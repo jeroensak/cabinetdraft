@@ -111,6 +111,52 @@ describe('deriveCabinetGeometry', () => {
     ])
   })
 
+  it('sizes shelves using non-default outside dimensions and construction settings', () => {
+    const { module, settings } = fixture()
+    Object.assign(module, { width: 500, height: 1000, depth: 400 })
+    module.shelves = [{ id: 'custom-shelf', bottom: 320 }]
+    Object.assign(settings, { corpusThickness: 20, backPanelThickness: 5 })
+
+    const shelves = deriveCabinetGeometry(module, settings).panels.filter(
+      (panel) => panel.source.type === 'shelf',
+    )
+    expect(shelves).toStrictEqual([
+      {
+        moduleId: module.id,
+        source: { type: 'shelf', shelfId: 'custom-shelf' },
+        length: 460,
+        width: 395,
+        thickness: 20,
+        orientation: 'horizontal',
+        position: { x: 20, y: 320, z: 0 },
+      },
+    ])
+  })
+
+  it('repositions physical panels after resizing while keeping shelf bottoms absolute', () => {
+    const { module, settings } = fixture()
+    const original = deriveCabinetGeometry(module, settings)
+    const originalSnapshot = structuredClone(original)
+    Object.assign(module, { width: 500, height: 1600, depth: 400 })
+    Object.assign(settings, { corpusThickness: 20, backPanelThickness: 5 })
+
+    const resized = deriveCabinetGeometry(module, settings)
+    expect(
+      Object.fromEntries(
+        resized.panels.map((panel) => [panel.source.type, panel.position]),
+      ),
+    ).toStrictEqual({
+      'side-left': { x: 0, y: 0, z: 0 },
+      'side-right': { x: 480, y: 0, z: 0 },
+      top: { x: 20, y: 1580, z: 0 },
+      bottom: { x: 20, y: 0, z: 0 },
+      shelf: { x: 20, y: 1091, z: 0 },
+      back: { x: 0, y: 0, z: 395 },
+    })
+    expect(module.shelves[0]!.bottom).toBe(1091)
+    expect(original).toStrictEqual(originalSnapshot)
+  })
+
   it('sorts shelf panels by bottom without mutating persisted data or deriving fronts', () => {
     const { module, settings } = fixture()
     module.shelves = [

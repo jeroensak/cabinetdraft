@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createDefaultProject } from '../project/createDefaultProject'
 import { deriveSpaces } from './deriveSpaces'
+import { deriveCabinetGeometry } from '../cabinet/deriveCabinetGeometry'
 
 function fixture() {
   let id = 0
@@ -93,6 +94,109 @@ describe('deriveSpaces', () => {
     ])
     expect(module.shelves[0]!.bottom).toBe(1091)
   })
+
+  it.each([
+    {
+      name: 'coincident shelves',
+      shelves: [
+        { id: 'a', bottom: 500 },
+        { id: 'b', bottom: 500 },
+      ],
+      coordinates: [
+        [18, 500, 482],
+        [518, 500, -18],
+        [518, 2182, 1664],
+      ],
+    },
+    {
+      name: 'a shelf below the bottom panel',
+      shelves: [{ id: 'a', bottom: -10 }],
+      coordinates: [
+        [18, -10, -28],
+        [8, 2182, 2174],
+      ],
+    },
+    {
+      name: 'a shelf intersecting the top panel',
+      shelves: [{ id: 'a', bottom: 2175 }],
+      coordinates: [
+        [18, 2175, 2157],
+        [2193, 2182, -11],
+      ],
+    },
+  ])(
+    'retains all geometry and stable boundaries for $name',
+    ({ shelves, coordinates }) => {
+      const { module, settings } = fixture()
+      module.shelves = shelves
+      const before = structuredClone({ module, settings })
+      const spaces = deriveSpaces(module, settings)
+      const panels = deriveCabinetGeometry(module, settings).panels.filter(
+        (panel) => panel.source.type === 'shelf',
+      )
+
+      expect(
+        panels.map((panel) => ({
+          source: panel.source,
+          bottom: panel.position.y,
+        })),
+      ).toStrictEqual(
+        shelves.map((shelf) => ({
+          source: { type: 'shelf', shelfId: shelf.id },
+          bottom: shelf.bottom,
+        })),
+      )
+      expect(
+        spaces.map(({ bottom, top, height }) => [bottom, top, height]),
+      ).toStrictEqual(coordinates)
+      expect(spaces.map((space) => space.bottomBoundary)).toStrictEqual([
+        { type: 'module-bottom' },
+        ...shelves.map((shelf) => ({ type: 'shelf', shelfId: shelf.id })),
+      ])
+      expect(spaces.map((space) => space.topBoundary)).toStrictEqual([
+        ...shelves.map((shelf) => ({ type: 'shelf', shelfId: shelf.id })),
+        { type: 'module-top' },
+      ])
+      expect({ module, settings }).toStrictEqual(before)
+    },
+  )
+
+  it.each([
+    'remove fronts',
+    'replace door with drawer',
+    'front gap',
+    'front thickness',
+  ] as const)(
+    'keeps carcass geometry and spaces independent of changes to %s',
+    (change) => {
+      const { module, settings } = fixture()
+      const geometry = structuredClone(deriveCabinetGeometry(module, settings))
+      const spaces = structuredClone(deriveSpaces(module, settings))
+      switch (change) {
+        case 'remove fronts':
+          module.fronts = []
+          break
+        case 'replace door with drawer':
+          module.fronts = [
+            {
+              id: 'drawer',
+              type: 'drawer',
+              bottomBoundary: { type: 'module-bottom' },
+              topBoundary: { type: 'shelf', shelfId: module.shelves[0]!.id },
+            },
+          ]
+          break
+        case 'front gap':
+          settings.frontGap = 7
+          break
+        case 'front thickness':
+          settings.frontThickness = 25
+          break
+      }
+      expect(deriveCabinetGeometry(module, settings)).toStrictEqual(geometry)
+      expect(deriveSpaces(module, settings)).toStrictEqual(spaces)
+    },
+  )
 
   it('preserves zero and negative spaces rather than filtering or repairing overlaps', () => {
     const { module, settings } = fixture()
