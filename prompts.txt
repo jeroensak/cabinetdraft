@@ -1,0 +1,1108 @@
+Prompt 2 — Project model and defaults
+
+Read:
+
+docs/IMPLEMENTATION_CONTRACT.md
+
+before making changes.
+
+Implement the persistent Cabinet Designer V1 project model in pure TypeScript.
+
+Persistent shape should conceptually be:
+
+interface Project {
+  schemaVersion: number;
+  id: string;
+  name: string;
+  settings: ProjectSettings;
+  modules: CabinetModule[];
+}
+
+interface ProjectSettings {
+  corpusThickness: number;
+  backPanelEnabled: boolean;
+  backPanelThickness: number;
+  frontThickness: number;
+  frontGap: number;
+}
+
+interface CabinetModule {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  depth: number;
+  shelves: Shelf[];
+  fronts: Front[];
+}
+
+interface Shelf {
+  id: string;
+  bottom: number;
+}
+
+Create an explicit stable boundary model for fronts:
+
+type Boundary =
+  | { type: 'module-bottom' }
+  | { type: 'shelf'; shelfId: string }
+  | { type: 'module-top' };
+
+Create semantic door and drawer-front types.
+
+Do not store:
+
+spaces;
+
+X coordinates;
+
+module order fields;
+
+front calculated dimensions;
+
+SVG coordinates;
+
+cut lists.
+
+Create ID generation behind a small replaceable helper.
+
+Create:
+
+createDefaultProject()
+
+Default settings:
+
+corpusThickness = 18
+backPanelEnabled = true
+backPanelThickness = 3
+frontThickness = 18
+frontGap = 2
+
+Default module:
+
+800 × 2200 × 600
+
+Default module contains:
+
+one shelf centred so both free spaces are equal;
+
+one full-height double door.
+
+For the default cabinet the shelf bottom must be:
+
+1091 mm
+
+Default project name:
+
+Untitled cabinet
+
+Default module name:
+
+Cabinet 1
+
+Add unit tests covering the default project exactly.
+
+Do not implement SVG or React UI.
+
+Stop after this slice.
+
+Prompt 3 — Cabinet geometry and spaces
+
+Implement pure domain geometry for carcass panels, shelves and spaces.
+
+Required formulas:
+
+Given:
+
+W = outside width
+H = outside height
+D = outside depth
+T = corpus thickness
+B = back thickness
+
+When the back is enabled:
+
+carcassDepth = D - B
+
+otherwise:
+
+carcassDepth = D
+
+Internal width:
+
+internalWidth = W - 2T
+
+Physical basic panels:
+
+side:
+H × carcassDepth × T
+
+top:
+internalWidth × carcassDepth × T
+
+bottom:
+internalWidth × carcassDepth × T
+
+back:
+H × W × B
+
+Shelf:
+
+internalWidth × carcassDepth × T
+
+Implement a canonical physical-panel representation suitable for later reuse by:
+
+SVG/domain geometry;
+
+Cut List.
+
+Do not put screen coordinates into this representation.
+
+Implement:
+
+deriveSpaces(module, settings)
+
+Spaces must be calculated from:
+
+top/bottom panels;
+
+sorted shelves.
+
+Spaces are derived only.
+
+Each space should expose at minimum:
+
+bottom boundary
+top boundary
+bottom coordinate
+top coordinate
+free height
+
+Test at least:
+
+empty module;
+
+one shelf;
+
+multiple shelves;
+
+unsorted persisted shelf array;
+
+default 800 × 2200 × 600 example.
+
+For:
+
+800 × 2200 × 600
+T = 18
+B = 3
+
+test exactly:
+
+side:       2200 × 597
+top/bottom: 764 × 597
+
+Do not implement front geometry yet.
+
+Stop after this slice.
+
+Prompt 4 — Front geometry
+
+Implement canonical front geometry in the pure TypeScript domain.
+
+This geometry must later be consumed by both:
+
+SVG rendering;
+
+Cut List.
+
+Do not calculate these measurements in React.
+
+Implement semantic:
+
+DoorFront
+DrawerFront
+
+with stable boundary references.
+
+Implement helpers to resolve a boundary to a physical vertical coordinate.
+
+Rules:
+
+Horizontal
+
+Single full-width front:
+
+width = W - 2G
+
+Double door:
+
+leafWidth = (W - 3G) / 2
+
+If leaf width is non-integer millimetres, expose this as an invalid geometry condition rather than rounding.
+
+Vertical outer boundaries
+
+Module bottom:
+
+G
+
+Module top:
+
+H - G
+
+Internal shelf boundaries
+
+centre = shelf.bottom + T / 2
+
+For a front below that shelf:
+
+top = centre - G / 2
+
+For a front above that shelf:
+
+bottom = centre + G / 2
+
+Internal shelves inside one door's covered range do not influence that door's geometry.
+
+Implement:
+
+deriveFrontGeometry(...)
+
+or equivalent canonical functions.
+
+Required exact test:
+
+module: 800 × 2200
+frontGap: 2
+double full-height door
+
+must derive two physical leaves:
+
+397 × 2196 × frontThickness
+
+Also test:
+
+partial door between shelves;
+
+drawer front;
+
+adjacent fronts sharing a shelf;
+
+door spanning several spaces;
+
+fractional double-door width.
+
+Do not build UI yet.
+
+Stop after this slice.
+
+Prompt 5 — Validation and Cut List
+
+Implement domain validation.
+
+Return structured validation issues with codes/data.
+
+Do not make domain errors depend on English UI strings.
+
+Validation should cover at minimum:
+
+width <= 2 × corpusThickness;
+
+height <= 2 × corpusThickness;
+
+back thickness >= outside depth;
+
+shelf outside usable interior;
+
+overlapping fronts;
+
+references to missing shelves;
+
+non-positive front dimensions;
+
+fractional physical manufacturing dimensions that V1 cannot represent;
+
+other clearly impossible derived geometry.
+
+Invalid state must be representable.
+
+Do not silently repair anything.
+
+Then implement:
+
+deriveCutList(project)
+
+The cut list must:
+
+use canonical domain/physical geometry;
+
+never use SVG data;
+
+be unavailable as usable manufacturing output when project validation fails.
+
+Suggested item shape:
+
+interface CutListItem {
+  id: string;
+  moduleId: string;
+  moduleName: string;
+  part: string;
+  quantity: number;
+  length: number;
+  width: number;
+  thickness: number;
+}
+
+Do not group equal pieces across modules.
+
+Create deterministic human-readable IDs such as:
+
+C1-SIDE-L
+C1-SIDE-R
+C1-TOP
+C1-BOTTOM
+C1-SHELF-1
+C1-BACK
+C1-DOOR-1-L
+C1-DOOR-1-R
+
+Test the complete default cabinet cut list.
+
+Stop after this slice.
+
+Prompt 6 — Domain commands
+
+Implement all V1 project mutations as pure domain commands.
+
+React will later call these commands.
+
+Do not mutate nested arrays directly in UI code.
+
+Implement at minimum:
+
+addModule
+duplicateModule
+deleteModule
+renameModule
+reorderModules
+
+setModuleDimensions
+
+addShelfToSpace
+moveShelf
+removeShelf
+
+addDoor
+setDoorLeaves
+addDrawerFront
+removeFront
+
+updateProjectSettings
+
+Important behaviour:
+
+Add shelf
+
+A shelf is added to a selected derived space.
+
+Place it centred while accounting for shelf thickness.
+
+Example:
+
+1000 mm free space
+18 mm shelf
+→
+491 + 18 + 491
+
+Shelf inside door
+
+Door remains unchanged.
+
+The shelf sits behind it.
+
+Shelf inside drawer front
+
+One drawer front becomes two drawer fronts.
+
+This must be one atomic domain operation.
+
+Remove shelf
+
+Adjacent spaces merge.
+
+Rules:
+
+configured front > empty
+
+When both sides contain conflicting fronts:
+
+lower space wins
+
+Examples:
+
+door + empty → door
+empty + drawer → drawer
+upper door + lower drawer → drawer
+upper drawer + lower door → door
+
+Duplicate module
+
+Generate new IDs for:
+
+module;
+
+shelves;
+
+fronts.
+
+Remap front shelf-boundary references.
+
+Insert copy immediately to the right of the original.
+
+Do not retain any live relationship between original and copy.
+
+Write comprehensive unit tests.
+
+Stop after this slice.
+
+Prompt 7 — Store, history and persistence
+
+Add the application state layer using Zustand.
+
+Separate:
+
+persistent project state
+
+from:
+
+editor-only state
+
+Editor-only state includes:
+
+selection;
+
+hover;
+
+viewport zoom;
+
+viewport pan.
+
+Project changes go into history.
+
+UI-only changes do not.
+
+Implement simple history:
+
+past[]
+present
+future[]
+
+Support:
+
+Ctrl/Cmd + Z
+Ctrl/Cmd + Shift + Z
+
+One logical project command must equal one history entry.
+
+A shelf drag must eventually be able to update live while committing only one history entry on release.
+
+Implement current-project autosave to:
+
+localStorage
+
+Persist only Project JSON.
+
+Do not persist:
+
+derived geometry;
+
+Cut List;
+
+spaces;
+
+selection;
+
+hover;
+
+viewport state.
+
+Restore the current project on application startup.
+
+If no stored project exists, use createDefaultProject().
+
+Do not build the full visual editor yet.
+
+Stop after this slice.
+
+Prompt 8 — Application shell and visual foundation
+
+Implement the application shell based on the Figma source of truth:
+
+https://www.figma.com/design/donKXEbUuouv3eFmWolZKY
+
+Primary reference:
+
+Designer — Preferred Direction
+
+Match the overall visual language:
+
+light mode;
+
+warm/off-white neutral background;
+
+muted natural gray/beige surfaces;
+
+restrained green/teal accent;
+
+Inter-like typography;
+
+thin borders;
+
+compact controls;
+
+calm product-configurator feeling.
+
+Implement:
+
+application header;
+
+project name;
+
+Designer / Cut List navigation;
+
+undo/redo controls;
+
+import/export placeholders;
+
+project/settings control;
+
+left cabinet sidebar;
+
+central editor area;
+
+right properties inspector.
+
+The layout should fill the desktop viewport.
+
+Desktop-first only.
+
+For narrow screens, a simple unsupported/small-screen message is sufficient.
+
+Do not implement the final cabinet SVG yet.
+
+Module sidebar should display only modules.
+
+Do not create a CAD object tree.
+
+Implement module selection from the list.
+
+Match Figma closely but keep component code readable and uncomplicated.
+
+Stop after this slice.
+
+Prompt 9 — Isometric Structure renderer
+
+Implement the Structure-mode SVG renderer.
+
+Important rule:
+
+SVG rendering is presentation-only.
+
+All cabinet dimensions must come from domain geometry.
+
+Do not calculate manufacturing dimensions inside SVG components.
+
+Implement an isometric projection helper converting simple domain/world coordinates to screen coordinates.
+
+Render:
+
+left/right side structure;
+
+top;
+
+bottom;
+
+shelves;
+
+multiple adjacent modules;
+
+differing module heights;
+
+differing module depths.
+
+Modules align:
+
+front = 0
+bottom = 0
+
+Horizontal module origin is derived from preceding module widths.
+
+Implement:
+
+selected module state;
+
+hover state;
+
+linked hover between sidebar and SVG;
+
+overall total width dimension;
+
+maximum height dimension;
+
+selected-module width/height/depth dimensions.
+
+Use the Figma screen as visual guidance.
+
+Also implement viewport basics:
+
+wheel/trackpad zoom;
+
+pan by dragging empty canvas;
+
+Fit to view.
+
+Do not implement front rendering in this slice.
+
+Stop after this slice.
+
+Prompt 10 — Designer interactions and properties
+
+Implement Structure-mode editing.
+
+Selection types should support conceptually:
+
+module
+shelf
+space
+front
+null
+
+Spaces are derived and identified by their boundaries.
+
+If a structural change destroys the selected derived space:
+
+selection = null
+
+Do not attempt clever selection migration.
+
+Implement:
+
+Module properties
+
+editable name;
+
+width;
+
+height;
+
+depth;
+
+duplicate;
+
+delete.
+
+Input edits use local draft state.
+
+Commit to project state only on:
+
+Enter
+blur
+
+Do not create history entries for individual keystrokes.
+
+Space interaction
+
+Click a derived space.
+
+Show contextual actions:
+
+Add shelf
+Add door
+Add drawer front
+
+In Structure mode, prioritize:
+
+Add shelf
+
+Shelf editing
+
+Allow:
+
+selection;
+
+exact numeric positioning;
+
+vertical dragging.
+
+Dragging may snap to 10 mm.
+
+During drag:
+
+visual position updates live;
+
+current dimension can be shown.
+
+On mouse release:
+
+commit one history action.
+
+Delete
+
+Support:
+
+Delete
+Backspace
+
+for selected module/shelf/front where appropriate.
+
+Module deletion may confirm.
+
+Do not overbuild keyboard accessibility/mobile support for V1.
+
+Stop after this slice.
+
+Prompt 11 — Fronts mode
+
+Implement the Fronts mode based on Figma screen:
+
+Designer — Fronts
+
+Use the same editor shell as Structure mode.
+
+The Structure / Fronts toggle changes presentation mode, not the project model.
+
+Render derived physical fronts using the canonical front geometry.
+
+Support:
+
+single door;
+
+double door;
+
+drawer front;
+
+door spanning multiple contiguous spaces.
+
+Do not add handles, hinges or animations.
+
+Interaction:
+
+click front → select front;
+
+Shift-click adjacent spaces → multi-space selection;
+
+create door across contiguous selected spaces.
+
+Inspector for a selected front should show appropriate semantic information such as:
+
+front type;
+
+single/double leaves for a door;
+
+covered boundary range;
+
+derived physical dimensions;
+
+front thickness;
+
+gap.
+
+Derived dimensions are display-only.
+
+Do not persist calculated width/height.
+
+Ensure adding a shelf inside an existing spanning door visually leaves the door intact.
+
+Ensure adding a shelf to a drawer-front space uses the already-implemented atomic split command.
+
+Stop after this slice.
+
+Prompt 12 — Module management
+
+Complete module-level editing.
+
+Implement:
+
++ Add cabinet
+Duplicate
+Delete
+Rename
+Drag/drop reorder
+
+Use a lightweight drag/drop solution.
+
+Do not support dragging modules in the SVG.
+
+Array order remains physical left-to-right order.
+
+New normal cabinets are empty carcasses using sensible default dimensions.
+
+Duplicated cabinets copy full internal configuration but receive new IDs.
+
+After any module change:
+
+total arrangement width updates;
+
+isometric layout updates;
+
+Cut List later derives naturally from project state.
+
+Do not persist derived module positions.
+
+Stop after this slice.
+
+Prompt 13 — Cut List page
+
+Implement the /cut-list page based on Figma:
+
+Cut List
+
+It must be an independent consumer of:
+
+deriveCutList(project)
+
+Do not import editor canvas components.
+
+Do not import SVG geometry.
+
+Use the same header/navigation/design language as Designer.
+
+Render columns:
+
+ID
+Cabinet
+Part
+Qty
+Length
+Width
+Thickness
+
+Use mm in column labels or otherwise unobtrusively.
+
+Keep rows relatively dense and easy to scan.
+
+Do not group equal pieces across modules.
+
+For valid projects show:
+
+Configuration valid
+
+For invalid projects do not show questionable manufacturing dimensions as usable output.
+
+Instead render:
+
+Cut list unavailable
+
+Resolve configuration errors in the Designer first.
+
+Include a clear:
+
+Back to Designer
+
+action.
+
+Do not implement sheet optimization.
+
+Do not implement purchasing quantities.
+
+Stop after this slice.
+
+Prompt 14 — JSON import/export
+
+Implement project JSON export.
+
+Filename should be derived from the project name where reasonable, for example:
+
+my-wardrobe.json
+
+Export only persisted Project data.
+
+JSON should remain human-readable.
+
+Implement schema versioning:
+
+schemaVersion: 1
+
+Create an import boundary conceptually:
+
+raw JSON
+→ parse
+→ schema/version validation
+→ migrations
+→ current Project
+
+Even though only V1 exists, structure the code so future migrations can be inserted.
+
+Do not overengineer a generic migration framework.
+
+Import replaces the current project.
+
+Ask for confirmation:
+
+Replace current design with imported project?
+
+Malformed import must never partially mutate the current project.
+
+Imported invalid geometric projects are allowed if structurally parseable.
+
+Their validation state should simply be shown in the UI.
+
+Add unit tests for:
+
+export/import roundtrip;
+
+malformed JSON;
+
+unsupported schema version;
+
+structurally invalid data;
+
+geometrically invalid but representable project.
+
+Stop after this slice.
+
+Prompt 15 — Integration and polish
+
+Review the full application against:
+
+frozen functional specification;
+
+all three approved Figma screens.
+
+Do not add new product features.
+
+Fix only inconsistencies, missing states and visual mismatches.
+
+Specifically review:
+
+selection consistency;
+
+hover linking;
+
+properties panels;
+
+Structure/Fronts switching;
+
+zoom/pan/Fit;
+
+dimension labels;
+
+invalid-state presentation;
+
+localStorage restore;
+
+history behaviour;
+
+module reorder;
+
+import/export;
+
+Cut List correctness.
+
+Run:
+
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm build
+
+Remove:
+
+unused code;
+
+unused dependencies;
+
+placeholder controls;
+
+dead helpers;
+
+duplicated domain formulas.
+
+Check explicitly that no cabinet manufacturing formula has been reimplemented in React or SVG code.
+
+Do not perform large architectural rewrites if existing code already satisfies the contract.
+
+Stop after this slice.
+
+Prompt 16 — Playwright happy paths
+
+Only after V1 behaviour is stable, add Playwright.
+
+Do not create a huge E2E suite.
+
+Cover several critical user flows.
+
+At minimum:
+
+Flow 1
+
+open default project
+→ verify example cabinet
+→ open Cut List
+→ verify expected default parts
+
+Flow 2
+
+add cabinet
+→ resize it
+→ add shelf
+→ add door
+→ verify Cut List updates
+
+Flow 3
+
+make module dimension invalid
+→ verify validation state
+→ open Cut List
+→ verify usable Cut List is blocked
+
+Flow 4
+
+perform project edit
+→ undo
+→ redo
+
+Flow 5
+
+export project
+→ import equivalent project
+→ verify structure restored
+
+Keep the E2E suite focused on integration behaviour.
+
+Do not duplicate all domain-unit tests in Playwright.
+
+Finish by running the complete test/build pipeline.
+
+Recommended working method with Codex
+
+Run one prompt at a time.
+
+After each prompt:
+
+1. inspect the diff
+2. run the app/tests
+3. fix that slice if needed
+4. commit
+5. only then continue
+
+Do not give Codex Prompt 1–16 at once.
+
+The point of the slices is to prevent later UI code from shaping or corrupting the domain model.
+
+The most important checkpoints are:
+
+after Prompt 5:
+domain calculations are trustworthy
+
+after Prompt 7:
+state architecture is trustworthy
+
+after Prompt 11:
+editor behaviour is functionally complete
+
+after Prompt 14:
+V1 feature set is complete
+
+after Prompt 16:
+V1 is release-ready
