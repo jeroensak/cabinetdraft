@@ -1,0 +1,31 @@
+# Dependencies and package-manager cache
+node_modules/
+.pnpm-store/
+
+# Build, test, and tooling output
+dist/
+coverage/
+.vite/
+*.tsbuildinfo
+.eslintcache
+
+# Local environment and overrides (keep shareable examples)
+.env
+.env.*
+!.env.example
+*.local
+
+# Logs
+logs/
+*.log
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*.swo
+*~

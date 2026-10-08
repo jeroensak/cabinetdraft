@@ -1,0 +1,8 @@
+# Frozen source; edit only on explicit instruction.
+technical-specification.md
+
+# Generated files
+pnpm-lock.yaml
+node_modules/
+dist/
+coverage/

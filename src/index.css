@@ -1,0 +1,16 @@
+@import 'tailwindcss';
+
+:root {
+  font-family: Inter, system-ui, sans-serif;
+  color-scheme: light;
+}
+
+nav a[aria-current='page'] {
+  text-decoration: underline;
+  text-underline-offset: 0.4em;
+}
+
+a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
