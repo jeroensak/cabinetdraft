@@ -1,6 +1,6 @@
 # Cabinet Designer V1
 
-Frontend foundation built with Vite, React, TypeScript, Tailwind CSS, React Router, Zustand, Vitest, and ESLint. Designer and Cut List currently render placeholders; the persistent domain model and default project factory are implemented. Canonical carcass/shelf physical panels and spaces are derived in the domain. Front geometry, commands, and the store remain reserved for later slices.
+Frontend foundation built with Vite, React, TypeScript, Tailwind CSS, React Router, Zustand, Vitest, and ESLint. Designer and Cut List currently render placeholders; the persistent domain model and default project factory are implemented. Canonical carcass/shelf physical panels and spaces are derived in the domain. Canonical front geometry derives door leaves and drawer panels with structured geometry issues. Project validation, cut lists, commands, and the store remain reserved for later slices.
 
 Read the [implementation contract](docs/IMPLEMENTATION_CONTRACT.md) and [frozen specification index](docs/SPECIFICATION_INDEX.md) before making changes. The specification must not be edited without explicit instruction.
 

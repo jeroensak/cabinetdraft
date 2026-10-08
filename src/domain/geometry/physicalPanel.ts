@@ -10,6 +10,8 @@ export interface PhysicalPosition {
 export type PanelSource =
   | { type: 'side-left' | 'side-right' | 'top' | 'bottom' | 'back' }
   | { type: 'shelf'; shelfId: string }
+  | { type: 'door'; frontId: string; leaf: 'single' | 'left' | 'right' }
+  | { type: 'drawer'; frontId: string }
 
 /** Maps manufacturing dimensions onto physical axes without duplicating sizes.
  * side: length=y, width=z, thickness=x
