@@ -1,8 +1,12 @@
+import { useEffect } from 'react'
 import { NavLink, Navigate, Outlet, Route, Routes } from 'react-router'
 import { DesignerPage } from '../editor/DesignerPage'
 import { CutListPage } from '../cut-list/CutListPage'
+import { installHistoryShortcuts, useProjectStore } from '../store/projectStore'
 
 function Layout() {
+  useEffect(() => installHistoryShortcuts(useProjectStore), [])
+
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900">
       <header className="flex items-center justify-between border-b border-stone-200 bg-white px-8 py-5">
