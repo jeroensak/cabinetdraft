@@ -1,6 +1,6 @@
 export function CutListPage() {
   return (
-    <section aria-labelledby="cut-list-title">
+    <section className="cut-list-page" aria-labelledby="cut-list-title">
       <h1 id="cut-list-title" className="text-3xl font-semibold">
         Cut List
       </h1>

@@ -1,25 +1,102 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Navigate, Outlet, Route, Routes } from 'react-router'
 import { DesignerPage } from '../editor/DesignerPage'
 import { CutListPage } from '../cut-list/CutListPage'
+import { ProjectSettings } from '../editor/properties/ProjectSettings'
 import { installHistoryShortcuts, useProjectStore } from '../store/projectStore'
 
 function Layout() {
+  const name = useProjectStore((state) => state.present.name)
+  const canUndo = useProjectStore((state) => state.past.length > 0)
+  const canRedo = useProjectStore((state) => state.future.length > 0)
+  const undo = useProjectStore((state) => state.undo)
+  const redo = useProjectStore((state) => state.redo)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   useEffect(() => installHistoryShortcuts(useProjectStore), [])
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900">
-      <header className="flex items-center justify-between border-b border-stone-200 bg-white px-8 py-5">
-        <span className="font-semibold">Cabinet Designer</span>
-        <nav aria-label="Main navigation" className="flex gap-6">
-          <NavLink to="/designer">Designer</NavLink>
-          <NavLink to="/cut-list">Cut List</NavLink>
-        </nav>
-      </header>
-      <main className="mx-auto max-w-5xl px-8 py-16">
-        <Outlet />
-      </main>
-    </div>
+    <>
+      <div className="small-screen-message">
+        <strong>Cabinet Designer</strong>
+        <h1>A little more room to design</h1>
+        <p>Open this project in a desktop window at least 1024 pixels wide.</p>
+      </div>
+      <div className="application-shell">
+        <header className="app-header">
+          <div className="project-identity">
+            <strong>Cabinet Designer</strong>
+            <span title={name}>{name}</span>
+          </div>
+          <nav aria-label="Main navigation" className="segmented navigation">
+            <NavLink to="/designer">Designer</NavLink>
+            <NavLink to="/cut-list">Cut List</NavLink>
+          </nav>
+          <div className="header-actions">
+            <button
+              className="history-button"
+              aria-label="Undo"
+              title="Undo (Ctrl/Cmd + Z)"
+              disabled={!canUndo}
+              onClick={undo}
+            >
+              ↶
+            </button>
+            <button
+              className="history-button"
+              aria-label="Redo"
+              title="Redo (Ctrl/Cmd + Shift + Z)"
+              disabled={!canRedo}
+              onClick={redo}
+            >
+              ↷
+            </button>
+            <button
+              className="pill"
+              disabled
+              title="Import will be available soon"
+            >
+              Import
+            </button>
+            <button
+              className="pill"
+              disabled
+              title="Export will be available soon"
+            >
+              Export
+            </button>
+            <button
+              className="pill primary"
+              aria-expanded={settingsOpen}
+              aria-controls="project-settings"
+              onClick={() => setSettingsOpen(!settingsOpen)}
+            >
+              Settings
+            </button>
+          </div>
+        </header>
+        {settingsOpen && (
+          <section
+            className="settings-popover"
+            id="project-settings"
+            aria-label="Project settings"
+          >
+            <div className="section-heading">
+              <h2>Project settings</h2>
+              <button className="pill" onClick={() => setSettingsOpen(false)}>
+                Close
+              </button>
+            </div>
+            <ProjectSettings />
+            <p className="muted">
+              Settings are read-only. Editing will be available soon.
+            </p>
+          </section>
+        )}
+        <main className="app-main">
+          <Outlet />
+        </main>
+      </div>
+    </>
   )
 }
 
