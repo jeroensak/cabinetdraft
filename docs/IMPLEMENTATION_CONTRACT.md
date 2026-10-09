@@ -44,3 +44,7 @@ No backend, accounts, cloud saving, WebGL/Three.js, materials, wood textures, ha
 14. E2E + hardening
 
 Every slice must leave typecheck, tests, lint, and build passing. Foundation contains only tooling, directory boundaries, documentation, and route placeholders; no project model, persistence, or cabinet calculations yet.
+
+## Subsequent placement decision
+
+The user approved rounding newly centred shelf positions to the nearest integer millimetre. Half-millimetre ties round toward the module top. Free spaces may consequently differ by 1 mm. This applies only to shelf placement; fractional manufacturing dimensions remain invalid. The frozen source specification is unchanged.

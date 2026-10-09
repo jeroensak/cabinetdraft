@@ -35,4 +35,6 @@ Import commands from `src/domain/commands`. Each command returns a new `Project`
 
 Shelf and front selections use stable bottom/top boundaries. `addShelfToSpace` resolves the current space from those boundaries; it ignores any caller-supplied derived measurements. `addDoor` covers every contiguous space between its endpoints, while `addDrawerFront` requires adjacent boundaries.
 
-Shelf centring accounts for thickness. If exact centring requires a fractional persisted position, the command reports `non-integer-shelf-position`; no V1 rounding policy has been introduced. Moving a shelf may leave invalid geometry but cannot break a front's structural range. Removing a shelf deletes the entire losing front, including a losing door that extended beyond the merged space, as specified.
+Shelf centring accounts for thickness. New shelf placement rounds to the nearest whole millimetre, with half-millimetre ties toward the module top. This placement rule does not round manufacturing dimensions. Moving a shelf may leave invalid geometry but cannot break a front's structural range. Removing a shelf deletes the entire losing front, including a losing door that extended beyond the merged space, as specified.
+
+Persistence exposes load/save errors and unsaved status in the store. Unreadable saved data stays untouched and is available as `persistence.recoveryData`; autosave is blocked for that session to prevent accidental replacement. Failed writes can be retried with `retrySave()`.

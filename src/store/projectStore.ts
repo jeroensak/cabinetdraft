@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { updateProjectSettings, type BoundaryRange } from '../domain/commands'
+import { projectData } from '../domain/project/projectData'
 import { createDefaultProject } from '../domain/project/createDefaultProject'
 import {
   PROJECT_SCHEMA_VERSION,
@@ -81,27 +82,51 @@ function isProject(value: unknown): value is Project {
   })
 }
 
-function readProject(storage?: ProjectStorage): Project {
-  const fallback = () => createDefaultProject()
-  if (!storage) return fallback()
-  try {
-    const raw = storage.getItem(PROJECT_STORAGE_KEY)
-    if (raw === null) return fallback()
-    const project: unknown = JSON.parse(raw)
-    return isProject(project) ? project : fallback()
-  } catch {
-    return fallback()
-  }
+export interface PersistenceState {
+  loadError: 'invalid-project' | 'read-failed' | 'storage-unavailable' | null
+  saveError: 'write-failed' | 'blocked-by-load-error' | null
+  /** Original unreadable payload, also left untouched in storage. */
+  recoveryData: string | null
+  unsaved: boolean
 }
 
-function saveProject(
-  storage: ProjectStorage | undefined,
-  project: Project,
-): void {
-  try {
-    storage?.setItem(PROJECT_STORAGE_KEY, JSON.stringify(project))
-  } catch {
-    // Storage may be unavailable or full; the current in-memory project remains usable.
+function readProject(storage?: ProjectStorage): {
+  project: Project
+  persistence: PersistenceState
+} {
+  let loadError: PersistenceState['loadError'] = storage
+    ? null
+    : 'storage-unavailable'
+  let recoveryData: string | null = null
+  if (storage) {
+    try {
+      recoveryData = storage.getItem(PROJECT_STORAGE_KEY)
+      if (recoveryData !== null) {
+        let parsed: unknown
+        try {
+          parsed = JSON.parse(recoveryData)
+        } catch {
+          /* Retain the original payload below. */
+        }
+        if (isProject(parsed))
+          return {
+            project: projectData(parsed),
+            persistence: {
+              loadError: null,
+              saveError: null,
+              recoveryData: null,
+              unsaved: false,
+            },
+          }
+        loadError = 'invalid-project'
+      }
+    } catch {
+      loadError = 'read-failed'
+    }
+  }
+  return {
+    project: createDefaultProject(),
+    persistence: { loadError, saveError: null, recoveryData, unsaved: true },
   }
 }
 
@@ -129,6 +154,8 @@ export interface ProjectStoreState {
   future: Project[]
   editor: EditorState
   previewBase: Project | null
+  persistence: PersistenceState
+  retrySave(): void
   execute(command: (project: Project) => Project): void
   beginProjectPreview(): void
   updateProjectPreview(project: Project): void
@@ -150,100 +177,149 @@ export interface CreateProjectStoreOptions {
 /** A fresh isolated Zustand store; useful for tests and independent app instances. */
 export function createProjectStore(options: CreateProjectStoreOptions = {}) {
   const storage = options.storage ?? browserStorage()
-  return create<ProjectStoreState>((set, get) => ({
-    present: options.initialProject ?? readProject(storage),
-    past: [],
-    future: [],
-    editor: {
-      selection: null,
-      hover: null,
-      viewport: { zoom: 1, pan: { x: 0, y: 0 } },
-    },
-    previewBase: null,
-    execute: (command) => {
-      const state = get()
-      const next = command(state.present)
-      if (sameProject(next, state.present)) return
-      const baseline = state.previewBase ?? state.present
-      set({
-        present: next,
-        past: [...state.past, baseline],
-        future: [],
-        previewBase: null,
-      })
-      saveProject(storage, next)
-    },
-    beginProjectPreview: () =>
-      set((state) => (state.previewBase ? {} : { previewBase: state.present })),
-    updateProjectPreview: (project) =>
-      set((state) => ({
-        previewBase: state.previewBase ?? state.present,
-        present: project,
-      })),
-    commitProjectPreview: () => {
-      const state = get()
-      if (!state.previewBase) return
-      const base = state.previewBase
-      if (sameProject(base, state.present)) {
-        set({ previewBase: null })
-        return
-      }
-      set({ past: [...state.past, base], future: [], previewBase: null })
-      saveProject(storage, state.present)
-    },
-    cancelProjectPreview: () =>
-      set((state) =>
-        state.previewBase
-          ? { present: state.previewBase, previewBase: null }
-          : {},
-      ),
-    undo: () => {
-      const state = get()
-      if (state.previewBase) {
-        set({ present: state.previewBase, previewBase: null })
-        return
-      }
-      const previous = state.past.at(-1)
-      if (!previous) return
-      const past = state.past.slice(0, -1)
-      set({ present: previous, past, future: [state.present, ...state.future] })
-      saveProject(storage, previous)
-    },
-    redo: () => {
-      const state = get()
-      if (state.previewBase) {
-        set({ present: state.previewBase, previewBase: null })
-        return
-      }
-      const next = state.future[0]
-      if (!next) return
-      set({
-        present: next,
-        past: [...state.past, state.present],
-        future: state.future.slice(1),
-      })
-      saveProject(storage, next)
-    },
-    setSelection: (selection) =>
-      set((state) => ({ editor: { ...state.editor, selection } })),
-    setHover: (hover) =>
-      set((state) => ({ editor: { ...state.editor, hover } })),
-    setViewport: (viewport) =>
-      set((state) => ({
-        editor: {
-          ...state.editor,
-          viewport: {
-            ...state.editor.viewport,
-            ...viewport,
-            pan: viewport.pan ? { ...viewport.pan } : state.editor.viewport.pan,
+  const loaded = readProject(storage)
+  return create<ProjectStoreState>((set, get) => {
+    const save = (project: Project) => {
+      const previous = get().persistence
+      if (previous.loadError || !storage) {
+        set({
+          persistence: {
+            ...previous,
+            saveError: 'blocked-by-load-error',
+            unsaved: true,
           },
-        },
-      })),
-    updateSettings: (settings) =>
-      get().execute((project) => {
-        return updateProjectSettings(project, settings)
-      }),
-  }))
+        })
+        return
+      }
+      try {
+        storage.setItem(
+          PROJECT_STORAGE_KEY,
+          JSON.stringify(projectData(project)),
+        )
+        set({ persistence: { ...previous, saveError: null, unsaved: false } })
+      } catch {
+        set({
+          persistence: {
+            ...previous,
+            saveError: 'write-failed',
+            unsaved: true,
+          },
+        })
+      }
+    }
+    return {
+      present: options.initialProject
+        ? projectData(options.initialProject)
+        : loaded.project,
+      persistence: {
+        ...loaded.persistence,
+        unsaved: options.initialProject ? true : loaded.persistence.unsaved,
+      },
+      retrySave: () => save(get().previewBase ?? get().present),
+      past: [],
+      future: [],
+      editor: {
+        selection: null,
+        hover: null,
+        viewport: { zoom: 1, pan: { x: 0, y: 0 } },
+      },
+      previewBase: null,
+      execute: (command) => {
+        const state = get()
+        const next = projectData(command(state.present))
+        const baseline = state.previewBase ?? state.present
+        if (sameProject(next, baseline)) {
+          if (state.previewBase) set({ present: baseline, previewBase: null })
+          return
+        }
+        set({
+          present: next,
+          past: [...state.past, baseline],
+          future: [],
+          previewBase: null,
+        })
+        save(next)
+      },
+      beginProjectPreview: () =>
+        set((state) =>
+          state.previewBase ? {} : { previewBase: state.present },
+        ),
+      updateProjectPreview: (project) =>
+        set((state) => ({
+          previewBase: state.previewBase ?? state.present,
+          present: projectData(project),
+        })),
+      commitProjectPreview: () => {
+        const state = get()
+        if (!state.previewBase) return
+        const base = state.previewBase
+        if (sameProject(base, state.present)) {
+          set({ previewBase: null })
+          return
+        }
+        set({ past: [...state.past, base], future: [], previewBase: null })
+        save(state.present)
+      },
+      cancelProjectPreview: () =>
+        set((state) =>
+          state.previewBase
+            ? { present: state.previewBase, previewBase: null }
+            : {},
+        ),
+      undo: () => {
+        const state = get()
+        if (state.previewBase) {
+          set({ present: state.previewBase, previewBase: null })
+          return
+        }
+        const previous = state.past.at(-1)
+        if (!previous) return
+        const past = state.past.slice(0, -1)
+        set({
+          present: previous,
+          past,
+          future: [state.present, ...state.future],
+        })
+        save(previous)
+      },
+      redo: () => {
+        const state = get()
+        if (state.previewBase) {
+          set({ present: state.previewBase, previewBase: null })
+          return
+        }
+        const next = state.future[0]
+        if (!next) return
+        set({
+          present: next,
+          past: [...state.past, state.present],
+          future: state.future.slice(1),
+        })
+        save(next)
+      },
+      setSelection: (selection) =>
+        set((state) => ({ editor: { ...state.editor, selection } })),
+      setHover: (hover) =>
+        set((state) => ({ editor: { ...state.editor, hover } })),
+      setViewport: (viewport) =>
+        set((state) => ({
+          editor: {
+            ...state.editor,
+            viewport: {
+              ...state.editor.viewport,
+              ...viewport,
+              pan: viewport.pan
+                ? { ...viewport.pan }
+                : state.editor.viewport.pan,
+            },
+          },
+        })),
+      updateSettings: (settings) =>
+        get().execute((project) => {
+          return updateProjectSettings(project, settings)
+        }),
+    }
+  })
 }
 
 /** Application-wide store. Importing it restores the current Project at startup. */
@@ -268,11 +344,24 @@ export function installHistoryShortcuts(
 ): () => void {
   const onKeyDown = (event: KeyboardEvent) => {
     if (
+      event.defaultPrevented ||
+      event.isComposing ||
       !(event.metaKey || event.ctrlKey) ||
       event.altKey ||
       event.key.toLowerCase() !== 'z'
     )
       return
+    const editable = event
+      .composedPath()
+      .some(
+        (node) =>
+          node instanceof HTMLElement &&
+          (/^(INPUT|TEXTAREA|SELECT)$/.test(node.tagName) ||
+            node.isContentEditable ||
+            node.closest('[contenteditable]:not([contenteditable="false"])') !==
+              null),
+      )
+    if (editable) return
     event.preventDefault()
     if (event.shiftKey) store.getState().redo()
     else store.getState().undo()

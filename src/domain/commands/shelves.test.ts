@@ -104,15 +104,29 @@ describe('shelf insertion', () => {
     )
   })
 
-  it('rejects half-millimetre centring rather than inventing a rounding policy', () => {
-    const project = fixture()
-    const space = deriveSpaces(project.modules[0]!, project.settings)[0]!
-    rejects(
-      project,
-      () => addShelfToSpace(project, 'original-2', space, ids()),
-      'non-integer-shelf-position',
-    )
-  })
+  it.each([
+    { spaceIndex: 0, expectedBottom: 546, heights: [528, 527, 1073] },
+    { spaceIndex: 1, expectedBottom: 1637, heights: [1073, 528, 527] },
+  ])(
+    'rounds placement in default space $spaceIndex to the nearest mm',
+    ({ spaceIndex, expectedBottom, heights }) => {
+      const project = fixture()
+      const space = deriveSpaces(project.modules[0]!, project.settings)[
+        spaceIndex
+      ]!
+      const next = addShelfToSpace(freeze(project), 'original-2', space, ids())
+      expect(
+        next.modules[0]!.shelves.find((shelf) => shelf.id === 'new-1')!.bottom,
+      ).toBe(expectedBottom)
+      expect(
+        deriveSpaces(next.modules[0]!, next.settings).map(
+          (space) => space.height,
+        ),
+      ).toStrictEqual(heights)
+      expect(next.modules[0]!.fronts).toStrictEqual(project.modules[0]!.fronts)
+      expect(validateProject(next)).toStrictEqual([])
+    },
+  )
 
   it('rolls back a drawer split if ID generation conflicts partway through', () => {
     const project = splitFixture('drawer')

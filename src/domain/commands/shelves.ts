@@ -48,8 +48,10 @@ export function addShelfToSpace(
         sameBoundary(space.topBoundary, range.topBoundary),
     )
     if (!space) throw new CommandError('invalid-space', { range })
-    const bottom =
-      space.bottom + (space.height - draft.settings.corpusThickness) / 2
+    // Round placement only: half millimetres go toward the module top.
+    const bottom = Math.round(
+      space.bottom + (space.height - draft.settings.corpusThickness) / 2,
+    )
     if (!Number.isSafeInteger(bottom))
       throw new CommandError('non-integer-shelf-position', { bottom })
     const front = occupant(module, space)
