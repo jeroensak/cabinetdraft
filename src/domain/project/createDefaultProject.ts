@@ -1,3 +1,4 @@
+import { DEFAULT_MODULE_DIMENSIONS } from './defaults'
 import { createId, type IdGenerator } from './id'
 import { PROJECT_SCHEMA_VERSION, type Project } from './types'
 
@@ -20,9 +21,7 @@ export function createDefaultProject(
       {
         id: generateId(),
         name: 'Cabinet 1',
-        width: 800,
-        height: 2200,
-        depth: 600,
+        ...DEFAULT_MODULE_DIMENSIONS,
         // Frozen specification §5: this position gives equal free heights.
         shelves: [{ id: generateId(), bottom: 1091 }],
         fronts: [

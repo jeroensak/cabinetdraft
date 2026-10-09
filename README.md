@@ -1,6 +1,6 @@
 # Cabinet Designer V1
 
-Frontend foundation built with Vite, React, TypeScript, Tailwind CSS, React Router, Zustand, Vitest, and ESLint. Designer and Cut List currently render placeholders; the persistent domain model and default project factory are implemented. Canonical carcass/shelf physical panels and spaces are derived in the domain. Canonical front geometry derives door leaves and drawer panels with structured geometry issues. Project validation reports structured issues without repair; cut lists contain independent physical-panel rows and are unavailable for invalid projects. Commands and the store remain reserved for later slices.
+Frontend foundation built with Vite, React, TypeScript, Tailwind CSS, React Router, Zustand, Vitest, and ESLint. Designer and Cut List currently render placeholders; the persistent domain model and default project factory are implemented. Canonical carcass/shelf physical panels and spaces are derived in the domain. Canonical front geometry derives door leaves and drawer panels with structured geometry issues. Project validation reports structured issues without repair; cut lists contain independent physical-panel rows and are unavailable for invalid projects. Immutable domain commands handle module, shelf, front, and settings edits. The store remains reserved for a later slice.
 
 Read the [implementation contract](docs/IMPLEMENTATION_CONTRACT.md) and [frozen specification index](docs/SPECIFICATION_INDEX.md) before making changes. The specification must not be edited without explicit instruction.
 
@@ -28,3 +28,11 @@ pnpm build
 `pnpm test` runs Vitest once. Domain tests default to Node; UI tests explicitly opt into jsdom. `pnpm preview` serves the production build locally. Production hosting must rewrite SPA routes to `index.html`.
 
 Tooling was initialized with `pnpm create vite@latest --template react-ts`. Tailwind uses its [official Vite integration](https://tailwindcss.com/docs/installation/using-vite).
+
+## Domain commands
+
+Import commands from `src/domain/commands`. Each command returns a new `Project` or throws a `CommandError` with a machine-readable `code` and `data`. Input projects are never mutated, including on failure. Structural conflicts are rejected; geometric invalidity remains representable. ID-creating commands accept a replaceable ID generator.
+
+Shelf and front selections use stable bottom/top boundaries. `addShelfToSpace` resolves the current space from those boundaries; it ignores any caller-supplied derived measurements. `addDoor` covers every contiguous space between its endpoints, while `addDrawerFront` requires adjacent boundaries.
+
+Shelf centring accounts for thickness. If exact centring requires a fractional persisted position, the command reports `non-integer-shelf-position`; no V1 rounding policy has been introduced. Moving a shelf may leave invalid geometry but cannot break a front's structural range. Removing a shelf deletes the entire losing front, including a losing door that extended beyond the merged space, as specified.
