@@ -651,3 +651,29 @@ input:focus-visible {
   stroke: #256d67;
   stroke-width: 1.2;
 }
+.module-row[draggable='true'] .module-marker {
+  cursor: grab;
+}
+.module-row[data-dragging='true'] {
+  opacity: 0.45;
+}
+.module-list li {
+  position: relative;
+}
+.module-list li[data-drop-edge]::after {
+  position: absolute;
+  content: '';
+  height: 2px;
+  background: #256d67;
+  left: 4px;
+  right: 4px;
+}
+.module-list li[data-drop-edge='before']::after {
+  top: -3px;
+}
+.module-list li[data-drop-edge='after']::after {
+  bottom: -3px;
+}
+.add-cabinet {
+  color: #256d67;
+}

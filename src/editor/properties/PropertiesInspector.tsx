@@ -1,3 +1,4 @@
+import { duplicateCabinet } from '../module-list/moduleActions'
 import { FrontProperties } from './FrontProperties'
 import { frontName } from '../frontName'
 import { useProjectStore } from '../../store/projectStore'
@@ -5,7 +6,6 @@ import { spacesInRange } from '../../store/selection'
 import {
   renameModule,
   setModuleDimensions,
-  duplicateModule,
   moveShelf,
   addShelfToSpace,
   addDoor,
@@ -172,11 +172,7 @@ export function PropertiesInspector() {
               {selection.type === 'module' && (
                 <button
                   className="pill"
-                  onClick={() =>
-                    run(() =>
-                      execute((project) => duplicateModule(project, module.id)),
-                    )
-                  }
+                  onClick={() => run(() => duplicateCabinet(module.id))}
                 >
                   Duplicate
                 </button>
