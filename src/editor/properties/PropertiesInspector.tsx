@@ -1,3 +1,5 @@
+import { FrontProperties } from './FrontProperties'
+import { frontName } from '../frontName'
 import { useProjectStore } from '../../store/projectStore'
 import { spacesInRange } from '../../store/selection'
 import {
@@ -19,6 +21,10 @@ export function PropertiesInspector() {
   const execute = useProjectStore((state) => state.execute)
   const { error, run } = useCommandAction()
   const module = project.modules.find((item) => item.id === selection?.moduleId)
+  const front =
+    selection?.type === 'front'
+      ? module?.fronts.find((item) => item.id === selection.frontId)
+      : undefined
   const shelf =
     selection?.type === 'shelf'
       ? module?.shelves.find((item) => item.id === selection.shelfId)
@@ -39,7 +45,9 @@ export function PropertiesInspector() {
                 ? 'Shelf'
                 : selection.type === 'space'
                   ? 'Selected space'
-                  : 'Front'}
+                  : front
+                    ? frontName(front)
+                    : 'Front'}
           </h2>
           <p className="muted">
             {selection.type === 'module' ? 'Selected module' : module.name}
@@ -81,6 +89,13 @@ export function PropertiesInspector() {
                 under Settings.
               </p>
             </>
+          )}
+          {front && (
+            <FrontProperties
+              module={module}
+              front={front}
+              settings={project.settings}
+            />
           )}
           {shelf && (
             <>

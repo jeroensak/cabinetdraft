@@ -617,3 +617,37 @@ input:focus-visible {
   stroke: #f3f0e8;
   stroke-width: 3px;
 }
+.property-field select,
+.semantic-value {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 20px;
+  background: #f7f4ed;
+  border: 1px solid #ddd8ce;
+  color: #202722;
+  font-size: 12px;
+}
+.panel-face[data-source='door'],
+.panel-face[data-source='drawer'] {
+  fill: #fffdf9;
+}
+.front-hit-area {
+  outline: none;
+  cursor: pointer;
+}
+.front-hit-area polygon {
+  fill: transparent;
+  stroke: transparent;
+  vector-effect: non-scaling-stroke;
+}
+.front-hit-area[data-hovered='true'] polygon {
+  fill: #e7f2ef33;
+  stroke: #6da59c;
+  stroke-dasharray: 4 2;
+}
+.front-hit-area[aria-pressed='true'] polygon,
+.front-hit-area:focus-visible polygon {
+  fill: #e7f2ef44;
+  stroke: #256d67;
+  stroke-width: 1.2;
+}

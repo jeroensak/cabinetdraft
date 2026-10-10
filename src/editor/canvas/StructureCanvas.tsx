@@ -1,4 +1,6 @@
-import { useMemo, useRef } from 'react'
+import { deriveFrontGeometry } from '../../domain/fronts/deriveFrontGeometry'
+import { FrontTargets } from './FrontTargets'
+import { useMemo, useRef, useState } from 'react'
 import { deriveArrangement } from '../../domain/cabinet/deriveArrangement'
 import { validateProject } from '../../domain/validation/validateProject'
 import { useProjectStore } from '../../store/projectStore'
@@ -8,6 +10,7 @@ import { Dimension } from './Dimension'
 import { StructureTargets } from './StructureTargets'
 
 export function StructureCanvas() {
+  const [mode, setMode] = useState<'structure' | 'fronts'>('structure')
   const project = useProjectStore((state) => state.present)
   const selection = useProjectStore((state) => state.editor.selection)
   const hover = useProjectStore((state) => state.editor.hover)
@@ -37,17 +40,29 @@ export function StructureCanvas() {
     () =>
       arrangement.modules
         .flatMap(({ module, origin, geometry }) =>
-          geometry.panels.flatMap((panel, index) =>
+          [
+            ...geometry.panels,
+            ...(mode === 'fronts'
+              ? module.fronts.flatMap(
+                  (front) =>
+                    deriveFrontGeometry(module, project.settings, front).panels,
+                )
+              : []),
+          ].flatMap((panel, index) =>
             panelFaces(panel, origin).map((face) => ({
               ...face,
               module,
               key: `${module.id}-${index}-${face.side}`,
               source: panel.source.type,
+              layer:
+                panel.source.type === 'door' || panel.source.type === 'drawer'
+                  ? 1
+                  : 0,
             })),
           ),
         )
-        .sort((a, b) => a.distance - b.distance),
-    [arrangement],
+        .sort((a, b) => a.layer - b.layer || a.distance - b.distance),
+    [arrangement, mode, project.settings],
   )
   const screen = (x: number, y: number, z = 0) => {
     const p = projectPoint({ x, y, z })
@@ -68,10 +83,25 @@ export function StructureCanvas() {
           {arrangement.totalWidth.toLocaleString('en-US')} mm total width
         </span>
         <div className="segmented view-switch" aria-label="Designer view">
-          <button disabled className="selected">
-            Structure
-          </button>
-          <button disabled>Fronts</button>
+          {(['structure', 'fronts'] as const).map((view) => (
+            <button
+              key={view}
+              aria-pressed={mode === view}
+              className={mode === view ? 'selected' : undefined}
+              onClick={() => {
+                setMode(view)
+                setHover(null)
+                if (
+                  selection &&
+                  ((view === 'structure' && selection.type === 'front') ||
+                    (view === 'fronts' && selection.type === 'shelf'))
+                )
+                  setSelection({ type: 'module', moduleId: selection.moduleId })
+              }}
+            >
+              {view === 'structure' ? 'Structure' : 'Fronts'}
+            </button>
+          ))}
         </div>
         <div className="canvas-controls">
           <div className="zoom-control">
@@ -129,8 +159,10 @@ export function StructureCanvas() {
       >
         <title>Cabinet structure</title>
         <desc>
-          Fronts hidden. Select a cabinet to show its dimensions. Drag empty
-          canvas to pan; scroll to zoom.
+          {mode === 'structure'
+            ? 'Structure view. Select spaces or shelves to edit.'
+            : 'Fronts view. Select a front to edit. Shift-click adjacent empty spaces to select a range.'}{' '}
+          Drag empty canvas to pan; scroll to zoom.
         </desc>
         <g
           aria-hidden="true"
@@ -203,8 +235,10 @@ export function StructureCanvas() {
             item={item}
             screen={screen}
             zoom={viewport.zoom}
+            frontsMode={mode === 'fronts'}
           />
         ))}
+        {mode === 'fronts' && <FrontTargets arrangement={arrangement} />}
         {arrangement.modules.length > 0 && (
           <g className="dimension-layer">
             <Dimension
