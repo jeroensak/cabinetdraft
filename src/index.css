@@ -276,26 +276,6 @@ input:focus-visible {
   padding: 5px 14px;
   font-size: 10px;
 }
-.canvas-placeholder {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 24px;
-  color: var(--muted);
-}
-.canvas-placeholder h1 {
-  font-size: 20px;
-  color: #6f6a62;
-  font-weight: 500;
-  margin-bottom: 12px;
-}
-.canvas-placeholder p {
-  font-size: 12px;
-  line-height: 1.8;
-}
 .editor-status {
   padding: 24px;
   display: flex;
@@ -488,4 +468,101 @@ input:focus-visible {
     color: var(--muted);
     max-width: 34ch;
   }
+}
+
+.structure-canvas {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  touch-action: none;
+  cursor: grab;
+}
+.structure-canvas:active {
+  cursor: grabbing;
+}
+.panel-face {
+  stroke: #9d988e;
+  stroke-width: 0.8;
+  vector-effect: non-scaling-stroke;
+  cursor: pointer;
+}
+.face-front {
+  fill: #e9e4da;
+}
+.face-top {
+  fill: #fffdf8;
+}
+.face-right {
+  fill: #d8d1c5;
+}
+.panel-face[data-source='back'] {
+  fill: #fffdf8;
+}
+.panel-face[data-hovered='true'] {
+  stroke: #256d67;
+  fill: #e7f2ef;
+}
+.panel-face[data-selected='true'] {
+  stroke: #256d67;
+  stroke-width: 1.2;
+}
+.panel-face[data-invalid='true'] {
+  stroke: #a63d40;
+  stroke-dasharray: 4 2;
+}
+.module-hit-area {
+  fill: transparent;
+  stroke: transparent;
+  cursor: pointer;
+}
+.module-hit-area[data-hovered='true'] {
+  stroke: #6da59c;
+  stroke-dasharray: 4 3;
+}
+.module-hit-area[data-selected='true'] {
+  stroke: #256d67;
+  stroke-width: 1.5;
+  stroke-dasharray: none;
+}
+.module-hit-area[data-invalid='true'] {
+  stroke: #a63d40;
+  stroke-dasharray: 4 2;
+}
+.module-hit-area:focus-visible {
+  outline: none;
+  stroke: #256d67;
+  stroke-width: 3;
+}
+.module-row[data-hovered='true'] {
+  background: #f0f6f3;
+  outline: 1px dashed #6da59c;
+}
+.dimension-layer {
+  pointer-events: none;
+}
+.dimension path {
+  stroke: #9a968c;
+  stroke-width: 0.7;
+  fill: none;
+}
+.dimension text {
+  fill: #6b7280;
+  font-size: 10px;
+  paint-order: stroke;
+  stroke: #f3f0e8;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.invalid-geometry-label {
+  fill: #a63d40;
+  font-size: 11px;
+  pointer-events: none;
+}
+.canvas-empty {
+  fill: #7b756d;
+  font-size: 13px;
+}
+.module-hit-area {
+  outline: none;
 }

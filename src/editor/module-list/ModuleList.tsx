@@ -3,6 +3,8 @@ import { useProjectStore } from '../../store/projectStore'
 export function ModuleList() {
   const modules = useProjectStore((state) => state.present.modules)
   const selection = useProjectStore((state) => state.editor.selection)
+  const hover = useProjectStore((state) => state.editor.hover)
+  const setHover = useProjectStore((state) => state.setHover)
   const setSelection = useProjectStore((state) => state.setSelection)
   return (
     <aside className="cabinet-sidebar" aria-labelledby="cabinet-list-title">
@@ -14,6 +16,11 @@ export function ModuleList() {
           <li key={module.id}>
             <button
               className="module-row"
+              data-hovered={hover?.moduleId === module.id}
+              onPointerEnter={() =>
+                setHover({ type: 'module', moduleId: module.id })
+              }
+              onPointerLeave={() => setHover(null)}
               aria-label={`${module.name}, ${module.width} mm`}
               aria-pressed={selection?.moduleId === module.id}
               onClick={() =>

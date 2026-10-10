@@ -1,16 +1,21 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { App } from './App'
+import { mockResizeObserver } from '../test/mockResizeObserver'
 import { useProjectStore } from '../store/projectStore'
 import { createDefaultProject } from '../domain/project/createDefaultProject'
 import { addModule, renameProject } from '../domain/commands'
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  vi.unstubAllGlobals()
+})
 beforeEach(() => {
+  mockResizeObserver()
   useProjectStore.setState({
     present: createDefaultProject(),
     past: [],
