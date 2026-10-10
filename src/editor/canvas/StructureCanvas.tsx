@@ -5,6 +5,7 @@ import { useProjectStore } from '../../store/projectStore'
 import { arrangementBounds, panelFaces, projectPoint } from './projection'
 import { useCanvasViewport } from './useCanvasViewport'
 import { Dimension } from './Dimension'
+import { StructureTargets } from './StructureTargets'
 
 export function StructureCanvas() {
   const project = useProjectStore((state) => state.present)
@@ -196,6 +197,14 @@ export function StructureCanvas() {
             </g>
           )
         })}
+        {arrangement.modules.map((item) => (
+          <StructureTargets
+            key={item.module.id}
+            item={item}
+            screen={screen}
+            zoom={viewport.zoom}
+          />
+        ))}
         {arrangement.modules.length > 0 && (
           <g className="dimension-layer">
             <Dimension

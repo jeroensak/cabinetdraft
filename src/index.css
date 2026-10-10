@@ -566,3 +566,54 @@ input:focus-visible {
 .module-hit-area {
   outline: none;
 }
+.context-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 24px;
+}
+.field-error {
+  display: block;
+  color: #a63d40;
+  font-size: 12px;
+  margin-top: 12px;
+  line-height: 1.5;
+}
+.space-hit-area {
+  fill: transparent;
+  stroke: none;
+  cursor: pointer;
+  outline: none;
+}
+.space-hit-area:hover {
+  fill: #e7f2ef66;
+}
+.space-hit-area[data-selected='true'] {
+  fill: #e7f2ef99;
+  stroke: #256d67;
+  stroke-width: 1;
+}
+.space-hit-area:focus-visible {
+  stroke: #256d67;
+  stroke-dasharray: 4 2;
+}
+.shelf-hit-area {
+  fill: transparent;
+  stroke: none;
+  cursor: ns-resize;
+  touch-action: none;
+  outline: none;
+}
+.shelf-hit-area:hover,
+.shelf-hit-area[aria-pressed='true'],
+.shelf-hit-area:focus-visible {
+  fill: #256d6744;
+  stroke: #256d67;
+}
+.shelf-position {
+  fill: #256d67;
+  font-size: 11px;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: #f3f0e8;
+  stroke-width: 3px;
+}

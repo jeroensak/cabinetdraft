@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { reconcileSelection } from './selection'
 import { updateProjectSettings, type BoundaryRange } from '../domain/commands'
 import { projectData } from '../domain/project/projectData'
 import { createDefaultProject } from '../domain/project/createDefaultProject'
@@ -178,7 +179,7 @@ export interface CreateProjectStoreOptions {
 export function createProjectStore(options: CreateProjectStoreOptions = {}) {
   const storage = options.storage ?? browserStorage()
   const loaded = readProject(storage)
-  return create<ProjectStoreState>((set, get) => {
+  const store = create<ProjectStoreState>((set, get) => {
     const save = (project: Project) => {
       const previous = get().persistence
       if (previous.loadError || !storage) {
@@ -320,6 +321,23 @@ export function createProjectStore(options: CreateProjectStoreOptions = {}) {
         }),
     }
   })
+  store.subscribe((state, previous) => {
+    if (state.present === previous.present) return
+    const selection = reconcileSelection(
+      previous.present,
+      state.present,
+      state.editor.selection,
+    )
+    const hover = reconcileSelection(
+      previous.present,
+      state.present,
+      state.editor.hover,
+    )
+    if (selection !== state.editor.selection || hover !== state.editor.hover) {
+      store.setState({ editor: { ...state.editor, selection, hover } })
+    }
+  })
+  return store
 }
 
 /** Application-wide store. Importing it restores the current Project at startup. */

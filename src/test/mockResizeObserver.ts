@@ -1,6 +1,14 @@
 import { vi } from 'vitest'
 
 export function mockResizeObserver() {
+  Object.defineProperty(SVGElement.prototype, 'setPointerCapture', {
+    configurable: true,
+    value: vi.fn(),
+  })
+  Object.defineProperty(SVGElement.prototype, 'releasePointerCapture', {
+    configurable: true,
+    value: vi.fn(),
+  })
   vi.stubGlobal(
     'ResizeObserver',
     class {
