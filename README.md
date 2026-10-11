@@ -23,6 +23,7 @@ pnpm typecheck
 pnpm test
 pnpm lint
 pnpm build
+pnpm test:e2e
 ```
 
 `pnpm format` formats maintained source and documentation; `pnpm format:check` checks formatting. The frozen specification and generated lockfile are excluded.
@@ -40,3 +41,9 @@ Shelf and front selections use stable bottom/top boundaries. `addShelfToSpace` r
 Shelf centring accounts for thickness. New shelf placement rounds to the nearest whole millimetre, with half-millimetre ties toward the module top. This placement rule does not round manufacturing dimensions. Moving a shelf may leave invalid geometry but cannot break a front's structural range. Removing a shelf deletes the entire losing front, including a losing door that extended beyond the merged space, as specified.
 
 Persistence exposes load/save errors and unsaved status in the store. Unreadable saved data stays untouched and is available as `persistence.recoveryData`; autosave stays blocked to prevent accidental replacement until the user explicitly confirms importing a replacement project. Failed writes can be retried with `retrySave()`.
+
+## Browser integration tests
+
+Install the test browser once with `pnpm exec playwright install chromium`, then run `pnpm test:e2e`. The suite builds and serves the production app on port 4173 in isolated Chromium contexts; no existing browser projects are changed. The five flows cover default parts, cabinet/shelf/front editing and reload, invalid output blocking, undo/redo, and file export/import.
+
+Failed tests retain screenshots and traces in ignored `test-results/`; `pnpm exec playwright show-report` opens the HTML report. Unit tests remain the primary domain-calculation checks.
