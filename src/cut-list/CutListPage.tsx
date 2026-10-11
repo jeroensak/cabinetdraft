@@ -1,25 +1,26 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
-import {
-  deriveCutList,
-  type CutListItem,
-} from '../domain/cutlist/deriveCutList'
+import { deriveCutList } from '../domain/cutlist/deriveCutList'
+import { partNames } from './partNames'
 import { useProjectStore } from '../store/projectStore'
-
-const partNames: Record<CutListItem['part'], string> = {
-  'side-left': 'Side',
-  'side-right': 'Side',
-  top: 'Top',
-  bottom: 'Bottom',
-  shelf: 'Shelf',
-  back: 'Back',
-  door: 'Door',
-  drawer: 'Drawer front',
-}
 
 export function CutListPage() {
   const project = useProjectStore((state) => state.present)
   const result = useMemo(() => deriveCutList(project), [project])
+  const [downloading, setDownloading] = useState(false)
+  const [downloadError, setDownloadError] = useState<string | null>(null)
+  const download = async () => {
+    setDownloading(true)
+    setDownloadError(null)
+    try {
+      const { downloadCutListPdf } = await import('./cutListPdf')
+      await downloadCutListPdf(project)
+    } catch {
+      setDownloadError('Could not create the PDF. Please try again.')
+    } finally {
+      setDownloading(false)
+    }
+  }
   return (
     <section className="cut-list-page" aria-labelledby="cut-list-title">
       <div className="cut-list-heading">
@@ -30,12 +31,28 @@ export function CutListPage() {
             {project.modules.length === 1 ? 'cabinet' : 'cabinets'}
           </p>
         </div>
-        {result.available && (
-          <span className="validation-badge" data-valid="true" role="status">
-            ✓ Configuration valid
-          </span>
-        )}
+        <div className="cut-list-actions">
+          {result.available && (
+            <span className="validation-badge" data-valid="true" role="status">
+              ✓ Configuration valid
+            </span>
+          )}
+          <button
+            className="pill primary"
+            onClick={() => void download()}
+            disabled={
+              downloading || !result.available || result.items.length === 0
+            }
+          >
+            {downloading ? 'Creating PDF…' : 'Download PDF'}
+          </button>
+        </div>
       </div>
+      {downloadError && (
+        <p role="alert" className="field-error">
+          {downloadError}
+        </p>
+      )}
       {result.available ? (
         <div className="cut-list-card">
           <div className="cut-list-summary">

@@ -47,3 +47,5 @@ Persistence exposes load/save errors and unsaved status in the store. Unreadable
 Install the test browser once with `pnpm exec playwright install chromium`, then run `pnpm test:e2e`. The suite builds and serves the production app on port 4173 in isolated Chromium contexts; no existing browser projects are changed. The five flows cover default parts, cabinet/shelf/front editing and reload, invalid output blocking, undo/redo, and file export/import.
 
 Failed tests retain screenshots and traces in ignored `test-results/`; `pnpm exec playwright show-report` opens the HTML report. Unit tests remain the primary domain-calculation checks.
+
+The Cut List includes a **Download PDF** button for valid, nonempty projects. It exports a landscape A4 table with repeated headings and page numbers. PDF libraries and the bundled Noto Sans font load on demand; the font license is in `src/assets/fonts/OFL.txt`.

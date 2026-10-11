@@ -873,3 +873,9 @@ input:focus-visible {
   max-height: calc(100vh - 90px);
   overflow-y: auto;
 }
+
+.cut-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}

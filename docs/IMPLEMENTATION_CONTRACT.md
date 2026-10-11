@@ -48,3 +48,7 @@ Every slice must leave typecheck, tests, lint, and build passing. Foundation con
 ## Subsequent placement decision
 
 The user approved rounding newly centred shelf positions to the nearest integer millimetre. Half-millimetre ties round toward the module top. Free spaces may consequently differ by 1 mm. This applies only to shelf placement; fractional manufacturing dimensions remain invalid. The frozen source specification is unchanged.
+
+## Cut List PDF export
+
+The user requested a downloadable PDF from the Cut List. Export uses validated canonical cut-list rows, includes millimetre units, and is unavailable for invalid or empty projects. PDF generation is presentation code and never persists derived data.

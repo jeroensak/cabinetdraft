@@ -148,3 +148,28 @@ test('export and confirmed import restore the full design', async ({
   await (await restoredDownloadReady).saveAs(restoredFile)
   expect(JSON.parse(await readFile(restoredFile, 'utf8'))).toEqual(exported)
 })
+
+test('downloads single and multiple page cut-list PDFs', async ({
+  page,
+}, testInfo) => {
+  await page.getByRole('link', { name: 'Cut List', exact: true }).click()
+  const firstDownload = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Download PDF', exact: true }).click()
+  const single = await firstDownload
+  expect(single.suggestedFilename()).toBe('untitled-cabinet-cut-list.pdf')
+  const singlePath = testInfo.outputPath('single-page.pdf')
+  await single.saveAs(singlePath)
+  await page.screenshot({ path: testInfo.outputPath('cut-list.png') })
+  expect((await readFile(singlePath)).subarray(0, 5).toString()).toBe('%PDF-')
+  await page.getByRole('link', { name: 'Designer', exact: true }).click()
+  for (let i = 0; i < 12; i++)
+    await page
+      .getByRole('button', { name: '+ Add cabinet', exact: true })
+      .click()
+  await page.getByLabel('Name', { exact: true }).fill('Étagère – entrée')
+  await page.getByLabel('Name', { exact: true }).press('Enter')
+  await page.getByRole('link', { name: 'Cut List', exact: true }).click()
+  const nextDownload = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Download PDF', exact: true }).click()
+  await (await nextDownload).saveAs(testInfo.outputPath('multiple-pages.pdf'))
+})

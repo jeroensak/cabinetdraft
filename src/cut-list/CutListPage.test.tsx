@@ -39,6 +39,7 @@ describe('Cut List page', () => {
   it('renders each physical panel with units and per-leaf rows, without mounting SVG', () => {
     const { container } = renderCutList()
     expect(screen.getByText('✓ Configuration valid')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Download PDF' })).toBeEnabled()
     expect(screen.getAllByRole('row')).toHaveLength(9)
     const door = screen.getByRole('row', { name: /C1-DOOR-1-L/ })
     expect(
@@ -104,6 +105,7 @@ describe('Cut List page', () => {
       screen.getByText('Resolve configuration errors in the Designer first.'),
     ).toBeInTheDocument()
     expect(screen.queryByRole('table')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Download PDF' })).toBeDisabled()
     expect(screen.queryByText('C1-SIDE-L')).toBeNull()
     act(() => useProjectStore.getState().undo())
     expect(screen.getByRole('table')).toBeInTheDocument()
@@ -120,6 +122,7 @@ describe('Cut List page', () => {
       </MemoryRouter>,
     )
     expect(screen.getByText('No panels yet')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Download PDF' })).toBeDisabled()
     await user.click(screen.getByRole('link', { name: '← Back to Designer' }))
     expect(
       screen.getByRole('heading', { name: 'Designer' }),
