@@ -106,7 +106,7 @@ describe('application shell', () => {
     expect(screen.getByText('Kitchen')).toBeVisible()
   })
 
-  it('shows global settings separately and leaves future controls disabled', async () => {
+  it('shows global settings separately and enables file controls', async () => {
     const user = userEvent.setup()
     renderDesigner()
     await user.click(screen.getByRole('button', { name: 'Settings' }))
@@ -118,7 +118,7 @@ describe('application shell', () => {
     expect(
       screen.queryByRole('region', { name: 'Project settings' }),
     ).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Import' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Export' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Import' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Export' })).toBeEnabled()
   })
 })

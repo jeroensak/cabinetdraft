@@ -1,13 +1,10 @@
+import { parseProject } from '../domain/import-export/projectJson'
 import { create } from 'zustand'
 import { reconcileSelection } from './selection'
 import { updateProjectSettings, type BoundaryRange } from '../domain/commands'
 import { projectData } from '../domain/project/projectData'
 import { createDefaultProject } from '../domain/project/createDefaultProject'
-import {
-  PROJECT_SCHEMA_VERSION,
-  type Project,
-  type ProjectSettings,
-} from '../domain/project/types'
+import { type Project, type ProjectSettings } from '../domain/project/types'
 import type { Point, Selection } from './types'
 export type { Point, Selection } from './types'
 
@@ -15,72 +12,6 @@ export const PROJECT_STORAGE_KEY = 'cabinet-designer:project:v1'
 export interface ProjectStorage {
   getItem(key: string): string | null
   setItem(key: string, value: string): void
-}
-
-function record(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
-function boundary(value: unknown): boolean {
-  return (
-    record(value) &&
-    (value.type === 'module-bottom' ||
-      value.type === 'module-top' ||
-      (value.type === 'shelf' && typeof value.shelfId === 'string'))
-  )
-}
-function isProject(value: unknown): value is Project {
-  if (
-    !record(value) ||
-    value.schemaVersion !== PROJECT_SCHEMA_VERSION ||
-    typeof value.id !== 'string' ||
-    typeof value.name !== 'string' ||
-    !record(value.settings) ||
-    !Array.isArray(value.modules)
-  )
-    return false
-  const settings = value.settings
-  if (
-    !Number.isSafeInteger(settings.corpusThickness) ||
-    !Number.isSafeInteger(settings.backPanelThickness) ||
-    !Number.isSafeInteger(settings.frontThickness) ||
-    !Number.isSafeInteger(settings.frontGap) ||
-    typeof settings.backPanelEnabled !== 'boolean'
-  )
-    return false
-  return value.modules.every((module) => {
-    if (
-      !record(module) ||
-      typeof module.id !== 'string' ||
-      typeof module.name !== 'string' ||
-      !Number.isSafeInteger(module.width) ||
-      !Number.isSafeInteger(module.height) ||
-      !Number.isSafeInteger(module.depth) ||
-      !Array.isArray(module.shelves) ||
-      !Array.isArray(module.fronts)
-    )
-      return false
-    if (
-      !module.shelves.every(
-        (shelf) =>
-          record(shelf) &&
-          typeof shelf.id === 'string' &&
-          Number.isSafeInteger(shelf.bottom),
-      )
-    )
-      return false
-    return module.fronts.every((front) => {
-      if (
-        !record(front) ||
-        typeof front.id !== 'string' ||
-        !boundary(front.bottomBoundary) ||
-        !boundary(front.topBoundary)
-      )
-        return false
-      return front.type === 'door'
-        ? front.leaves === 1 || front.leaves === 2
-        : front.type === 'drawer'
-    })
-  })
 }
 
 export interface PersistenceState {
@@ -103,15 +34,9 @@ function readProject(storage?: ProjectStorage): {
     try {
       recoveryData = storage.getItem(PROJECT_STORAGE_KEY)
       if (recoveryData !== null) {
-        let parsed: unknown
         try {
-          parsed = JSON.parse(recoveryData)
-        } catch {
-          /* Retain the original payload below. */
-        }
-        if (isProject(parsed))
           return {
-            project: projectData(parsed),
+            project: parseProject(recoveryData),
             persistence: {
               loadError: null,
               saveError: null,
@@ -119,6 +44,9 @@ function readProject(storage?: ProjectStorage): {
               unsaved: false,
             },
           }
+        } catch {
+          /* Preserve unreadable saved data. */
+        }
         loadError = 'invalid-project'
       }
     } catch {
@@ -159,6 +87,7 @@ export interface ProjectStoreState {
   editor: EditorState
   previewBase: Project | null
   persistence: PersistenceState
+  replaceProject(raw: string): void
   retrySave(): void
   execute(command: (project: Project) => Project): void
   beginProjectPreview(): void
@@ -218,6 +147,28 @@ export function createProjectStore(options: CreateProjectStoreOptions = {}) {
       persistence: {
         ...loaded.persistence,
         unsaved: options.initialProject ? true : loaded.persistence.unsaved,
+      },
+      replaceProject: (raw) => {
+        const project = parseProject(raw)
+        const state = get()
+        set({
+          present: project,
+          past: [...state.past, state.previewBase ?? state.present],
+          future: [],
+          previewBase: null,
+          editor: {
+            selection: null,
+            hover: null,
+            viewport: { zoom: 1, pan: { x: 0, y: 0 } },
+          },
+          persistence: {
+            loadError: null,
+            saveError: null,
+            recoveryData: null,
+            unsaved: true,
+          },
+        })
+        save(project)
       },
       retrySave: () => save(get().previewBase ?? get().present),
       past: [],

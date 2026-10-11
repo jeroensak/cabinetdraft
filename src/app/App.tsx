@@ -1,3 +1,4 @@
+import { ProjectFiles } from './ProjectFiles'
 import { useEffect, useState } from 'react'
 import { NavLink, Navigate, Outlet, Route, Routes } from 'react-router'
 import { DesignerPage } from '../editor/DesignerPage'
@@ -50,20 +51,7 @@ function Layout() {
             >
               ↷
             </button>
-            <button
-              className="pill"
-              disabled
-              title="Import will be available soon"
-            >
-              Import
-            </button>
-            <button
-              className="pill"
-              disabled
-              title="Export will be available soon"
-            >
-              Export
-            </button>
+            <ProjectFiles />
             <button
               className="pill primary"
               aria-expanded={settingsOpen}

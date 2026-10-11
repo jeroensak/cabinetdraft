@@ -836,3 +836,19 @@ input:focus-visible {
   color: var(--muted);
   max-width: 52ch;
 }
+
+.file-error {
+  position: absolute;
+  right: 24px;
+  top: 70px;
+  z-index: 30;
+  max-width: 440px;
+  padding: 16px;
+  background: var(--surface, #fff);
+  border: 1px solid #bf7463;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px #0001;
+}
+.file-error button {
+  margin-left: 12px;
+}
