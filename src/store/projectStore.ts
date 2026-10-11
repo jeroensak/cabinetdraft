@@ -143,6 +143,9 @@ export interface ViewportState {
   pan: Point
 }
 export interface EditorState {
+  /** Session-only context for preserving the viewport across route remounts. */
+  viewportProjectId?: string
+  viewportModuleIds?: string[]
   selection: Selection
   hover: Hover
   viewport: ViewportState
@@ -306,6 +309,8 @@ export function createProjectStore(options: CreateProjectStoreOptions = {}) {
         set((state) => ({
           editor: {
             ...state.editor,
+            viewportProjectId: state.present.id,
+            viewportModuleIds: state.present.modules.map((module) => module.id),
             viewport: {
               ...state.editor.viewport,
               ...viewport,

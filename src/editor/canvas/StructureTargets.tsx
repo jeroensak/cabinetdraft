@@ -43,8 +43,10 @@ export function StructureTargets({
       if (event.key === 'Escape') cancel()
     }
     window.addEventListener('keydown', escape)
+    window.addEventListener('blur', cancel)
     return () => {
       window.removeEventListener('keydown', escape)
+      window.removeEventListener('blur', cancel)
       cancel()
     }
   }, [])
@@ -52,6 +54,17 @@ export function StructureTargets({
   return (
     <g>
       {spaces.map((space, index) => {
+        // Covered spaces remain editable in Structure, but cannot be targeted
+        // through an opaque front in Fronts mode (including keyboard focus).
+        if (
+          frontsMode &&
+          module.fronts.some((front) =>
+            spacesInRange(project, module.id, front).some((covered) =>
+              sameBoundary(covered.bottomBoundary, space.bottomBoundary),
+            ),
+          )
+        )
+          return null
         const p = screen(origin.x + project.settings.corpusThickness, space.top)
         const selected =
           selection?.type === 'space' &&

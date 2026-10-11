@@ -9,6 +9,7 @@ export function useCanvasViewport(bounds: Bounds, moduleIds: string[]) {
   const setViewport = useProjectStore((state) => state.setViewport)
   const previousIds = useRef<string[] | null>(null)
   const fit = useCallback(() => {
+    if (useProjectStore.getState().previewBase) return
     if (size.width && size.height)
       setViewport(fitViewport(bounds, size.width, size.height))
   }, [bounds, size, setViewport])
@@ -28,9 +29,15 @@ export function useCanvasViewport(bounds: Bounds, moduleIds: string[]) {
 
   useEffect(() => {
     if (!size.width || !size.height) return
-    const added = moduleIds.some((id) => !previousIds.current?.includes(id))
+    const state = useProjectStore.getState()
+    const previous =
+      previousIds.current ??
+      (state.editor.viewportProjectId === state.present.id
+        ? state.editor.viewportModuleIds
+        : undefined)
+    const added = moduleIds.some((id) => !previous?.includes(id))
     if (
-      previousIds.current === null ||
+      !previous ||
       (added &&
         !isInView(
           bounds,
@@ -48,6 +55,7 @@ export function useCanvasViewport(bounds: Bounds, moduleIds: string[]) {
     if (!svg) return
     const wheel = (event: WheelEvent) => {
       event.preventDefault()
+      if (useProjectStore.getState().previewBase) return
       const rect = svg.getBoundingClientRect()
       const delta =
         event.deltaY *
@@ -64,7 +72,8 @@ export function useCanvasViewport(bounds: Bounds, moduleIds: string[]) {
     return () => svg.removeEventListener('wheel', wheel)
   }, [setViewport])
 
-  const zoom = (factor: number) =>
+  const zoom = (factor: number) => {
+    if (useProjectStore.getState().previewBase) return
     setViewport(
       zoomAt(
         useProjectStore.getState().editor.viewport,
@@ -72,5 +81,6 @@ export function useCanvasViewport(bounds: Bounds, moduleIds: string[]) {
         factor,
       ),
     )
+  }
   return { svgRef, viewport, setViewport, size, fit, zoom }
 }

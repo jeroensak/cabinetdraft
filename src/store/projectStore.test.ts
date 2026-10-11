@@ -178,6 +178,10 @@ describe('project store and local persistence', () => {
       selection,
       hover: { type: 'module', moduleId: selection.moduleId },
       viewport: { zoom: 2, pan: { x: 30, y: -12 } },
+      viewportProjectId: store.getState().present.id,
+      viewportModuleIds: store
+        .getState()
+        .present.modules.map((module) => module.id),
     })
     expect(store.getState().past).toStrictEqual([])
     expect(storage.writes).toStrictEqual([])

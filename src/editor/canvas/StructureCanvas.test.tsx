@@ -30,6 +30,21 @@ beforeEach(() => {
 })
 
 describe('Structure canvas', () => {
+  it('retains the viewport across route remounts and fits modules added while away', () => {
+    const first = render(<StructureCanvas />)
+    const custom = { zoom: 1, pan: { x: 25, y: 40 } }
+    act(() => useProjectStore.getState().setViewport(custom))
+    first.unmount()
+    const second = render(<StructureCanvas />)
+    expect(useProjectStore.getState().editor.viewport).toEqual(custom)
+    second.unmount()
+    act(() => useProjectStore.getState().execute(addModule))
+    render(<StructureCanvas />)
+    expect(useProjectStore.getState().editor.viewport.zoom).toBeLessThan(
+      custom.zoom,
+    )
+    expect(useProjectStore.getState().past).toHaveLength(1)
+  })
   it('renders canonical structure and overall dimensions, with contextual dimensions on selection', async () => {
     const user = userEvent.setup()
     const { container } = render(<StructureCanvas />)

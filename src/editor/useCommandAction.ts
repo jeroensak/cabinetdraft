@@ -15,8 +15,10 @@ export function useCommandAction() {
     try {
       action()
       setError(null)
+      return true
     } catch (error) {
       setError(commandMessage(error))
+      return false
     }
   }
   return { error, run }

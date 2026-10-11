@@ -28,6 +28,31 @@ beforeEach(() => {
 })
 
 describe('Structure editing', () => {
+  it('keeps zoom stable during a shelf drag and rolls back when the window loses focus', () => {
+    vi.stubGlobal('PointerEvent', MouseEvent)
+    render(<DesignerPage />)
+    const original = useProjectStore.getState().present
+    const viewport = useProjectStore.getState().editor.viewport
+    const shelf = screen.getByRole('button', {
+      name: 'Cabinet 1 shelf at 1091 mm',
+    })
+    fireEvent.pointerDown(shelf, { button: 0, clientY: 300 })
+    fireEvent.pointerMove(shelf, { clientY: 300 - viewport.zoom * 100 })
+    expect(
+      useProjectStore.getState().present.modules[0].shelves[0].bottom,
+    ).toBe(1191)
+    fireEvent.wheel(screen.getByLabelText('Cabinet structure'), {
+      deltaY: -100,
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Fit to view' }))
+    expect(useProjectStore.getState().editor.viewport).toEqual(viewport)
+    fireEvent.blur(window)
+    expect(useProjectStore.getState().present).toEqual(original)
+    expect(useProjectStore.getState().previewBase).toBeNull()
+    fireEvent.pointerUp(shelf)
+    expect(useProjectStore.getState().past).toHaveLength(0)
+  })
   it('commits a dimension draft once, accepts invalid geometry, and preserves text deletion', async () => {
     const user = userEvent.setup()
     render(<DesignerPage />)

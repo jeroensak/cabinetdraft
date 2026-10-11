@@ -10,7 +10,7 @@ export function DraftField({
   label: string
   value: string | number
   numeric?: boolean
-  onCommit: (value: string) => void
+  onCommit: (value: string) => boolean | void
 }) {
   const [draft, setDraft] = useState(String(value))
   const [error, setError] = useState(false)
@@ -37,9 +37,10 @@ export function DraftField({
               setError(true)
               return
             }
-            onCommit(draft)
+            if (onCommit(draft) === false) setDraft(String(value))
           }}
           onKeyDown={(event) => {
+            if (event.nativeEvent.isComposing) return
             if (event.key === 'Enter') {
               event.preventDefault()
               event.currentTarget.blur()

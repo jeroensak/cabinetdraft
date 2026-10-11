@@ -41,6 +41,19 @@ function clearFronts() {
 }
 
 describe('Fronts mode', () => {
+  it('exposes covered spaces only in Structure mode', async () => {
+    const user = userEvent.setup()
+    render(<DesignerPage />)
+    expect(
+      screen.getAllByRole('button', { name: /Cabinet 1 space/ }),
+    ).toHaveLength(2)
+    await user.click(screen.getByRole('button', { name: 'Fronts' }))
+    expect(screen.queryByRole('button', { name: /Cabinet 1 space/ })).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'Structure' }))
+    expect(
+      screen.getAllByRole('button', { name: /Cabinet 1 space/ }),
+    ).toHaveLength(2)
+  })
   it('switches presentation without project/history changes, selects one semantic double door, and edits its leaves', async () => {
     const user = userEvent.setup()
     const project = useProjectStore.getState().present
