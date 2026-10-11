@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f4f1e9"/>
+  <rect x="60" y="65" width="46" height="5" rx="2" fill="#17766d"/>
+  <g font-family="Arial, sans-serif" fill="#29342f">
+    <text x="60" y="135" font-size="24" letter-spacing="3">CABINET DESIGNER</text>
+    <text x="57" y="250" font-size="62" font-weight="700">Plan your cabinet.</text>
+    <text x="57" y="325" font-size="62" font-weight="700">Make it yours.</text>
+    <text x="60" y="395" font-size="25" fill="#5d6965">Shelves, doors and drawer fronts.</text>
+    <text x="60" y="435" font-size="25" fill="#5d6965">Panel cut lists, ready to download.</text>
+  </g>
+  <rect x="60" y="502" width="260" height="49" rx="24.5" fill="#17766d"/>
+  <text x="190" y="533" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#fffdf8">Design in your browser</text>
+  <g stroke="#17766d" stroke-width="3" stroke-linejoin="round">
+    <path d="M825 140 897 98h210v385l-72 42H825Z" fill="#d4dfd7"/>
+    <path d="M825 140h210v385H825Z" fill="#fffdf8"/>
+    <path d="m825 140 72-42h210l-72 42Z" fill="#ffffff"/>
+    <path d="M839 154h182v355H839Z" fill="#e7e5dc"/>
+    <path d="M839 154h182v135H887V154Z" fill="#fffdf8"/>
+    <path d="M839 315h182v180H887V315Z" fill="#fffdf8"/>
+    <path d="m839 315 48-28h134v14l-48 28H839Z" fill="#ffffff"/>
+    <path d="M839 315h182v14H839Z" fill="#d4dfd7"/>
+    <path d="m839 509 48-28h134v28Z" fill="#ffffff"/>
+    <path d="M1021 154v355M887 154v133M887 329v152" fill="none"/>
+  </g>
+  <g stroke="#a7aaa1" stroke-width="1.5">
+    <path d="M825 557h210M825 549v16M1035 549v16"/>
+  </g>
+  <text x="930" y="593" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#5d6965">Designed in millimetres</text>
+</svg>

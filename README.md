@@ -28,9 +28,23 @@ pnpm test:e2e
 
 `pnpm format` formats maintained source and documentation; `pnpm format:check` checks formatting. The frozen specification and generated lockfile are excluded.
 
-`pnpm test` runs Vitest once. Domain tests default to Node; UI tests explicitly opt into jsdom. `pnpm preview` serves the production build locally. Production hosting must rewrite SPA routes to `index.html`.
+`pnpm test` runs Vitest once. Domain tests default to Node; UI tests explicitly opt into jsdom. `pnpm preview` serves the production build locally. Vercel routing is configured in `vercel.json`.
 
 Tooling was initialized with `pnpm create vite@latest --template react-ts`. Tailwind uses its [official Vite integration](https://tailwindcss.com/docs/installation/using-vite).
+
+## Vercel deployment and search metadata
+
+Import the GitHub repository `jeroensak/cabinetdraft` into Vercel and use the project name `cabinetdraft` if it is available. The configuration uses Node.js 24, Corepack with the pnpm version recorded in `package.json`, a frozen-lockfile install, and `pnpm build`, publishing `dist/`. No backend or secrets are required. Vercel assigns the actual deployment domain; confirm it before launch.
+
+The default production origin is `https://cabinetdraft.vercel.app`. If Vercel assigns another hostname or you attach a custom domain, set `SITE_URL` in Vercel to the full origin (for example, `https://your-domain.example`) and redeploy. Set the same production value in both Production and Preview environments; preview URLs must not become canonical URLs. For local builds, use `.env.local` (see `.env.example`). Vercel normally adds `X-Robots-Tag: noindex` to preview deployments.
+
+The build emits static titles, descriptions, canonical links, Open Graph/Twitter cards, WebApplication structured data, `robots.txt`, and `sitemap.xml`. Client-side navigation keeps metadata in sync. The sitemap includes `/designer`; `/cut-list` is `noindex, follow` because it presents browser-local project data. This is an indexing preference, not an access restriction. Social metadata never contains project names or cabinet dimensions.
+
+The root permanently redirects to `/designer`. Only the two application routes are rewritten to their corresponding HTML documents; unknown URLs return the static 404 page. Hashed assets receive immutable caching. Browser-local persistence and file downloads work without server storage.
+
+After deployment, verify direct visits and reloads on `/designer` and `/cut-list`, an unknown URL's HTTP 404 status, and the production canonical URL in page source. Submit `/sitemap.xml` through Google Search Console after verifying domain ownership. Metadata makes the app discoverable but does not guarantee indexing or rankings. A future public guide or landing page with useful cabinet-building content would offer more search value than indexing project tables.
+
+The social preview source is `public/social-preview.svg`; `public/social-preview.png` is its 1200 × 630 raster export used by sharing platforms.
 
 ## Domain commands
 
@@ -44,7 +58,7 @@ Persistence exposes load/save errors and unsaved status in the store. Unreadable
 
 ## Browser integration tests
 
-Install the test browser once with `pnpm exec playwright install chromium`, then run `pnpm test:e2e`. The suite builds and serves the production app on port 4173 in isolated Chromium contexts; no existing browser projects are changed. The five flows cover default parts, cabinet/shelf/front editing and reload, invalid output blocking, undo/redo, and file export/import.
+Install the test browser once with `pnpm exec playwright install chromium`, then run `pnpm test:e2e`. The suite builds and serves the production app on port 4173 in isolated Chromium contexts; no existing browser projects are changed. It covers default parts, cabinet/shelf/front editing and reload, invalid output blocking, undo/redo, file export/import, PDF downloads, static search metadata, and metadata updates during navigation. Vercel's redirects and HTTP 404 handling must also be checked on the deployed site; the local Vite preview server does not apply `vercel.json`.
 
 Failed tests retain screenshots and traces in ignored `test-results/`; `pnpm exec playwright show-report` opens the HTML report. Unit tests remain the primary domain-calculation checks.
 

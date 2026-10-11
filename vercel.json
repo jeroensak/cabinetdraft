@@ -1,0 +1,36 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "corepack pnpm install --frozen-lockfile",
+  "buildCommand": "corepack pnpm build",
+  "outputDirectory": "dist",
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/", "destination": "/designer", "permanent": true },
+    { "source": "/index.html", "destination": "/designer", "permanent": true },
+    {
+      "source": "/cut-list.html",
+      "destination": "/cut-list",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    { "source": "/designer", "destination": "/index.html" },
+    { "source": "/cut-list", "destination": "/cut-list.html" }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [{ "key": "X-Content-Type-Options", "value": "nosniff" }]
+    }
+  ]
+}

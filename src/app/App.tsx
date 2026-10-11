@@ -1,7 +1,8 @@
 import { SaveStatus } from './SaveStatus'
+import { RouteMetadata } from './RouteMetadata'
 import { ProjectFiles } from './ProjectFiles'
 import { useEffect, useState } from 'react'
-import { NavLink, Navigate, Outlet, Route, Routes } from 'react-router'
+import { Link, NavLink, Navigate, Outlet, Route, Routes } from 'react-router'
 import { DesignerPage } from '../editor/DesignerPage'
 import { CutListPage } from '../cut-list/CutListPage'
 import { ProjectSettings } from '../editor/properties/ProjectSettings'
@@ -21,6 +22,10 @@ function Layout() {
       <div className="small-screen-message">
         <strong>Cabinet Designer</strong>
         <h1>A little more room to design</h1>
+        <p>
+          Plan DIY cabinets with shelves, doors and drawer fronts, then download
+          a panel cut list as a PDF. No account needed.
+        </p>
         <p>Open this project in a desktop window at least 1024 pixels wide.</p>
       </div>
       <div className="application-shell">
@@ -89,12 +94,24 @@ function Layout() {
 
 export function App() {
   return (
-    <Routes>
-      <Route element={<Layout />}>
-        <Route index element={<Navigate to="/designer" replace />} />
-        <Route path="designer" element={<DesignerPage />} />
-        <Route path="cut-list" element={<CutListPage />} />
-      </Route>
-    </Routes>
+    <>
+      <RouteMetadata />
+      <Routes>
+        <Route element={<Layout />}>
+          <Route index element={<Navigate to="/designer" replace />} />
+          <Route path="designer" element={<DesignerPage />} />
+          <Route path="cut-list" element={<CutListPage />} />
+        </Route>
+        <Route
+          path="*"
+          element={
+            <main>
+              <h1>Page not found</h1>
+              <Link to="/designer">Open the cabinet designer</Link>
+            </main>
+          }
+        />
+      </Routes>
+    </>
   )
 }
