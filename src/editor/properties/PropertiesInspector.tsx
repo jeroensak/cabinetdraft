@@ -18,6 +18,7 @@ import { useCommandAction } from '../useCommandAction'
 export function PropertiesInspector() {
   const project = useProjectStore((state) => state.present)
   const selection = useProjectStore((state) => state.editor.selection)
+  const setSelection = useProjectStore((state) => state.setSelection)
   const execute = useProjectStore((state) => state.execute)
   const { error, run } = useCommandAction()
   const module = project.modules.find((item) => item.id === selection?.moduleId)
@@ -35,6 +36,15 @@ export function PropertiesInspector() {
       : []
   return (
     <aside className="properties-inspector" aria-label="Properties">
+      {selection?.type === 'space' && module && (
+        <button
+          className="pill"
+          title={`Select ${module.name}`}
+          onClick={() => setSelection({ type: 'module', moduleId: module.id })}
+        >
+          ↑ Select cabinet
+        </button>
+      )}
       <p className="eyebrow">{selection?.type ?? 'Cabinet'}</p>
       {module && selection ? (
         <>
