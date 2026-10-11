@@ -106,6 +106,31 @@ describe('application shell', () => {
     expect(screen.getByText('Kitchen')).toBeVisible()
   })
 
+  it('commits project settings as single undoable edits and updates the cut list', async () => {
+    const user = userEvent.setup()
+    renderDesigner()
+    await user.click(screen.getByRole('button', { name: 'Settings' }))
+    await user.clear(screen.getByLabelText('Project name'))
+    await user.type(screen.getByLabelText('Project name'), 'Kitchen{Enter}')
+    expect(useProjectStore.getState().present.name).toBe('Kitchen')
+    expect(useProjectStore.getState().past).toHaveLength(1)
+    await user.clear(screen.getByLabelText('Front gap (mm)'))
+    await user.type(screen.getByLabelText('Front gap (mm)'), '3{Enter}')
+    expect(useProjectStore.getState().past).toHaveLength(2)
+    await user.click(screen.getByRole('button', { name: 'Close' }))
+    await user.click(screen.getByRole('link', { name: 'Cut List' }))
+    expect(screen.getByText('Cut list unavailable')).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Undo' }))
+    expect(screen.getByRole('table')).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Settings' }))
+    expect(screen.getByLabelText('Front gap (mm)')).toHaveValue('2')
+    await user.click(screen.getByLabelText('Back panel enabled'))
+    expect(useProjectStore.getState().present.settings.backPanelEnabled).toBe(
+      false,
+    )
+    expect(screen.queryByText('C1-BACK')).toBeNull()
+  })
+
   it('shows global settings separately and enables file controls', async () => {
     const user = userEvent.setup()
     renderDesigner()

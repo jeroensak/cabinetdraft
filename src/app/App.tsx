@@ -1,3 +1,4 @@
+import { SaveStatus } from './SaveStatus'
 import { ProjectFiles } from './ProjectFiles'
 import { useEffect, useState } from 'react'
 import { NavLink, Navigate, Outlet, Route, Routes } from 'react-router'
@@ -75,11 +76,9 @@ function Layout() {
               </button>
             </div>
             <ProjectSettings />
-            <p className="muted">
-              Settings are read-only. Editing will be available soon.
-            </p>
           </section>
         )}
+        <SaveStatus />
         <main className="app-main">
           <Outlet />
         </main>

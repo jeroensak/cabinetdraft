@@ -1,6 +1,8 @@
 # Cabinet Designer V1
 
-Frontend foundation built with Vite, React, TypeScript, Tailwind CSS, React Router, Zustand, Vitest, and ESLint. Designer and Cut List currently render placeholders; the persistent domain model and default project factory are implemented. Canonical carcass/shelf physical panels and spaces are derived in the domain. Canonical front geometry derives door leaves and drawer panels with structured geometry issues. Project validation reports structured issues without repair; cut lists contain independent physical-panel rows and are unavailable for invalid projects. Immutable domain commands handle module, shelf, front, and settings edits. Zustand stores the current Project, editor-only state, and undo/redo history. Only Project JSON is autosaved; editor state and drag previews remain transient.
+A desktop cabinet editor built with Vite, React, TypeScript, Tailwind CSS, React Router, and Zustand. The Designer supports module management, shelves, semantic fronts, and undo/redo. The independent Cut List derives manufacturing panels from the same pure domain geometry and blocks output for invalid projects.
+
+Project settings and names are editable. Only Project JSON is autosaved; editor state and drag previews remain transient. Export creates readable V1 JSON. Import validates schema and structural invariants before confirmation, accepts invalid geometry without repair, and replaces the design as one undoable action.
 
 Read the [implementation contract](docs/IMPLEMENTATION_CONTRACT.md) and [frozen specification index](docs/SPECIFICATION_INDEX.md) before making changes. The specification must not be edited without explicit instruction.
 
@@ -37,4 +39,4 @@ Shelf and front selections use stable bottom/top boundaries. `addShelfToSpace` r
 
 Shelf centring accounts for thickness. New shelf placement rounds to the nearest whole millimetre, with half-millimetre ties toward the module top. This placement rule does not round manufacturing dimensions. Moving a shelf may leave invalid geometry but cannot break a front's structural range. Removing a shelf deletes the entire losing front, including a losing door that extended beyond the merged space, as specified.
 
-Persistence exposes load/save errors and unsaved status in the store. Unreadable saved data stays untouched and is available as `persistence.recoveryData`; autosave is blocked for that session to prevent accidental replacement. Failed writes can be retried with `retrySave()`.
+Persistence exposes load/save errors and unsaved status in the store. Unreadable saved data stays untouched and is available as `persistence.recoveryData`; autosave stays blocked to prevent accidental replacement until the user explicitly confirms importing a replacement project. Failed writes can be retried with `retrySave()`.

@@ -852,3 +852,24 @@ input:focus-visible {
 .file-error button {
   margin-left: 12px;
 }
+
+.settings-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0;
+}
+.save-warning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: #fff1df;
+  border-bottom: 1px solid #dfbf94;
+  font-size: 12px;
+}
+.settings-popover {
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+}

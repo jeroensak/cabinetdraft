@@ -8,6 +8,7 @@ import { ModuleList } from '../module-list/ModuleList'
 import { useProjectStore } from '../../store/projectStore'
 import { createDefaultProject } from '../../domain/project/createDefaultProject'
 import { addModule, setModuleDimensions } from '../../domain/commands'
+import { exportProject } from '../../domain/import-export/projectJson'
 import { mockResizeObserver } from '../../test/mockResizeObserver'
 
 afterEach(() => {
@@ -45,6 +46,19 @@ describe('Structure canvas', () => {
     )
     expect(useProjectStore.getState().past).toHaveLength(1)
   })
+  it('refits an imported project even when its IDs match the current design', () => {
+    render(<StructureCanvas />)
+    act(() =>
+      useProjectStore
+        .getState()
+        .setViewport({ zoom: 4, pan: { x: -900, y: -900 } }),
+    )
+    const raw = exportProject(useProjectStore.getState().present)
+    act(() => useProjectStore.getState().replaceProject(raw))
+    expect(useProjectStore.getState().editor.viewport.zoom).toBeLessThan(1)
+    expect(useProjectStore.getState().past).toHaveLength(1)
+  })
+
   it('renders canonical structure and overall dimensions, with contextual dimensions on selection', async () => {
     const user = userEvent.setup()
     const { container } = render(<StructureCanvas />)

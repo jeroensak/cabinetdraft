@@ -7,7 +7,6 @@ export function useCanvasViewport(bounds: Bounds, moduleIds: string[]) {
   const [size, setSize] = useState({ width: 0, height: 0 })
   const viewport = useProjectStore((state) => state.editor.viewport)
   const setViewport = useProjectStore((state) => state.setViewport)
-  const previousIds = useRef<string[] | null>(null)
   const fit = useCallback(() => {
     if (useProjectStore.getState().previewBase) return
     if (size.width && size.height)
@@ -31,10 +30,9 @@ export function useCanvasViewport(bounds: Bounds, moduleIds: string[]) {
     if (!size.width || !size.height) return
     const state = useProjectStore.getState()
     const previous =
-      previousIds.current ??
-      (state.editor.viewportProjectId === state.present.id
+      state.editor.viewportProjectId === state.present.id
         ? state.editor.viewportModuleIds
-        : undefined)
+        : undefined
     const added = moduleIds.some((id) => !previous?.includes(id))
     if (
       !previous ||
@@ -47,8 +45,8 @@ export function useCanvasViewport(bounds: Bounds, moduleIds: string[]) {
         ))
     )
       fit()
-    previousIds.current = moduleIds
-  }, [moduleIds, bounds, fit, size])
+    else setViewport({})
+  }, [moduleIds, bounds, fit, size, setViewport])
 
   useEffect(() => {
     const svg = svgRef.current
