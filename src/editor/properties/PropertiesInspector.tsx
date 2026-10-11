@@ -38,7 +38,7 @@ export function PropertiesInspector() {
     <aside className="properties-inspector" aria-label="Properties">
       {selection?.type === 'space' && module && (
         <button
-          className="pill"
+          className="pill mb-4"
           title={`Select ${module.name}`}
           onClick={() => setSelection({ type: 'module', moduleId: module.id })}
         >
