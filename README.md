@@ -46,6 +46,19 @@ After deployment, verify direct visits and reloads on `/designer` and `/cut-list
 
 The social preview source is `public/social-preview.svg`; `public/social-preview.png` is its 1200 × 630 raster export used by sharing platforms.
 
+## Analytics
+
+Vercel Web Analytics tracks Designer and Cut List page views, including client-side navigation. Enable **Web Analytics** in the Vercel project's Analytics tab and redeploy. Tracking defaults to enabled only when Vercel builds with `VERCEL_ENV=production`; local, test and preview builds are disabled. Set `VITE_ANALYTICS_ENABLED=false` to disable it, or `true` to opt in for debugging (development mode logs instead of collecting production events).
+
+Custom events use fixed names with no project properties:
+
+- `project_changed`: once per page load, after the first committed edit or confirmed import. Selection, hovering, drag previews, cancelled edits and undo/redo do not count.
+- `project_imported` / `project_import_failed`: confirmed imports and read/validation failures; cancelling the confirmation sends nothing.
+- `project_exported`: a JSON download was initiated.
+- `cut_list_pdf_downloaded` / `cut_list_pdf_failed`: PDF generation/download initiation succeeded or failed. Browser downloads cannot confirm that a file was saved to disk.
+
+No project names, IDs, dimensions, filenames, file contents or error text are attached. Page URLs are restricted to the two app routes and stripped of query strings and fragments. Analytics failures cannot block editing or exports, and no analytics state is persisted. Vercel's [custom events](https://vercel.com/docs/analytics/custom-events) currently require Pro or Enterprise; basic page views remain useful without them.
+
 ## Domain commands
 
 Import commands from `src/domain/commands`. Each command returns a new `Project` or throws a `CommandError` with a machine-readable `code` and `data`. Input projects are never mutated, including on failure. Structural conflicts are rejected; geometric invalidity remains representable. ID-creating commands accept a replaceable ID generator.

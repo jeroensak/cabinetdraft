@@ -1,6 +1,13 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
-import { act, cleanup, render, screen, within } from '@testing-library/react'
+import {
+  act,
+  cleanup,
+  render,
+  screen,
+  within,
+  waitFor,
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router'
@@ -14,12 +21,18 @@ import {
 import { useProjectStore } from '../store/projectStore'
 import { App } from '../app/App'
 import { mockResizeObserver } from '../test/mockResizeObserver'
+import { trackEvent } from '../app/analytics'
+import { downloadCutListPdf } from './cutListPdf'
+
+vi.mock('../app/analytics', () => ({ trackEvent: vi.fn() }))
+vi.mock('./cutListPdf', () => ({ downloadCutListPdf: vi.fn() }))
 
 afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()
 })
 beforeEach(() => {
+  vi.resetAllMocks()
   useProjectStore.setState({
     present: createDefaultProject(),
     past: [],
@@ -36,6 +49,35 @@ function renderCutList() {
 }
 
 describe('Cut List page', () => {
+  it('tracks PDF outcomes only after generation and supports retry after failure', async () => {
+    const user = userEvent.setup()
+    renderCutList()
+    let finish!: () => void
+    vi.mocked(downloadCutListPdf).mockReturnValueOnce(
+      new Promise<void>((resolve) => {
+        finish = resolve
+      }),
+    )
+    await user.click(screen.getByRole('button', { name: 'Download PDF' }))
+    expect(trackEvent).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: 'Creating PDF…' })).toBeDisabled()
+    await act(async () => finish())
+    expect(trackEvent).toHaveBeenCalledExactlyOnceWith(
+      'cut_list_pdf_downloaded',
+    )
+    vi.mocked(downloadCutListPdf).mockRejectedValueOnce(
+      new Error('Private error text'),
+    )
+    await user.click(screen.getByRole('button', { name: 'Download PDF' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Could not create the PDF',
+    )
+    expect(trackEvent).toHaveBeenLastCalledWith('cut_list_pdf_failed')
+    vi.mocked(downloadCutListPdf).mockResolvedValueOnce(undefined)
+    await user.click(screen.getByRole('button', { name: 'Download PDF' }))
+    await waitFor(() => expect(trackEvent).toHaveBeenCalledTimes(3))
+    expect(trackEvent).toHaveBeenLastCalledWith('cut_list_pdf_downloaded')
+  })
   it('renders each physical panel with units and per-leaf rows, without mounting SVG', () => {
     const { container } = renderCutList()
     expect(screen.getByText('✓ Configuration valid')).toBeInTheDocument()

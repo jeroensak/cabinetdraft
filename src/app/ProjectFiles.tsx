@@ -6,6 +6,7 @@ import {
   ProjectImportError,
 } from '../domain/import-export/projectJson'
 import { useProjectStore } from '../store/projectStore'
+import { trackEvent } from './analytics'
 
 export function ProjectFiles() {
   const input = useRef<HTMLInputElement>(null)
@@ -17,9 +18,12 @@ export function ProjectFiles() {
     try {
       const raw = await file.text()
       parseProject(raw)
-      if (window.confirm('Replace current design with imported project?'))
+      if (window.confirm('Replace current design with imported project?')) {
         useProjectStore.getState().replaceProject(raw)
+        trackEvent('project_imported')
+      }
     } catch (error) {
+      trackEvent('project_import_failed')
       setError(
         error instanceof ProjectImportError
           ? {
@@ -45,6 +49,7 @@ export function ProjectFiles() {
     link.href = url
     link.download = projectFilename(project.name)
     link.click()
+    trackEvent('project_exported')
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
   return (

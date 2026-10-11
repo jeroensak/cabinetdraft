@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { deriveCutList } from '../domain/cutlist/deriveCutList'
 import { partNames } from './partNames'
 import { useProjectStore } from '../store/projectStore'
+import { trackEvent } from '../app/analytics'
 
 export function CutListPage() {
   const project = useProjectStore((state) => state.present)
@@ -15,7 +16,9 @@ export function CutListPage() {
     try {
       const { downloadCutListPdf } = await import('./cutListPdf')
       await downloadCutListPdf(project)
+      trackEvent('cut_list_pdf_downloaded')
     } catch {
+      trackEvent('cut_list_pdf_failed')
       setDownloadError('Could not create the PDF. Please try again.')
     } finally {
       setDownloading(false)
