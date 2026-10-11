@@ -72,6 +72,7 @@ export function panelFaces(panel: PhysicalPanel, origin: PhysicalPosition) {
   ]
   return faces.map(({ side, corners }) => ({
     side,
+    corners,
     points: corners.map(projectPoint),
     // Camera direction is (0.18, 0.1, -1); far faces are painted first.
     distance:

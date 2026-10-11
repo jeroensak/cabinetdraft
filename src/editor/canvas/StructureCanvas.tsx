@@ -8,6 +8,7 @@ import { arrangementBounds, panelFaces, projectPoint } from './projection'
 import { useCanvasViewport } from './useCanvasViewport'
 import { Dimension } from './Dimension'
 import { StructureTargets } from './StructureTargets'
+import { orderFaces } from './orderFaces'
 
 export function StructureCanvas() {
   const [mode, setMode] = useState<'structure' | 'fronts'>('structure')
@@ -38,30 +39,33 @@ export function StructureCanvas() {
   } | null>(null)
   const faces = useMemo(
     () =>
-      arrangement.modules
-        .flatMap(({ module, origin, geometry }) =>
-          [
-            ...geometry.panels,
-            ...(mode === 'fronts'
-              ? module.fronts.flatMap(
-                  (front) =>
-                    deriveFrontGeometry(module, project.settings, front).panels,
-                )
-              : []),
-          ].flatMap((panel, index) =>
-            panelFaces(panel, origin).map((face) => ({
-              ...face,
-              module,
-              key: `${module.id}-${index}-${face.side}`,
-              source: panel.source.type,
-              layer:
-                panel.source.type === 'door' || panel.source.type === 'drawer'
-                  ? 1
-                  : 0,
-            })),
-          ),
-        )
-        .sort((a, b) => a.layer - b.layer || a.distance - b.distance),
+      orderFaces(
+        arrangement.modules
+          .flatMap(({ module, origin, geometry }) =>
+            [
+              ...geometry.panels,
+              ...(mode === 'fronts'
+                ? module.fronts.flatMap(
+                    (front) =>
+                      deriveFrontGeometry(module, project.settings, front)
+                        .panels,
+                  )
+                : []),
+            ].flatMap((panel, index) =>
+              panelFaces(panel, origin).map((face) => ({
+                ...face,
+                module,
+                key: `${module.id}-${index}-${face.side}`,
+                source: panel.source.type,
+                layer:
+                  panel.source.type === 'door' || panel.source.type === 'drawer'
+                    ? 1
+                    : 0,
+              })),
+            ),
+          )
+          .sort((a, b) => a.layer - b.layer || a.distance - b.distance),
+      ),
     [arrangement, mode, project.settings],
   )
   const screen = (x: number, y: number, z = 0) => {
