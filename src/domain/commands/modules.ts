@@ -6,8 +6,12 @@ import {
 import type { CabinetModule } from '../cabinet/types'
 import type { Boundary } from '../fronts/types'
 import type { IdGenerator } from '../project/id'
-import { DEFAULT_MODULE_DIMENSIONS } from '../project/defaults'
+import {
+  DEFAULT_INCH_MODULE_DIMENSIONS,
+  DEFAULT_MODULE_DIMENSIONS,
+} from '../project/defaults'
 import type { Project, ProjectSettings } from '../project/types'
+import { maxCabinetSize } from '../project/units'
 import {
   allocateIds,
   cloneModule,
@@ -32,7 +36,9 @@ export function addModule(
     draft.modules.push({
       id: id(),
       name: `${baseName} ${number}`,
-      ...DEFAULT_MODULE_DIMENSIONS,
+      ...(draft.settings.unit === 'inch'
+        ? DEFAULT_INCH_MODULE_DIMENSIONS
+        : DEFAULT_MODULE_DIMENSIONS),
       shelves: [],
       dividers: [],
       fronts: [],
@@ -115,19 +121,27 @@ export function deleteModule(project: Project, moduleId: string): Project {
   })
 }
 
+function requiredName(name: string) {
+  const trimmed = name.trim()
+  if (!trimmed) throw new CommandError('blank-name')
+  return trimmed
+}
+
 export function renameModule(
   project: Project,
   moduleId: string,
   name: string,
 ): Project {
+  const trimmed = requiredName(name)
   return editProject(project, (draft) => {
-    findModule(draft, moduleId).name = name
+    findModule(draft, moduleId).name = trimmed
   })
 }
 
 export function renameProject(project: Project, name: string): Project {
+  const trimmed = requiredName(name)
   return editProject(project, (draft) => {
-    draft.name = name
+    draft.name = trimmed
   })
 }
 
@@ -158,6 +172,9 @@ export function setModuleDimensions(
       const value = dimensions[field]
       if (value !== undefined) {
         integer(value, field)
+        if (value <= 0) throw new CommandError('invalid-size', { field, value })
+        if (value > maxCabinetSize(draft.settings.unit))
+          throw new CommandError('size-too-large', { field, value })
         module[field] = value
       }
     }

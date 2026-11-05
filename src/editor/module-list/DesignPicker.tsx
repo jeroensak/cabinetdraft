@@ -15,6 +15,8 @@ export function DesignPicker() {
   const execute = useProjectStore((state) => state.execute)
   const switchDesign = useProjectStore((state) => state.switchDesign)
   const deleteDesign = useProjectStore((state) => state.deleteDesign)
+  const duplicateDesign = useProjectStore((state) => state.duplicateDesign)
+
   const { error, run } = useCommandAction()
   const [creating, setCreating] = useState(false)
   const [failure, setFailure] = useState<string | null>(null)
@@ -29,11 +31,17 @@ export function DesignPicker() {
     id,
     name: id === project.id ? project.name : name,
   }))
+  const copyName = () => {
+    const base = t('drawer.copyName', { name: project.name })
+    let name = base
+    for (let n = 2; options.some((item) => item.name === name); n++)
+      name = `${base} ${n}`
+    return name
+  }
   return (
     <section className="design-picker" aria-labelledby="design-picker-title">
       <h2 className="eyebrow" id="design-picker-title">
-        {' '}
-        {t('design.heading')}{' '}
+        {t('design.heading')}
       </h2>
       <select
         aria-label={t('design.current')}
@@ -56,8 +64,7 @@ export function DesignPicker() {
         label={t('design.name')}
         value={project.name}
         onCommit={(name) =>
-          Boolean(name.trim()) &&
-          run(() => execute((project) => renameProject(project, name.trim())))
+          run(() => execute((project) => renameProject(project, name)))
         }
       />
       <button
@@ -68,6 +75,17 @@ export function DesignPicker() {
         {t('design.new')}
       </button>
       <button
+        className="design-duplicate"
+        disabled={unavailable}
+        onClick={() =>
+          setFailure(
+            duplicateDesign(copyName()) ? null : t('design.duplicateFailed'),
+          )
+        }
+      >
+        {t('design.duplicate')}
+      </button>
+      <button
         className="delete-button design-delete"
         disabled={unavailable || options.length < 2}
         title={options.length < 2 ? t('design.keepOne') : undefined}
@@ -76,7 +94,7 @@ export function DesignPicker() {
             setFailure(deleteDesign() ? null : t('design.deleteFailed'))
         }}
       >
-        {t('design.delete')}{' '}
+        {t('design.delete')}
       </button>
       {(error || failure) && (
         <p role="alert" className="field-error">

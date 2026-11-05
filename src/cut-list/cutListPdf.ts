@@ -1,18 +1,29 @@
 import { jsPDF } from 'jspdf'
 import { autoTable } from 'jspdf-autotable'
 import type { Project } from '../domain/project/types'
-import { deriveCutList } from '../domain/cutlist/deriveCutList'
+import {
+  deriveCutList,
+  deriveLabelledPanels,
+} from '../domain/cutlist/deriveCutList'
 import { projectFilename } from '../domain/import-export/projectJson'
 import { t } from '../i18n'
-import { groupCutList } from './partGroups'
-import { partName } from './partNames'
+import { formatBare, unitSymbol } from '../units'
+
+import { addAssemblyPage } from './assemblyPages'
+import { cutListRows, groupCutList } from './partGroups'
 import fontUrl from '../assets/fonts/NotoSans-Regular.ttf?url'
 
 /** Render validated domain rows directly; no DOM or SVG measurements. */
-export function createCutListPdf(project: Project, font: string) {
+export function createCutListPdf(
+  project: Project,
+  font: string,
+  merged = true,
+) {
   const result = deriveCutList(project)
   if (!result.available || result.items.length === 0)
     throw new Error('No valid cut list is available')
+  const measureUnit = project.settings.unit ?? 'mm'
+  const symbol = unitSymbol(measureUnit)
   const doc = new jsPDF({
     orientation: 'landscape',
     unit: 'mm',
@@ -32,9 +43,9 @@ export function createCutListPdf(project: Project, font: string) {
     t('cutList.cabinet'),
     t('cutList.part'),
     t('cutList.qty'),
-    t('cutList.length'),
-    t('cutList.width'),
-    t('cutList.thickness'),
+    t('cutList.length', { unit: symbol }),
+    t('cutList.width', { unit: symbol }),
+    t('cutList.thickness', { unit: symbol }),
   ]
   let startY = 42
   for (const group of groupCutList(result.items)) {
@@ -53,14 +64,14 @@ export function createCutListPdf(project: Project, font: string) {
         ],
         columns,
       ],
-      body: group.items.map((item) => [
-        item.id,
-        item.moduleName,
-        partName(item),
-        item.quantity,
-        item.length,
-        item.width,
-        item.thickness,
+      body: cutListRows(group.items, measureUnit, merged).map((row) => [
+        row.ids.join(', '),
+        row.cabinets.join(', '),
+        row.name,
+        row.quantity,
+        formatBare(row.length, measureUnit),
+        formatBare(row.width, measureUnit),
+        formatBare(row.thickness, measureUnit),
       ]),
       theme: 'striped',
       styles: {
@@ -93,39 +104,62 @@ export function createCutListPdf(project: Project, font: string) {
       (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable
         .finalY + 8
   }
+  const listPages = doc.getNumberOfPages()
+  const labelled = deriveLabelledPanels(project)
+  for (const module of project.modules)
+    addAssemblyPage(
+      doc,
+      labelled.filter((item) => item.moduleId === module.id),
+      { structure: t('canvas.structure'), fronts: t('canvas.fronts') },
+    )
   const pages = doc.getNumberOfPages()
   for (let page = 1; page <= pages; page++) {
     doc.setPage(page)
     doc.setFontSize(19)
     doc.setTextColor(31, 41, 51)
-    doc.text(t('cutList.title'), 15, 17)
+    const cabinet = project.modules[page - listPages - 1]
+    doc.text(
+      cabinet
+        ? t('pdf.assembly', { cabinet: cabinet.name })
+        : t('cutList.title'),
+      15,
+      17,
+    )
     doc.setFontSize(10)
     const lines: string[] = doc.splitTextToSize(project.name, 267)
     doc.text(lines.length > 2 ? [lines[0], lines[1] + '…'] : lines, 15, 24)
     doc.setFontSize(8)
     doc.setTextColor(100)
     doc.text(
-      t('pdf.summary', {
-        cabinets: t('count.cabinets', { count: project.modules.length }),
-        parts: t('count.parts', { count: result.items.length }),
-      }),
+      cabinet
+        ? t('pdf.assemblyNote', { prefix: `C${page - listPages}-` })
+        : t('pdf.summary', {
+            cabinets: t('count.cabinets', { count: project.modules.length }),
+            parts: t('count.parts', { count: result.items.length }),
+          }),
       15,
       36,
     )
     doc.setTextColor(100)
-    doc.text(t('pdf.note'), 15, 199)
+    doc.text(
+      t(merged ? 'pdf.noteMerged' : 'pdf.note', {
+        unit: t(measureUnit === 'inch' ? 'unit.inchPlural' : 'unit.mmPlural'),
+      }),
+      15,
+      199,
+    )
     doc.text(t('pdf.page', { page, pages }), 282, 199, { align: 'right' })
   }
   return doc
 }
 
-export async function downloadCutListPdf(project: Project) {
+export async function downloadCutListPdf(project: Project, merged = true) {
   const response = await fetch(fontUrl)
   if (!response.ok) throw new Error('Could not load PDF font')
   const bytes = new Uint8Array(await response.arrayBuffer())
   let binary = ''
   for (const byte of bytes) binary += String.fromCharCode(byte)
-  const doc = createCutListPdf(project, btoa(binary))
+  const doc = createCutListPdf(project, btoa(binary), merged)
   await doc.save(
     projectFilename(project.name).replace(/\.json$/, '-cut-list.pdf'),
     { returnPromise: true },

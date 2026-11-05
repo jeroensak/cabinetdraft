@@ -3,10 +3,12 @@ import { deriveCarcassDimensions } from '../cabinet/deriveCarcassDimensions'
 import type { DrawerFront } from '../fronts/types'
 import { deriveFrontGeometry } from '../fronts/deriveFrontGeometry'
 import type { ProjectSettings } from '../project/types'
+import type { MeasurementUnit } from '../project/units'
+
 import type { PhysicalPanel } from '../geometry/physicalPanel'
 import { horizontalBounds, verticalBounds } from '../spaces/boundaries'
 import {
-  MIN_DRAWER_SIDE_CLEARANCE,
+  minDrawerSideClearance,
   type DrawerDesign,
   type DrawerDesignInput,
 } from './types'
@@ -62,7 +64,10 @@ const measurementLabels = {
 } as const
 
 /** Space-independent checks. Commands reject designs that fail these. */
-export function validateDrawerDesign(design: DrawerDesignInput): DrawerIssue[] {
+export function validateDrawerDesign(
+  design: DrawerDesignInput,
+  unit: MeasurementUnit = 'mm',
+): DrawerIssue[] {
   const issues: DrawerIssue[] = []
   if (!design.name.trim())
     issues.push({
@@ -82,7 +87,7 @@ export function validateDrawerDesign(design: DrawerDesignInput): DrawerIssue[] {
     wallThickness: 1,
     bottomThickness: 1,
     depth: 1,
-    sideClearance: MIN_DRAWER_SIDE_CLEARANCE,
+    sideClearance: minDrawerSideClearance(unit),
     bottomClearance: 0,
     topClearance: 0,
     rearClearance: 0,
@@ -152,12 +157,58 @@ export interface DrawerGeometry {
   depth: number
   openingWidth: number
   openingHeight: number
+  /** Full depth available behind the opening, from the carcass front. */
+  carcassDepth: number
+  /** The gaps set on the design; above and behind are minimums. */
+  gaps: { side: number; bottom: number; top: number; rear: number }
   /** Opening rectangle (module-local mm) the box is fitted into. */
   opening: { left: number; right: number; bottom: number; top: number }
   /** Five box panels; the overlay front is derived by the front pipeline. */
   boxPanels: PhysicalPanel[]
   frontPanels: PhysicalPanel[]
+  /** The same front if this opening were a cabinet of its own, without
+   * neighbours. For the designer preview only: it is never cut. */
+  standaloneFrontPanels: PhysicalPanel[]
   issues: DrawerIssue[]
+}
+
+/** Every edge an outer wall, so an overlay front covers all of them. */
+function deriveStandaloneFront(
+  module: CabinetModule,
+  settings: ProjectSettings,
+  front: DrawerFront,
+  design: DrawerDesign,
+  opening: { left: number; bottom: number; width: number; height: number },
+): PhysicalPanel[] {
+  const thickness = settings.corpusThickness
+  const standalone: CabinetModule = {
+    ...module,
+    width: opening.width + 2 * thickness,
+    height: opening.height + 2 * thickness,
+    shelves: [],
+    dividers: [],
+    fronts: [],
+  }
+  const { panels } = deriveFrontGeometry(
+    standalone,
+    settings,
+    {
+      ...front,
+      leftBoundary: { type: 'module-left' },
+      rightBoundary: { type: 'module-right' },
+      bottomBoundary: { type: 'module-bottom' },
+      topBoundary: { type: 'module-top' },
+    },
+    design,
+  )
+  return panels.map((panel) => ({
+    ...panel,
+    position: {
+      ...panel.position,
+      x: panel.position.x + opening.left - thickness,
+      y: panel.position.y + opening.bottom - thickness,
+    },
+  }))
 }
 
 /** Canonical drawer box geometry in module-local mm.
@@ -185,7 +236,8 @@ export function deriveDrawerGeometry(
   const y = vertical.bottom + design.bottomClearance
   // An inset front fills the first part of the opening, so the box starts behind it.
   const z = design.frontMount === 'inset' ? settings.frontThickness : 0
-  const issues = validateDrawerDesign(design)
+  const issues = validateDrawerDesign(design, settings.unit)
+
   const { carcassDepth } = deriveCarcassDimensions(module, settings)
   if (height + design.bottomClearance + design.topClearance > openingHeight)
     issues.push({
@@ -289,6 +341,13 @@ export function deriveDrawerGeometry(
     depth,
     openingWidth,
     openingHeight,
+    carcassDepth,
+    gaps: {
+      side: design.sideClearance,
+      bottom: design.bottomClearance,
+      top: design.topClearance,
+      rear: design.rearClearance,
+    },
     opening: {
       left: horizontal.left,
       right: horizontal.right,
@@ -297,6 +356,18 @@ export function deriveDrawerGeometry(
     },
     boxPanels,
     frontPanels: deriveFrontGeometry(module, settings, front, design).panels,
+    standaloneFrontPanels: deriveStandaloneFront(
+      module,
+      settings,
+      front,
+      design,
+      {
+        left: horizontal.left,
+        bottom: vertical.bottom,
+        width: openingWidth,
+        height: openingHeight,
+      },
+    ),
     issues,
   }
 }

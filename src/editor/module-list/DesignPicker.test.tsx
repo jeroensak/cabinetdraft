@@ -6,6 +6,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { createDefaultProject } from '../../domain/project/createDefaultProject'
 import { useProjectStore } from '../../store/projectStore'
 import { DESIGN_LIBRARY_KEY } from '../../store/designLibrary'
+import { ProjectSettings } from '../properties/ProjectSettings'
 import { DesignPicker } from './DesignPicker'
 import { NewDesignDialog } from './NewDesignDialog'
 
@@ -100,6 +101,82 @@ it('deletes the open design only after confirmation, never the last one', async 
   expect(useProjectStore.getState().present.name).toBe('Kitchen')
   expect(screen.getAllByRole('option')).toHaveLength(1)
   expect(remove).toBeDisabled()
+})
+
+it('sets inches when creating a design, entered and shown as fractions', async () => {
+  const user = userEvent.setup()
+  render(
+    <>
+      <DesignPicker />
+      <ProjectSettings />
+    </>,
+  )
+  await user.click(screen.getByRole('button', { name: '+ New design' }))
+  const dialog = screen.getByRole('dialog', { name: 'New design' })
+  await user.selectOptions(
+    within(dialog).getByRole('combobox', { name: 'Units' }),
+    'inch',
+  )
+  await user.click(
+    within(dialog).getByRole('button', { name: 'Create design' }),
+  )
+  expect(screen.getByText('Inches')).toBeInTheDocument()
+  const thickness = screen.getByRole('textbox', {
+    name: 'Corpus thickness (in)',
+  })
+  expect(thickness).toHaveValue('3/4')
+
+  await user.clear(thickness)
+  await user.type(thickness, '1/64{Enter}')
+  expect(screen.getByRole('alert')).toHaveTextContent('nearest 1/32')
+  expect(useProjectStore.getState().present.settings.corpusThickness).toBe(24)
+
+  await user.clear(thickness)
+  await user.type(thickness, '5/8{Enter}')
+  expect(useProjectStore.getState().present.settings.corpusThickness).toBe(20)
+  expect(
+    screen.getByRole('textbox', { name: 'Corpus thickness (in)' }),
+  ).toHaveValue('5/8')
+})
+
+it('duplicates the open design from the menu', async () => {
+  const user = userEvent.setup()
+  render(<DesignPicker />)
+  await user.click(screen.getByRole('button', { name: 'Duplicate design' }))
+  expect(useProjectStore.getState().present.name).toBe('Kitchen copy')
+  expect(
+    screen.getAllByRole('option').map((option) => option.textContent),
+  ).toEqual(['Kitchen', 'Kitchen copy'])
+})
+
+it('gives each duplicate its own name', async () => {
+  const user = userEvent.setup()
+  render(<DesignPicker />)
+  const button = screen.getByRole('button', { name: 'Duplicate design' })
+  await user.click(button)
+  await user.selectOptions(
+    screen.getByRole('combobox', { name: 'Current design' }),
+    'Kitchen',
+  )
+  await user.click(button)
+  expect(
+    screen.getAllByRole('option').map((option) => option.textContent),
+  ).toEqual(['Kitchen', 'Kitchen copy', 'Kitchen copy 2'])
+})
+
+it('keeps keyboard focus in the dialog, closes on Escape and returns focus', async () => {
+  const user = userEvent.setup()
+  render(<DesignPicker />)
+  const opener = screen.getByRole('button', { name: '+ New design' })
+  await user.click(opener)
+  const dialog = screen.getByRole('dialog')
+  for (let i = 0; i < 14; i++) {
+    await user.tab()
+    expect(dialog).toContainElement(document.activeElement as HTMLElement)
+  }
+  await user.keyboard('{Escape}')
+  expect(screen.queryByRole('dialog')).toBeNull()
+  expect(opener).toHaveFocus()
 })
 
 it('cannot be dismissed on a first visit unless saving fails', async () => {

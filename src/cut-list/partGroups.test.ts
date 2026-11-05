@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { CutListItem } from '../domain/cutlist/deriveCutList'
-import { groupCutList } from './partGroups'
+import { cutListRows, groupCutList } from './partGroups'
 import { partName } from './partNames'
 
 const item = (
@@ -28,6 +28,50 @@ describe('partName', () => {
     ).toBe(
       'Drawer side (left), groove 6 wide × 7.5 deep, 13 mm from lower edge',
     )
+  })
+})
+
+describe('cutListRows', () => {
+  const sized = (
+    id: string,
+    part: CutListItem['part'],
+    moduleId: string,
+    length = 100,
+  ) => ({ ...item(id, part, moduleId), length })
+
+  it('merges identical parts across cabinets and keeps every ID', () => {
+    const rows = cutListRows(
+      [
+        sized('C1-SIDE-L', 'side-left', 'one'),
+        sized('C1-SIDE-R', 'side-right', 'one'),
+        sized('C2-SIDE-L', 'side-left', 'two'),
+        sized('C3-SIDE-L', 'side-left', 'three', 200),
+      ],
+      'mm',
+      true,
+    )
+    expect(rows).toHaveLength(2)
+    expect(rows[0]).toMatchObject({
+      ids: ['C1-SIDE-L', 'C1-SIDE-R', 'C2-SIDE-L'],
+      cabinets: ['one', 'two'],
+      quantity: 3,
+    })
+    expect(rows[1]).toMatchObject({ ids: ['C3-SIDE-L'], quantity: 1 })
+  })
+
+  it('treats left and right drawer sides as one part only when merged', () => {
+    const sides = [
+      sized('D-L', 'drawer-side-left', 'one'),
+      sized('D-R', 'drawer-side-right', 'one'),
+    ]
+    expect(cutListRows(sides, 'mm', true)).toHaveLength(1)
+    expect(cutListRows(sides, 'mm', true)[0]!.name).toBe('Drawer side')
+    expect(cutListRows(sides, 'mm', false)).toHaveLength(2)
+  })
+
+  it('keeps different parts of the same size apart', () => {
+    const parts = [sized('T', 'top', 'one'), sized('B', 'bottom', 'one')]
+    expect(cutListRows(parts, 'mm', true)).toHaveLength(2)
   })
 })
 

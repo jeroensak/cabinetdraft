@@ -1,5 +1,7 @@
 import { useState, type DragEvent } from 'react'
 import { useTranslation } from '../../i18n'
+import { useMeasure } from '../../units/useMeasure'
+
 import { useProjectStore } from '../../store/projectStore'
 import { addDrawerDesign, reorderModules } from '../../domain/commands'
 import { defaultDrawerDesign } from '../../domain/drawers/types'
@@ -11,6 +13,7 @@ import { DesignPicker } from './DesignPicker'
 
 export function ModuleList() {
   const { t } = useTranslation()
+  const { measure, unit } = useMeasure()
 
   const modules = useProjectStore((state) => state.present.modules)
   const selection = useProjectStore((state) => state.editor.selection)
@@ -37,7 +40,7 @@ export function ModuleList() {
     const created = run(() =>
       execute((project) =>
         addDrawerDesign(project, {
-          ...defaultDrawerDesign(),
+          ...defaultDrawerDesign(unit),
           name: uniqueDesignName(project, t('default.drawerDesign')),
         }),
       ),
@@ -78,7 +81,7 @@ export function ModuleList() {
                 setHover({ type: 'module', moduleId: module.id })
               }
               onPointerLeave={() => setHover(null)}
-              aria-label={`${module.name}, ${module.width} mm`}
+              aria-label={`${module.name}, ${measure(module.width)}`}
               aria-pressed={selection?.moduleId === module.id}
               onClick={() =>
                 setSelection({ type: 'module', moduleId: module.id })
@@ -123,8 +126,10 @@ export function ModuleList() {
                 ⋮⋮
               </span>
               <span className="module-label">
-                <strong>{module.name}</strong>
-                <small>{module.width} mm</small>
+                <strong className="clamped" title={module.name}>
+                  {module.name}
+                </strong>
+                <small>{measure(module.width)}</small>
               </span>
             </button>
           </li>

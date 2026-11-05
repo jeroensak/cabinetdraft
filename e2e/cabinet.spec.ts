@@ -28,6 +28,7 @@ test('default design produces the expected physical parts', async ({
     page.getByRole('button', { name: 'Cabinet 1 double door 1' }),
   ).toBeVisible()
   await page.getByRole('link', { name: 'Cut List', exact: true }).click()
+  await page.getByRole('checkbox', { name: 'Group identical parts' }).uncheck()
   await expect(page.getByRole('row')).toHaveCount(11)
   await expect(
     page.getByRole('row').filter({ hasText: 'C1-SIDE-L' }),
@@ -57,6 +58,7 @@ test('new resized cabinet, shelf and door update manufacturing output and surviv
     .click({ modifiers: ['Shift'] })
   await page.getByRole('button', { name: 'Add door', exact: true }).click()
   await page.getByRole('link', { name: 'Cut List', exact: true }).click()
+  await page.getByRole('checkbox', { name: 'Group identical parts' }).uncheck()
   await expect(page.getByRole('row')).toHaveCount(18)
   await expect(
     page.getByRole('row').filter({ hasText: 'C2-SHELF-1' }),
@@ -65,6 +67,7 @@ test('new resized cabinet, shelf and door update manufacturing output and surviv
     page.getByRole('row').filter({ hasText: 'C2-DOOR-1' }),
   ).toContainText('896')
   await page.reload()
+  await page.getByRole('checkbox', { name: 'Group identical parts' }).uncheck()
   await expect(page.getByRole('row')).toHaveCount(18)
   await page.getByRole('link', { name: 'Designer', exact: true }).click()
   await expect(
@@ -395,4 +398,32 @@ test('the language picker translates the app and is remembered, without touching
   ).toContainText('Zijkant')
   await page.getByRole('combobox', { name: 'Taal' }).selectOption('en')
   await expect(page.getByRole('heading', { name: 'Cut List' })).toBeVisible()
+})
+
+test('an inch design stays in fractions through the designer, cut list and reload', async ({
+  page,
+}) => {
+  await page.getByRole('button', { name: '+ New design' }).click()
+  await page.getByRole('radio').nth(0).check()
+  await page.getByLabel('Name', { exact: true }).fill('Shop cabinet')
+  await page.getByRole('combobox', { name: 'Units' }).selectOption('inch')
+  await page.getByRole('button', { name: 'Create design' }).click()
+  await page.getByRole('button', { name: /^Cabinet 1, / }).click()
+  const width = page.getByRole('textbox', { name: 'width (in)' })
+  await width.fill('31 1/2')
+  await width.press('Enter')
+  await expect(
+    page.getByRole('button', { name: 'Cabinet 1, 31 1/2"', exact: true }),
+  ).toBeVisible()
+  await page.getByRole('link', { name: 'Cut List', exact: true }).click()
+  await expect(
+    page.getByRole('columnheader', { name: 'Length (in)' }).first(),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('row').filter({ hasText: 'C1-TOP' }),
+  ).toContainText('30')
+  await page.reload()
+  await expect(
+    page.getByRole('columnheader', { name: 'Length (in)' }).first(),
+  ).toBeVisible()
 })

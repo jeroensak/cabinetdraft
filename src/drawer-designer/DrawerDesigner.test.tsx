@@ -131,6 +131,55 @@ describe('Drawer designer', () => {
     expect(
       container.querySelector('.panel-face[data-source="drawer-bottom"]'),
     ).toBeNull()
+    expect(
+      container.querySelectorAll('.panel-face[data-source="cabinet"]'),
+    ).toHaveLength(15)
+    expect(
+      screen.getByText(
+        'Gaps: 5 mm each side, 14 mm below, at least 7 mm above, at least 3 mm behind',
+      ),
+    ).toBeInTheDocument()
+  })
+
+  it('opens and closes the drawer in the preview without changing the design', async () => {
+    const user = userEvent.setup()
+    const { container } = render(<DesignerPage />)
+    await user.click(screen.getByRole('button', { name: 'Cabinet 1 space 1' }))
+    await user.click(screen.getByRole('button', { name: 'Add drawer' }))
+    await user.click(
+      screen.getByRole('button', { name: '+ New drawer design' }),
+    )
+    const toggle = screen.getByRole('checkbox', { name: 'Open drawer' })
+    expect(toggle).toBeChecked()
+    const boxPoints = () =>
+      container
+        .querySelector('.panel-face[data-source="drawer-side-left"]')
+        ?.getAttribute('points')
+    const opened = boxPoints()
+    const project = useProjectStore.getState().present
+
+    await user.click(toggle)
+    expect(toggle).not.toBeChecked()
+    expect(boxPoints()).not.toBe(opened)
+    expect(useProjectStore.getState().present).toBe(project)
+
+    await user.click(toggle)
+    expect(boxPoints()).toBe(opened)
+  })
+
+  it('notes a box that rises above a lowered front', async () => {
+    const user = userEvent.setup()
+    render(<DesignerPage />)
+    await user.click(screen.getByRole('button', { name: 'Cabinet 1 space 1' }))
+    await user.click(screen.getByRole('button', { name: 'Add drawer' }))
+    await user.click(
+      screen.getByRole('button', { name: '+ New drawer design' }),
+    )
+    expect(screen.queryByText(/rises above this front/)).toBeNull()
+    const height = screen.getByRole('textbox', { name: 'Front height (%)' })
+    await user.clear(height)
+    await user.type(height, '20{Enter}')
+    expect(screen.getByText(/rises above this front/)).toBeInTheDocument()
   })
 
   it('sets the drawer front style, position and height on the design', async () => {

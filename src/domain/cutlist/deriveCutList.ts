@@ -2,7 +2,11 @@ import { deriveModuleDrawerPanels } from '../drawers/deriveModuleDrawerPanels'
 import { frontDesign } from '../drawers/types'
 import { deriveCabinetGeometry } from '../cabinet/deriveCabinetGeometry'
 import { deriveFrontGeometry } from '../fronts/deriveFrontGeometry'
-import type { PanelGroove, PanelSource } from '../geometry/physicalPanel'
+import type {
+  PanelGroove,
+  PanelSource,
+  PhysicalPanel,
+} from '../geometry/physicalPanel'
 import type { Project } from '../project/types'
 import {
   validateProject,
@@ -28,12 +32,17 @@ export type CutListResult =
   | { available: true; items: CutListItem[] }
   | { available: false; issues: ValidationIssue[] }
 
-/** Independent domain consumer; invalid projects expose no manufacturing rows. */
-export function deriveCutList(project: Project): CutListResult {
-  const issues = validateProject(project)
-  if (issues.length > 0) return { available: false, issues }
+export interface LabelledPanel {
+  id: string
+  moduleId: string
+  moduleName: string
+  panel: PhysicalPanel
+}
 
-  const items: CutListItem[] = []
+/** Every physical panel with its cut-list identifier, for any consumer that has
+ * to name the same parts as the cut list. */
+export function deriveLabelledPanels(project: Project): LabelledPanel[] {
+  const labelled: LabelledPanel[] = []
   project.modules.forEach((module, moduleIndex) => {
     const shelves = [...module.shelves].sort((a, b) => a.bottom - b.bottom)
     const doors = module.fronts.filter((front) => front.type === 'door')
@@ -86,10 +95,28 @@ export function deriveCutList(project: Project): CutListResult {
       ),
     ]
     for (const panel of panels) {
-      items.push({
+      labelled.push({
         id: `C${moduleIndex + 1}-${suffix(panel.source)}`,
         moduleId: module.id,
         moduleName: module.name,
+        panel,
+      })
+    }
+  })
+  return labelled
+}
+
+/** Independent domain consumer; invalid projects expose no manufacturing rows. */
+export function deriveCutList(project: Project): CutListResult {
+  const issues = validateProject(project)
+  if (issues.length > 0) return { available: false, issues }
+  return {
+    available: true,
+    items: deriveLabelledPanels(project).map(
+      ({ id, moduleId, moduleName, panel }) => ({
+        id,
+        moduleId,
+        moduleName,
         part: panel.source.type,
         quantity: 1,
         length: panel.length,
@@ -97,8 +124,7 @@ export function deriveCutList(project: Project): CutListResult {
         thickness: panel.thickness,
         ...(panel.waveDip !== undefined ? { waveDip: panel.waveDip } : {}),
         ...(panel.groove ? { groove: panel.groove } : {}),
-      })
-    }
-  })
-  return { available: true, items }
+      }),
+    ),
+  }
 }

@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from '../i18n'
+import { useMeasure } from '../units/useMeasure'
+
 import { drawerIssueMessage } from '../i18n/drawerIssues'
 import { DraftField } from '../components/DraftField'
 import {
@@ -12,7 +14,7 @@ import {
 import { deriveDrawerGeometry } from '../domain/drawers/deriveDrawerGeometry'
 import {
   defaultDrawerDesign,
-  MIN_DRAWER_SIDE_CLEARANCE,
+  minDrawerSideClearance,
   type DrawerDesign,
   type DrawerDesignInput,
 } from '../domain/drawers/types'
@@ -99,6 +101,7 @@ function resolveTargets(project: Project, context: DesignerScope) {
 
 export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
   const { t } = useTranslation()
+  const { measure, size, unit } = useMeasure()
 
   const project = useProjectStore((state) => state.present)
   const execute = useProjectStore((state) => state.execute)
@@ -106,6 +109,7 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
   const selectDesign = useProjectStore((state) => state.selectDrawerDesign)
   const { error, run } = useCommandAction()
   const [showFront, setShowFront] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(true)
   const library = context.moduleId === null
   const { module, targets } = resolveTargets(
     project,
@@ -143,6 +147,14 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
     })),
   )
   const usage = design ? drawerDesignUsage(project, design.id) : 0
+  const previewFront = preview?.frontPanels[0]
+  const previewBox = preview?.boxPanels[0]
+  const boxAboveFront =
+    preview &&
+    previewFront &&
+    previewBox &&
+    previewFront.position.y + previewFront.length <
+      previewBox.position.y + preview.height
   const update = (patch: Partial<DrawerDesignInput>) =>
     design
       ? run(() =>
@@ -200,7 +212,7 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
           className="add-cabinet"
           onClick={() =>
             create({
-              ...defaultDrawerDesign(),
+              ...defaultDrawerDesign(unit),
               name: uniqueDesignName(project, t('default.drawerDesign')),
             })
           }
@@ -224,21 +236,34 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
                 : t('drawer.cabinetUnavailable')}
             {preview &&
               t('drawer.opening', {
-                width: preview.openingWidth,
-                height: preview.openingHeight,
+                size: size(preview.openingWidth, preview.openingHeight),
               })}
           </span>
-          <label className="drawer-front-toggle">
-            <input
-              type="checkbox"
-              checked={showFront}
-              onChange={(event) => setShowFront(event.target.checked)}
-            />
-            {t('drawer.showFront')}
-          </label>
+          <div className="drawer-preview-toggles">
+            <label className="drawer-front-toggle">
+              <input
+                type="checkbox"
+                checked={showFront}
+                onChange={(event) => setShowFront(event.target.checked)}
+              />
+              {t('drawer.showFront')}
+            </label>
+            <label className="drawer-front-toggle">
+              <input
+                type="checkbox"
+                checked={drawerOpen}
+                onChange={(event) => setDrawerOpen(event.target.checked)}
+              />
+              {t('drawer.openToggle')}
+            </label>
+          </div>
         </div>
         {preview ? (
-          <DrawerPreview geometry={preview} showFront={showFront} />
+          <DrawerPreview
+            geometry={preview}
+            showFront={showFront}
+            open={drawerOpen}
+          />
         ) : (
           <div className="drawer-preview-empty muted">
             {library
@@ -259,9 +284,7 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
           {preview && (
             <span>
               {t('drawer.boxSummary', {
-                width: preview.width,
-                height: preview.height,
-                depth: preview.depth,
+                size: size(preview.width, preview.height, preview.depth),
               })}
             </span>
           )}
@@ -290,7 +313,7 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
               key={`${design.id}-heightPercent-${design.heightPercent}`}
               label={t('drawer.boxHeight')}
               numeric
-              unit="%"
+              percent
               value={design.heightPercent}
               onCommit={(value) => update({ heightPercent: Number(value) })}
             />
@@ -340,7 +363,7 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
               key={`${design.id}-frontHeightPercent-${design.frontHeightPercent}`}
               label={t('drawer.frontHeight')}
               numeric
-              unit="%"
+              percent
               value={design.frontHeightPercent}
               onCommit={(value) =>
                 updateFront({ frontHeightPercent: Number(value) })
@@ -359,48 +382,57 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
               />
             ))}
             <p className="inspector-note muted">
-              {t('drawer.note', { minimum: MIN_DRAWER_SIDE_CLEARANCE })}
+              {t('drawer.note', {
+                minimum: measure(minDrawerSideClearance(unit)),
+              })}
             </p>
-            {blockedByDoor && (
-              <p className="field-error">{t('drawer.doorBlocks')}</p>
-            )}
-            {fitIssues.map((issue, index) => (
-              <p key={index} className="field-error">
-                {targets.length > 1
-                  ? t('drawer.spacePrefix', { n: issue.target })
-                  : ''}
-                {drawerIssueMessage(issue)}
-              </p>
-            ))}
-            <div className="context-actions">
-              {!library && (
-                <button
-                  className="pill primary"
-                  disabled={
-                    !module ||
-                    !targets.length ||
-                    blockedByDoor ||
-                    fitIssues.length > 0
-                  }
-                  onClick={apply}
-                >
-                  {t('drawer.apply', { target: targetLabel })}
-                </button>
+            <div className="drawer-apply-bar">
+              {boxAboveFront && (
+                <p className="inspector-note muted">
+                  {t('drawer.boxAboveFront')}
+                </p>
               )}
-              <button
-                className="pill"
-                onClick={() =>
-                  create({
-                    ...designInput(design),
-                    name: uniqueDesignName(
-                      project,
-                      t('drawer.copyName', { name: design.name }),
-                    ),
-                  })
-                }
-              >
-                {t('drawer.duplicate')}{' '}
-              </button>
+              {blockedByDoor && (
+                <p className="field-error">{t('drawer.doorBlocks')}</p>
+              )}
+              {fitIssues.map((issue, index) => (
+                <p key={index} className="field-error">
+                  {targets.length > 1
+                    ? t('drawer.spacePrefix', { n: issue.target })
+                    : ''}
+                  {drawerIssueMessage(issue, unit)}
+                </p>
+              ))}
+              <div className="context-actions">
+                {!library && (
+                  <button
+                    className="pill primary"
+                    disabled={
+                      !module ||
+                      !targets.length ||
+                      blockedByDoor ||
+                      fitIssues.length > 0
+                    }
+                    onClick={apply}
+                  >
+                    {t('drawer.apply', { target: targetLabel })}
+                  </button>
+                )}
+                <button
+                  className="pill"
+                  onClick={() =>
+                    create({
+                      ...designInput(design),
+                      name: uniqueDesignName(
+                        project,
+                        t('drawer.copyName', { name: design.name }),
+                      ),
+                    })
+                  }
+                >
+                  {t('drawer.duplicate')}
+                </button>
+              </div>
             </div>
             <div className="inspector-actions">
               <button
@@ -418,7 +450,7 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
                     selectDesign(null)
                 }}
               >
-                {t('drawer.deleteDesign')}{' '}
+                {t('drawer.deleteDesign')}
               </button>
             </div>
             {usage > 0 && (

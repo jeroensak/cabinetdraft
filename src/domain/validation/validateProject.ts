@@ -80,12 +80,13 @@ export function validateProject(project: Project): ValidationIssue[] {
   checkId(project.id)
   for (const design of project.drawerDesigns) {
     checkId(design.id)
-    for (const issue of validateDrawerDesign(design))
+    for (const issue of validateDrawerDesign(design, project.settings.unit))
       issues.push({
         code: issue.code,
         data: {
           designId: design.id,
           message: issue.message,
+          issue,
           field: issue.field,
         },
       })
@@ -351,6 +352,7 @@ export function validateProject(project: Project): ValidationIssue[] {
               data: {
                 designId: design.id,
                 message: issue.message,
+                issue,
                 field: issue.field,
               },
             })

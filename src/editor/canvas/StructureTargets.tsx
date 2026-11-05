@@ -7,6 +7,8 @@ import { spacesInRange, selectedSpaces } from '../../store/selection'
 import { selectSpace } from '../spaceSelection'
 import { moveShelf } from '../../domain/commands'
 import { useTranslation } from '../../i18n'
+import { useMeasure } from '../../units/useMeasure'
+
 import { useProjectStore } from '../../store/projectStore'
 import { commandMessage } from '../useCommandAction'
 import type { Point } from './projection'
@@ -23,7 +25,9 @@ export function StructureTargets({
   frontsMode?: boolean
 }) {
   const { t } = useTranslation()
+  const { measure } = useMeasure()
   const { module, origin, geometry } = item
+
   const project = useProjectStore((state) => state.present)
   const selection = useProjectStore((state) => state.editor.selection)
   const setSelection = useProjectStore((state) => state.setSelection)
@@ -132,7 +136,7 @@ export function StructureTargets({
                 tabIndex={0}
                 aria-label={t('canvas.dividerAt', {
                   name: module.name,
-                  value: panel.position.x,
+                  value: measure(panel.position.x),
                 })}
                 aria-pressed={selected}
                 onPointerEnter={() =>
@@ -173,7 +177,7 @@ export function StructureTargets({
                   tabIndex={0}
                   aria-label={t('canvas.shelfAt', {
                     name: module.name,
-                    value: panel.position.y,
+                    value: measure(panel.position.y),
                   })}
                   aria-pressed={
                     selection?.type === 'shelf' && selection.shelfId === shelfId
@@ -249,7 +253,9 @@ export function StructureTargets({
                 {selection?.type === 'shelf' &&
                   selection.shelfId === shelfId && (
                     <text className="shelf-position" x={p.x + 8} y={p.y - 10}>
-                      {panel.position.y} mm from bottom
+                      {t('canvas.fromBottom', {
+                        value: measure(panel.position.y),
+                      })}
                     </text>
                   )}
               </g>

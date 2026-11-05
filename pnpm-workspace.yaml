@@ -1,2 +1,4 @@
 allowBuilds:
   core-js: false
+overrides:
+  dompurify: ^3.4.17

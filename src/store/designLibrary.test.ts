@@ -70,6 +70,28 @@ describe('local designs', () => {
     expect(store.getState().designs).toHaveLength(3)
   })
 
+  it('duplicates the open design with a new ID, keeping both and the unit', () => {
+    const disk = memory()
+    const store = createProjectStore({ storage: disk })
+    store.getState().createDesign(template(), 'Shop', 'inch')
+    const original = store.getState().present
+    expect(store.getState().duplicateDesign('Shop copy')).toBe(true)
+    const copy = store.getState().present
+    expect(copy.id).not.toBe(original.id)
+    expect(copy).toMatchObject({
+      name: 'Shop copy',
+      settings: { unit: 'inch' },
+      modules: original.modules,
+    })
+    expect(store.getState().designs?.map((d) => d.name)).toStrictEqual([
+      'Shop',
+      'Shop copy',
+    ])
+    expect(store.getState().past).toHaveLength(0)
+    expect(store.getState().switchDesign(original.id)).toBe(true)
+    expect(store.getState().present.name).toBe('Shop')
+  })
+
   it('deletes the open design for good, opens a neighbour and keeps the last one', () => {
     const disk = memory()
     const store = createProjectStore({ storage: disk })
@@ -136,6 +158,43 @@ describe('local designs', () => {
     store.getState().skipFirstDesign()
     expect(store.getState().needsFirstDesign).toBe(false)
     expect(store.getState().present.modules).toHaveLength(1)
+  })
+
+  it('creates an inch design from a millimetre template and keeps it on reload', () => {
+    const disk = memory()
+    const store = createProjectStore({ storage: disk })
+    store.getState().createDesign(template(), 'Inch', 'inch')
+    expect(store.getState().present.settings.unit).toBe('inch')
+    expect(store.getState().present.modules[0]!.width).toBe(1008)
+    expect(
+      createProjectStore({ storage: disk }).getState().present.settings.unit,
+    ).toBe('inch')
+  })
+
+  it('follows another tab instead of overwriting it with an older copy', () => {
+    const disk = memory()
+    const tabA = existingStore(disk)
+    const tabB = existingStore(disk)
+    tabA.getState().execute((p) => renameProject(p, 'From tab A'))
+    tabB.getState().adoptFromOtherTab(disk.getItem(PROJECT_STORAGE_KEY)!)
+    expect(tabB.getState().present.name).toBe('From tab A')
+    expect(tabB.getState().updatedInOtherTab).toBe(true)
+    expect(tabB.getState().past).toHaveLength(0)
+    tabB.getState().execute((p) => renameProject(p, 'Then tab B'))
+    expect(tabB.getState().updatedInOtherTab).toBe(false)
+    expect(JSON.parse(disk.getItem(PROJECT_STORAGE_KEY)!).name).toBe(
+      'Then tab B',
+    )
+  })
+
+  it('ignores unreadable data and its own save from another tab', () => {
+    const disk = memory()
+    const store = existingStore(disk)
+    store.getState().execute((p) => renameProject(p, 'Mine'))
+    store.getState().adoptFromOtherTab('not json')
+    store.getState().adoptFromOtherTab(disk.getItem(PROJECT_STORAGE_KEY)!)
+    expect(store.getState().updatedInOtherTab).toBe(false)
+    expect(store.getState().past).toHaveLength(1)
   })
 
   it('stays on the open design and keeps its history when saving fails', () => {

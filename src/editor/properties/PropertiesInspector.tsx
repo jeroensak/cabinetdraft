@@ -2,6 +2,8 @@ import { duplicateCabinet } from '../module-list/moduleActions'
 import { FrontProperties } from './FrontProperties'
 import { frontName } from '../frontName'
 import { useTranslation } from '../../i18n'
+import { useMeasure } from '../../units/useMeasure'
+
 import { useProjectStore } from '../../store/projectStore'
 import {
   renameModule,
@@ -15,11 +17,12 @@ import {
 import { enclosingRange, spaceRange } from '../../domain/spaces/spaceRanges'
 import { selectedSpaces } from '../../store/selection'
 import { DraftField } from '../../components/DraftField'
-import { deleteSelection } from '../deleteSelection'
+import { deleteWithNotice } from '../deleteSelection'
 import { useCommandAction } from '../useCommandAction'
 
 export function PropertiesInspector() {
   const { t } = useTranslation()
+  const { measure, unit } = useMeasure()
 
   const project = useProjectStore((state) => state.present)
   const selection = useProjectStore((state) => state.editor.selection)
@@ -29,6 +32,8 @@ export function PropertiesInspector() {
     (state) => state.openDrawerDesigner,
   )
   const { error, run } = useCommandAction()
+  const unitName = t(unit === 'inch' ? 'unit.inchPlural' : 'unit.mmPlural')
+
   const module = project.modules.find((item) => item.id === selection?.moduleId)
   const front =
     selection?.type === 'front'
@@ -72,7 +77,7 @@ export function PropertiesInspector() {
       <p className="eyebrow">{t(`selection.${selection?.type ?? 'none'}`)}</p>
       {module && selection ? (
         <>
-          <h2>
+          <h2 className="clamped" title={module.name}>
             {selection.type === 'module'
               ? module.name
               : selection.type === 'shelf'
@@ -151,7 +156,7 @@ export function PropertiesInspector() {
                         >
                           {t('inspector.selectDivider', {
                             n: index + 1,
-                            left: item.left,
+                            left: measure(item.left),
                           })}
                         </button>
                       ))}
@@ -206,7 +211,7 @@ export function PropertiesInspector() {
                 }
               />
               <p className="inspector-note muted">
-                {t('inspector.dividerNote')}
+                {t('inspector.dividerNote', { unit: unitName })}
               </p>
             </>
           )}
@@ -215,8 +220,8 @@ export function PropertiesInspector() {
               <p className="inspector-note muted">
                 {spaces.length === 1
                   ? t('inspector.freeSize', {
-                      width: spaces[0].width,
-                      height: spaces[0].height,
+                      width: measure(spaces[0].width),
+                      height: measure(spaces[0].height),
                     })
                   : t('inspector.selectedSpaces', { n: spaces.length })}
               </p>
@@ -291,18 +296,14 @@ export function PropertiesInspector() {
                   className="pill"
                   onClick={() => run(() => duplicateCabinet(module.id))}
                 >
-                  {t('inspector.duplicate')}{' '}
+                  {t('inspector.duplicate')}
                 </button>
               )}
               <button
                 className="delete-button"
-                onClick={() =>
-                  run(() =>
-                    execute((project) => deleteSelection(project, selection)),
-                  )
-                }
+                onClick={() => deleteWithNotice(run)}
               >
-                {t('inspector.delete')}{' '}
+                {t('inspector.delete')}
               </button>
             </div>
           )}

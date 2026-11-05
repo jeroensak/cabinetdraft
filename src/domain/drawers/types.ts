@@ -1,5 +1,9 @@
-/** Minimum gap between each drawer side and the opening side, for undermount slides. */
-export const MIN_DRAWER_SIDE_CLEARANCE = 3
+import { inches, type MeasurementUnit } from '../project/units'
+
+/** Minimum gap between each drawer side and the opening side, for undermount
+ * slides: 3 mm, or the 1/8" that covers it in an inch design. */
+export const minDrawerSideClearance = (unit: MeasurementUnit = 'mm') =>
+  unit === 'inch' ? inches(1 / 8) : 3
 
 /** A reusable construction recipe. Derived width and height are never stored. */
 export interface DrawerDesign {
@@ -32,19 +36,23 @@ export type DrawerFrontOptions = Pick<
 >
 
 /** Generic editable dimensions, not a hardware compatibility certification. */
-export function defaultDrawerDesign(): DrawerDesignInput {
+export function defaultDrawerDesign(
+  unit: MeasurementUnit = 'mm',
+): DrawerDesignInput {
+  const size = (mm: number, inch: number) =>
+    unit === 'inch' ? inches(inch) : mm
   return {
     name: 'Simple undermount drawer',
     slideType: 'undermount',
-    wallThickness: 18,
-    bottomThickness: 6,
-    depth: 450,
+    wallThickness: size(18, 3 / 4),
+    bottomThickness: size(6, 1 / 4),
+    depth: size(450, 18),
     heightPercent: 50,
-    sideClearance: 5,
-    bottomClearance: 14,
-    topClearance: 7,
-    rearClearance: 3,
-    bottomRecess: 13,
+    sideClearance: size(5, 3 / 16),
+    bottomClearance: size(14, 9 / 16),
+    topClearance: size(7, 1 / 4),
+    rearClearance: size(3, 1 / 8),
+    bottomRecess: size(13, 1 / 2),
     frontStyle: 'full',
     frontMount: 'overlay',
     frontHeightPercent: 100,

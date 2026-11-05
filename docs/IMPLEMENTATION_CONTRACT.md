@@ -67,7 +67,9 @@ The user explicitly requested a choice of drawer fronts: full or wave top, overl
 
 ## Cut List parts lists
 
-The user requested a shorter-reading Cut List. The Cut List page and PDF present the canonical rows in up to four lists, in this order: cabinet bases (sides, top, bottom, back), shelves and dividers, doors, and drawers (each drawer's front and box together). Empty lists are left out. Grouping is presentation only: `deriveCutList` output, identifiers, one row per physical panel and the columns of specification section 32 are unchanged.
+The user requested a shorter-reading Cut List. The Cut List page and PDF present the canonical rows in up to four lists, in this order: cabinet bases (sides, top, bottom, back), shelves and dividers, doors, and drawers (each drawer's front and box together). Empty lists are left out. Grouping is presentation only: `deriveCutList` output, identifiers and the columns of specification section 32 are unchanged.
+
+The user also requested merging identical parts into one row with a quantity, the future use specification section 32 anticipates. This supersedes the one-row-per-panel rule of section 30 for display only. It is on by default, parts match on name and size across cabinets, and a merged row lists every part's ID. A checkbox restores one row per panel, on the page and in the PDF.
 
 ## Approved post-V1 extension: grooved drawer bottoms
 
@@ -76,6 +78,8 @@ The user requested a groove, half the wall thickness deep, in all four drawer wa
 ## Approved post-V1 extension: local designs
 
 The user requested several named designs in one browser, chosen from a dropdown above the cabinets, and three starting templates for new designs. This is still local only: there is no backend, sign-in or real account. The open design stays under the existing project storage key, so its autosave and error handling follow specification section 59. The other designs live under `cabinet-designer:designs:v1`, which is never written while either key is unreadable. Switching, creating or deleting a design clears undo history. Deleting asks for confirmation, removes the open design permanently and opens a neighbouring one; the last design can't be deleted. Import still replaces the open design as specification section 62 requires, and takes a new ID only if its ID belongs to another saved design.
+
+Duplicating copies the open design under a new ID, keeping its unit, and opens the copy.
 
 A first visit with nothing saved opens the New design dialog instead of the example cabinet of specification section 5, which this supersedes. The dialog must be completed, the workspace stays empty behind it and nothing is stored until a design is created. Cancel appears only if saving fails. The default project remains as the fallback for browsers that can't store anything, and it never enters the design library.
 
@@ -92,3 +96,23 @@ The language is an editor preference stored under `cabinet-designer:language`, n
 The user requested doors that are either overlay or inset. This supersedes specification sections 10 and 20–23 only for inset doors; the frozen specification remains unchanged. A door may store `mount: 'inset'`; omitted means overlay, so existing projects need no migration and overlay is never written out.
 
 An inset door sits inside its opening with `frontGap` on all four sides, its face flush with the carcass front. A double door's leaves divide the width as they do for overlay, so a non-integer leaf remains a validation problem. Any shelf or divider inside the opening of an inset door would block it, so it is set back by `frontThickness + frontGap` and its depth shrinks by the same amount. `insetDoorSetback` is the one canonical rule. The setback is derived, never stored, and panels that only bound the opening do not move.
+
+## Approved post-V1 extension: inch designs
+
+The user requested designs in inches, in the fractional notation used in America, next to millimetres, with the unit set per design so that free switching can't cause rounding errors. This supersedes the measurement rule of specification section 6 for inch designs only; the frozen specification remains unchanged.
+
+A project with `settings.unit: 'inch'` stores every measurement as a whole number of 1/32 inch units. Omitted means millimetres, so existing projects need no migration. All domain formulas stay unit-agnostic and still require whole numbers, which keeps inch sizes exact: 1/16 inch has no whole-millimetre value, and a halved 1/16 inch size is still a whole unit. Percentage heights and centred placements round to a whole 1/32 inch, as they round to a whole millimetre otherwise. Groove depths may be half a unit, shown in 1/64ths.
+
+The unit is chosen in the New design dialog and can't be changed afterwards. Templates are millimetre files, converted once at creation by `convertToInches`: sheet thicknesses to the nearest 1/8 inch, everything else to the nearest 1/16 inch. That rounding is why no conversion exists for a design already in use. An imported project keeps its unit. Formatting and parsing live in `src/units`; input finer than 1/32 inch is refused, never rounded.
+
+## Cut List PDF assembly pages
+
+The user requested a printable assembly view. After its lists, the PDF adds one page per cabinet: the structure and the fronts side by side, labelled with the cut list IDs. `deriveLabelledPanels` is the one source of those IDs for both, and the drawing uses canonical panels with the Designer's projection helpers only. The Cut List page itself still renders no drawing.
+
+## Approved post-V1 extension: share links
+
+The user requested sharing a design by link. There is still no backend: the design's project JSON is gzipped into the URL fragment, which browsers don't send to servers, and analytics already strip fragments. Opening a link goes through the same parse, validate and migrate boundary as a file import, asks for confirmation, and adds a new design with its own ID and its original unit instead of replacing anything. The fragment is cleared from the address bar once read. A link expanding past 5 MB is refused.
+
+## Usability and safety rules
+
+Canvas shortcuts do nothing while a dialog is open. Tabs follow each other: a tab receiving another tab's save adopts it, clears its undo history and says so, so an older copy can't silently overwrite newer work. Names can't be blank. Cabinet sizes must be above zero and at most 100 m or 4,000 inches, which catches typing slips without setting furniture minimums. An invalid design explains why on the Designer and Cut List pages. The canvas view is editor state and survives navigation, and Settings no longer repeats the design name.

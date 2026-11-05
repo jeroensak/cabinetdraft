@@ -1,6 +1,7 @@
 import { useTranslation } from '../../i18n'
+import { useMeasure } from '../../units/useMeasure'
+
 import { useProjectStore } from '../../store/projectStore'
-import { renameProject } from '../../domain/commands'
 import { DraftField } from '../../components/DraftField'
 import { useCommandAction } from '../useCommandAction'
 
@@ -13,21 +14,13 @@ const fields = [
 
 export function ProjectSettings() {
   const { t } = useTranslation()
+  const { unit } = useMeasure()
 
   const project = useProjectStore((state) => state.present)
-  const execute = useProjectStore((state) => state.execute)
   const updateSettings = useProjectStore((state) => state.updateSettings)
   const { error, run } = useCommandAction()
   return (
     <div>
-      <DraftField
-        key={`${project.id}-${project.name}`}
-        label={t('settings.projectName')}
-        value={project.name}
-        onCommit={(name) =>
-          run(() => execute((project) => renameProject(project, name)))
-        }
-      />
       {fields.map(([field, label]) => (
         <DraftField
           key={`${project.id}-${field}-${project.settings[field]}`}
@@ -51,6 +44,12 @@ export function ProjectSettings() {
         />
         {t('settings.backEnabled')}
       </label>
+      <dl className="settings-values">
+        <div>
+          <dt>{t('settings.units')}</dt>
+          <dd>{t(unit === 'inch' ? 'unit.inch' : 'unit.mm')}</dd>
+        </div>
+      </dl>
       <p className="muted">{t('settings.note')}</p>
       {error && (
         <p role="alert" className="field-error">

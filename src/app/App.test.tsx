@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { App } from './App'
@@ -111,8 +111,11 @@ describe('application shell', () => {
     const user = userEvent.setup()
     renderDesigner()
     await user.click(screen.getByRole('button', { name: 'Settings' }))
-    await user.clear(screen.getByLabelText('Project name'))
-    await user.type(screen.getByLabelText('Project name'), 'Kitchen{Enter}')
+    act(() =>
+      useProjectStore
+        .getState()
+        .execute((project) => renameProject(project, 'Kitchen')),
+    )
     expect(useProjectStore.getState().present.name).toBe('Kitchen')
     expect(useProjectStore.getState().past).toHaveLength(1)
     await user.clear(screen.getByLabelText('Front gap (mm)'))
@@ -137,14 +140,58 @@ describe('application shell', () => {
     renderDesigner()
     await user.click(screen.getByRole('button', { name: 'Settings' }))
     expect(
-      screen.getByRole('region', { name: 'Project settings' }),
+      screen.getByRole('region', { name: 'Design settings' }),
     ).toBeVisible()
     expect(screen.getByText('Corpus thickness')).toBeVisible()
     await user.click(screen.getByRole('button', { name: 'Close' }))
     expect(
-      screen.queryByRole('region', { name: 'Project settings' }),
+      screen.queryByRole('region', { name: 'Design settings' }),
     ).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Import' })).toBeEnabled()
     expect(screen.getByRole('button', { name: 'Export' })).toBeEnabled()
+  })
+
+  it('closes settings on Escape and outside clicks, and keeps the view mode', async () => {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter initialEntries={['/designer']}>
+        <App />
+      </MemoryRouter>,
+    )
+    const settings = screen.getByRole('button', { name: 'Settings' })
+    await user.click(settings)
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('region', { name: 'Design settings' })).toBeNull()
+    await user.click(settings)
+    await user.click(screen.getByRole('heading', { name: 'Cabinets' }))
+    expect(screen.queryByRole('region', { name: 'Design settings' })).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: 'Fronts' }))
+    await user.click(screen.getByRole('link', { name: 'Cut List' }))
+    await user.click(screen.getByRole('link', { name: 'Designer' }))
+    expect(screen.getByRole('button', { name: 'Fronts' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+  })
+
+  it('explains an invalid design and offers undo after deleting a cabinet', async () => {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter initialEntries={['/designer']}>
+        <App />
+      </MemoryRouter>,
+    )
+    await user.click(screen.getByRole('button', { name: /^Cabinet 1, / }))
+    const width = screen.getByLabelText('width (mm)')
+    await user.clear(width)
+    await user.type(width, '801{Enter}')
+    expect(screen.getByText(/doesn’t come out at an exact size/)).toBeVisible()
+
+    await user.click(screen.getByRole('button', { name: 'Delete' }))
+    const notice = screen.getByText('Cabinet 1 deleted').parentElement!
+    await user.click(within(notice).getByRole('button', { name: 'Undo' }))
+    expect(useProjectStore.getState().present.modules).toHaveLength(1)
+    expect(screen.queryByText('Cabinet 1 deleted')).toBeNull()
   })
 })

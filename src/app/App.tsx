@@ -1,13 +1,20 @@
 import { SaveStatus } from './SaveStatus'
 import { RouteMetadata } from './RouteMetadata'
 import { ProjectFiles } from './ProjectFiles'
-import { useEffect, useState } from 'react'
+import { SharedDesign } from './SharedDesign'
+
+import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Navigate, Outlet, Route, Routes } from 'react-router'
 import { DesignerPage } from '../editor/DesignerPage'
 import { NewDesignDialog } from '../editor/module-list/NewDesignDialog'
 import { CutListPage } from '../cut-list/CutListPage'
 import { ProjectSettings } from '../editor/properties/ProjectSettings'
-import { installHistoryShortcuts, useProjectStore } from '../store/projectStore'
+import {
+  installHistoryShortcuts,
+  installTabSync,
+  useProjectStore,
+} from '../store/projectStore'
+import { UndoNotice } from './UndoNotice'
 import { useTranslation } from '../i18n'
 import { LanguagePicker } from './LanguagePicker'
 
@@ -23,6 +30,29 @@ function Layout() {
   const skipFirstDesign = useProjectStore((state) => state.skipFirstDesign)
   const [settingsOpen, setSettingsOpen] = useState(false)
   useEffect(() => installHistoryShortcuts(useProjectStore), [])
+  useEffect(() => installTabSync(useProjectStore), [])
+  const settingsPanel = useRef<HTMLElement>(null)
+  const settingsButton = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (!settingsOpen) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSettingsOpen(false)
+    }
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node
+      if (
+        !settingsPanel.current?.contains(target) &&
+        !settingsButton.current?.contains(target)
+      )
+        setSettingsOpen(false)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.removeEventListener('pointerdown', onPointerDown)
+    }
+  }, [settingsOpen])
 
   return (
     <>
@@ -34,63 +64,74 @@ function Layout() {
       <div className="application-shell">
         <header className="app-header">
           <div className="project-identity">
-            {' '}
             <strong>{t('app.name')}</strong>
             {!needsFirstDesign && <span title={name}>{name}</span>}
           </div>
-          <nav aria-label={t('nav.main')} className="segmented navigation">
-            <NavLink to="/designer">{t('nav.designer')}</NavLink>
-            <NavLink to="/cut-list">{t('nav.cutList')}</NavLink>
-          </nav>
+          {needsFirstDesign ? (
+            <span />
+          ) : (
+            <nav aria-label={t('nav.main')} className="segmented navigation">
+              <NavLink to="/designer">{t('nav.designer')}</NavLink>
+              <NavLink to="/cut-list">{t('nav.cutList')}</NavLink>
+            </nav>
+          )}
           <div className="header-actions">
-            <button
-              className="history-button"
-              aria-label={t('header.undo')}
-              title={t('header.undoHint')}
-              disabled={!canUndo}
-              onClick={undo}
-            >
-              ↶
-            </button>
-            <button
-              className="history-button"
-              aria-label={t('header.redo')}
-              title={t('header.redoHint')}
-              disabled={!canRedo}
-              onClick={redo}
-            >
-              ↷
-            </button>
+            {!needsFirstDesign && (
+              <>
+                <button
+                  className="history-button"
+                  aria-label={t('header.undo')}
+                  title={t('header.undoHint')}
+                  disabled={!canUndo}
+                  onClick={undo}
+                >
+                  ↶
+                </button>
+                <button
+                  className="history-button"
+                  aria-label={t('header.redo')}
+                  title={t('header.redoHint')}
+                  disabled={!canRedo}
+                  onClick={redo}
+                >
+                  ↷
+                </button>
+              </>
+            )}
             <LanguagePicker />
-            <ProjectFiles />
-            <button
-              className="pill primary"
-              aria-expanded={settingsOpen}
-              aria-controls="project-settings"
-              onClick={() => setSettingsOpen(!settingsOpen)}
-            >
-              {' '}
-              {t('header.settings')}{' '}
-            </button>
+            <ProjectFiles firstVisit={needsFirstDesign} />
+            {!needsFirstDesign && (
+              <button
+                ref={settingsButton}
+                className="pill primary"
+                aria-expanded={settingsOpen}
+                aria-controls="project-settings"
+                onClick={() => setSettingsOpen(!settingsOpen)}
+              >
+                {t('header.settings')}
+              </button>
+            )}
           </div>
         </header>
         {settingsOpen && (
           <section
             className="settings-popover"
+            ref={settingsPanel}
             id="project-settings"
             aria-label={t('settings.title')}
           >
             <div className="section-heading">
               <h2>{t('settings.title')}</h2>
               <button className="pill" onClick={() => setSettingsOpen(false)}>
-                {' '}
-                {t('settings.close')}{' '}
+                {t('settings.close')}
               </button>
             </div>
             <ProjectSettings />
           </section>
         )}
         <SaveStatus />
+        <UndoNotice />
+        <SharedDesign />
         <main className="app-main">{!needsFirstDesign && <Outlet />}</main>
         {needsFirstDesign && (
           <NewDesignDialog required onClose={skipFirstDesign} />

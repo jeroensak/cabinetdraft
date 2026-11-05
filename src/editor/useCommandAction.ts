@@ -3,6 +3,7 @@ import { CommandError } from '../domain/commands'
 import type { DrawerIssue } from '../domain/drawers/deriveDrawerGeometry'
 import { t } from '../i18n'
 import { drawerIssueMessage } from '../i18n/drawerIssues'
+import { useProjectStore } from '../store/projectStore'
 
 export function commandMessage(error: unknown) {
   if (!(error instanceof CommandError)) throw error
@@ -16,10 +17,18 @@ export function commandMessage(error: unknown) {
     error.code === 'drawer-does-not-fit'
   ) {
     const issue = (error.data.issues as DrawerIssue[] | undefined)?.[0]
-    return issue ? drawerIssueMessage(issue) : t('error.drawerNoFit')
+    return issue
+      ? drawerIssueMessage(
+          issue,
+          useProjectStore.getState().present.settings.unit ?? 'mm',
+        )
+      : t('error.drawerNoFit')
   }
   if (error.code === 'drawer-design-in-use') return t('error.designInUse')
   if (error.code === 'space-occupied') return t('error.spaceOccupied')
+  if (error.code === 'blank-name') return t('error.blankName')
+  if (error.code === 'invalid-size') return t('error.invalidSize')
+  if (error.code === 'size-too-large') return t('error.sizeTooLarge')
   return t('error.stale')
 }
 export function useCommandAction() {

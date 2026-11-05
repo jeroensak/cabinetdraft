@@ -65,7 +65,10 @@ export function isProject(value: unknown): value is Project {
     !Number.isSafeInteger(settings.backPanelThickness) ||
     !Number.isSafeInteger(settings.frontThickness) ||
     !Number.isSafeInteger(settings.frontGap) ||
-    typeof settings.backPanelEnabled !== 'boolean'
+    typeof settings.backPanelEnabled !== 'boolean' ||
+    (settings.unit !== undefined &&
+      settings.unit !== 'mm' &&
+      settings.unit !== 'inch')
   )
     return false
   return value.modules.every((module) => {
