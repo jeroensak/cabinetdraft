@@ -34,7 +34,6 @@ function Layout() {
       <div className="application-shell">
         <header className="app-header">
           <div className="project-identity">
-            {' '}
             <strong>{t('app.name')}</strong>
             {!needsFirstDesign && <span title={name}>{name}</span>}
           </div>
