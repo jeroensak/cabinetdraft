@@ -32,24 +32,6 @@ export function addDoor(
   })
 }
 
-export function addDrawerFront(
-  project: Project,
-  moduleId: string,
-  range: BoundaryRange,
-  generateId?: IdGenerator,
-): Project {
-  const id = allocateIds(project, generateId)
-  return editProject(project, (draft) => {
-    findModule(draft, moduleId).fronts.push({
-      id: id(),
-      type: 'drawer',
-      ...horizontalData(range),
-      bottomBoundary: { ...range.bottomBoundary },
-      topBoundary: { ...range.topBoundary },
-    })
-  })
-}
-
 export function setDoorLeaves(
   project: Project,
   moduleId: string,

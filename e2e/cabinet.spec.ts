@@ -306,9 +306,14 @@ test('divider openings support partial shelves, spanning doors and batch drawers
   await page
     .getByRole('button', { name: 'Cabinet 2 space 4', exact: true })
     .click({ modifiers: ['Shift'] })
+  await page.getByRole('button', { name: 'Add drawer…', exact: true }).click()
   await page
-    .getByRole('button', { name: 'Add drawer front', exact: true })
+    .getByRole('button', { name: '+ New drawer design', exact: true })
     .click()
+  await page
+    .getByRole('button', { name: 'Apply to 2 selected spaces', exact: true })
+    .click()
+  await page.getByRole('button', { name: 'Fronts', exact: true }).click()
   await expect(
     page.getByRole('button', { name: /Cabinet 2 drawer front/ }),
   ).toHaveCount(2)
@@ -324,7 +329,10 @@ test('divider openings support partial shelves, spanning doors and batch drawers
   const door = page.getByRole('row').filter({ hasText: 'C2-DOOR-1' })
   await expect(door).toContainText('397')
   await expect(door).toContainText('2196')
-  const drawer = page.getByRole('row').filter({ hasText: 'C2-DRAWER-1' })
+  const drawer = page
+    .getByRole('row')
+    .filter({ hasText: 'C2-DRAWER-1' })
+    .filter({ hasText: 'Drawer front' })
   await expect(drawer).toContainText('397')
   await expect(drawer).toContainText('1097')
   await page.reload()

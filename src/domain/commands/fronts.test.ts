@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { addDoor, addDrawerFront, setDoorLeaves, removeFront } from './fronts'
+import { addDoor, setDoorLeaves, removeFront } from './fronts'
+import { addBoxlessFront } from './testHelpers'
 import {
   fixture,
   freeze,
@@ -30,25 +31,6 @@ describe('front commands', () => {
     },
   )
 
-  it('adds a drawer to exactly one selected space and does not retain caller boundary references', () => {
-    const project = fixture()
-    const module = project.modules[0]!
-    module.fronts = []
-    const range = {
-      bottomBoundary: { type: 'module-bottom' as const },
-      topBoundary: { type: 'shelf' as const, shelfId: module.shelves[0]!.id },
-    }
-    const next = addDrawerFront(freeze(project), module.id, range, ids())
-    range.topBoundary.shelfId = 'changed'
-    expect(next.modules[0]!.fronts[0]).toStrictEqual({
-      id: 'new-1',
-      type: 'drawer',
-      bottomBoundary: { type: 'module-bottom' },
-      topBoundary: { type: 'shelf', shelfId: module.shelves[0]!.id },
-    })
-    expect(validateProject(next)).toStrictEqual([])
-  })
-
   it('rejects overlapping door or drawer assignments', () => {
     const project = fixture()
     const module = project.modules[0]!
@@ -62,7 +44,7 @@ describe('front commands', () => {
       'structural-conflict',
     )
     expect(
-      structuralCodes(() => addDrawerFront(project, module.id, range, ids())),
+      structuralCodes(() => addBoxlessFront(project, module.id, range, ids())),
     ).toContain('overlapping-fronts')
   })
 
@@ -71,7 +53,7 @@ describe('front commands', () => {
     project.modules[0]!.fronts = []
     expect(
       structuralCodes(() =>
-        addDrawerFront(
+        addBoxlessFront(
           freeze(project),
           project.modules[0]!.id,
           fullRange,
@@ -127,7 +109,7 @@ describe('front commands', () => {
   })
 
   it('rejects invalid leaf counts, drawers, and unknown front IDs', () => {
-    const project = addDrawerFront(
+    const project = addBoxlessFront(
       fixture(true),
       'original-2',
       fullRange,

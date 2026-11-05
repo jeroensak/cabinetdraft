@@ -2,11 +2,7 @@ import type { CabinetModule } from '../../domain/cabinet/types'
 import type { Boundary, Front } from '../../domain/fronts/types'
 import type { ProjectSettings } from '../../domain/project/types'
 import { deriveFrontGeometry } from '../../domain/fronts/deriveFrontGeometry'
-import {
-  applyDrawerDesign,
-  removeDrawerBox,
-  setDoorLeaves,
-} from '../../domain/commands'
+import { applyDrawerDesign, setDoorLeaves } from '../../domain/commands'
 import { deriveDrawerGeometry } from '../../domain/drawers/deriveDrawerGeometry'
 import { spaceRange } from '../../domain/spaces/spaceRanges'
 import { useTranslation } from '../../i18n'
@@ -131,23 +127,20 @@ export function FrontProperties({
                 const designId = event.target.value
                 run(() =>
                   execute((project) =>
-                    designId
-                      ? applyDrawerDesign(project, designId, [
-                          { moduleId: module.id, range: spaceRange(front) },
-                        ])
-                      : removeDrawerBox(project, module.id, front.id),
+                    applyDrawerDesign(project, designId, [
+                      { moduleId: module.id, range: spaceRange(front) },
+                    ]),
                   ),
                 )
               }}
             >
-              <option value="">{t('frontInfo.noBox')}</option>
               {designs.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.name}
                 </option>
               ))}
-              {front.drawerDesignId !== undefined && !design && (
-                <option value={front.drawerDesignId}>
+              {!design && (
+                <option value={front.drawerDesignId ?? ''}>
                   {t('frontInfo.missingDesign')}
                 </option>
               )}

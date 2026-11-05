@@ -1,15 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { createDefaultProject } from '../domain/project/createDefaultProject'
-import {
-  addDividerToSpace,
-  addShelfToSpace,
-  addDrawerFront,
-  addDoor,
-} from '../domain/commands'
+import { addDividerToSpace, addShelfToSpace, addDoor } from '../domain/commands'
 import { deriveSpaces } from '../domain/spaces/deriveSpaces'
 import { enclosingRange } from '../domain/spaces/spaceRanges'
 import { selectSpace } from './spaceSelection'
 import { selectedSpaces } from '../store/selection'
+import { addBoxlessFront } from '../domain/commands/testHelpers'
 import { createProjectStore } from '../store/projectStore'
 
 function grid() {
@@ -52,7 +48,7 @@ describe('partitioned space selection', () => {
     store
       .getState()
       .execute((p) =>
-        spaces.reduce((next, space) => addDrawerFront(next, m.id, space), p),
+        spaces.reduce((next, space) => addBoxlessFront(next, m.id, space), p),
       )
     expect(store.getState().present.modules[0].fronts).toHaveLength(4)
     expect(store.getState().past).toHaveLength(1)
@@ -65,7 +61,7 @@ describe('partitioned space selection', () => {
       store
         .getState()
         .execute((p) =>
-          spaces.reduce((next, space) => addDrawerFront(next, m.id, space), p),
+          spaces.reduce((next, space) => addBoxlessFront(next, m.id, space), p),
         ),
     ).toThrow('structural-conflict')
     expect(store.getState().present).toBe(before)

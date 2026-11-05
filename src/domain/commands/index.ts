@@ -9,7 +9,7 @@ export {
   setModuleDimensions,
   updateProjectSettings,
 } from './modules'
-export { addDoor, addDrawerFront, setDoorLeaves, removeFront } from './fronts'
+export { addDoor, setDoorLeaves, removeFront } from './fronts'
 export { addShelfToSpace, moveShelf, removeShelf } from './shelves'
 export { addDividerToSpace, moveDivider, removeDivider } from './dividers'
 

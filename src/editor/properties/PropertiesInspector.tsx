@@ -9,7 +9,6 @@ import {
   moveShelf,
   addShelfToSpace,
   addDoor,
-  addDrawerFront,
   addDividerToSpace,
   moveDivider,
 } from '../../domain/commands'
@@ -263,23 +262,6 @@ export function PropertiesInspector() {
                   }}
                 >
                   {t('inspector.addDoor')}
-                </button>
-                <button
-                  className="pill"
-                  disabled={!spaces.length}
-                  onClick={() =>
-                    run(() =>
-                      execute((project) =>
-                        spaces.reduce(
-                          (next, space) =>
-                            addDrawerFront(next, module.id, spaceRange(space)),
-                          project,
-                        ),
-                      ),
-                    )
-                  }
-                >
-                  {t('inspector.addDrawerFront')}
                 </button>
                 <button
                   className="pill"

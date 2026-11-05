@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { fixture, fullRange, ids, freeze, rejects } from './testHelpers'
 import { addDividerToSpace, moveDivider, removeDivider } from './dividers'
 import { addShelfToSpace, moveShelf, removeShelf } from './shelves'
-import { addDoor, addDrawerFront } from './fronts'
+import { addDoor } from './fronts'
+import { addBoxlessFront } from './testHelpers'
 import { duplicateModule } from './modules'
 import { deriveSpaces } from '../spaces/deriveSpaces'
 import { enclosingRange } from '../spaces/spaceRanges'
@@ -90,8 +91,8 @@ describe('two-dimensional spaces', () => {
   it('gives neighbouring fronts a shared gap and lets a door span vertically or horizontally', () => {
     const p = grid(),
       m = p.modules[0]
-    let drawers = addDrawerFront(p, m.id, spaces(p)[0], () => 'left-drawer')
-    drawers = addDrawerFront(drawers, m.id, spaces(p)[1], () => 'right-drawer')
+    let drawers = addBoxlessFront(p, m.id, spaces(p)[0], () => 'left-drawer')
+    drawers = addBoxlessFront(drawers, m.id, spaces(p)[1], () => 'right-drawer')
     const panels = drawers.modules[0].fronts.flatMap(
       (f) =>
         deriveFrontGeometry(drawers.modules[0], drawers.settings, f).panels,
@@ -141,7 +142,7 @@ describe('two-dimensional spaces', () => {
   it('splits a drawer on either axis and merges only the affected column when a shelf is removed', () => {
     let p = fixture(true)
     const m = p.modules[0]
-    p = addDrawerFront(p, m.id, fullRange, () => 'original-drawer')
+    p = addBoxlessFront(p, m.id, fullRange, () => 'original-drawer')
     p = addDividerToSpace(p, m.id, fullRange, ids())
     expect(p.modules[0].fronts).toHaveLength(2)
     const right = structuredClone(p.modules[0].fronts[1])

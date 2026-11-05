@@ -4,12 +4,11 @@ import {
   applyDrawerDesign,
   deleteDrawerDesign,
   drawerDesignUsage,
-  removeDrawerBox,
   updateDrawerDesign,
 } from './drawers'
-import { addDrawerFront } from './fronts'
+import { removeFront } from './fronts'
 import { addShelfToSpace } from './shelves'
-import { fixture, freeze, ids, rejects } from './testHelpers'
+import { addBoxlessFront, fixture, freeze, ids, rejects } from './testHelpers'
 import { defaultDrawerDesign } from '../drawers/types'
 import { deriveDrawerGeometry } from '../drawers/deriveDrawerGeometry'
 import { deriveCutList } from '../cutlist/deriveCutList'
@@ -110,7 +109,7 @@ describe('drawer design commands', () => {
   it('upgrades an existing drawer front in place, keeping its ID', () => {
     const base = withDesign()
     const moduleId = base.modules[0]!.id
-    const project = addDrawerFront(base, moduleId, lower(base), ids('front'))
+    const project = addBoxlessFront(base, moduleId, lower(base), ids('front'))
     const next = applyDrawerDesign(project, 'design-1', [
       { moduleId, range: lower(project) },
     ])
@@ -179,12 +178,7 @@ describe('drawer design commands', () => {
       'drawer-design-in-use',
     )
     const frontId = applied.modules[0]!.fronts[0]!.id
-    const detached = removeDrawerBox(applied, moduleId, frontId)
-    expect(detached.modules[0]!.fronts[0]).toStrictEqual({
-      id: frontId,
-      type: 'drawer',
-      ...lower(project),
-    })
+    const detached = removeFront(applied, moduleId, frontId)
     expect(
       deleteDrawerDesign(detached, 'design-1').drawerDesigns,
     ).toStrictEqual([])

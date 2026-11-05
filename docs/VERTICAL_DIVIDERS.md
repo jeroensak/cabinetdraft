@@ -12,7 +12,7 @@ This post-V1 extension was requested by the user. The subsequent request to add 
 ## Selection and editing
 
 - Structure and Fronts use the same spaces; Fronts hides openings covered by an existing front.
-- Shift-click an edge-adjacent space to extend selection. Shelves and drawer fronts can be added to each selected space in one undoable action. A drawer front covers one space; multiple selected spaces receive separate drawer fronts.
+- Shift-click an edge-adjacent space to extend selection. Shelves and drawers can be added to each selected space in one undoable action. A drawer front covers one space; multiple selected spaces receive separate drawer fronts.
 - A door can cover one space or a rectangular union of adjacent spaces, vertically, horizontally, or both. An L-shaped group supports per-space actions, but cannot become one rectangular door.
 - Adding a shelf or divider behind a door preserves that door. Splitting a space occupied by a drawer front creates two corresponding drawer fronts atomically.
 - Removing a shelf uses the existing lower-front-wins merge rule within that shelf's column. A shelf supporting dividers cannot be removed until those dividers are removed. A divider supporting shelves or bounding fronts cannot be removed until those dependants are removed. Unrelated spaces are not modified.

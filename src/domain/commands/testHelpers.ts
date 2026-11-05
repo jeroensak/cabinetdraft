@@ -1,7 +1,16 @@
 import { expect } from 'vitest'
 import { createDefaultProject } from '../project/createDefaultProject'
+import type { IdGenerator } from '../project/id'
 import type { Project } from '../project/types'
-import { CommandError, type CommandErrorCode } from './core'
+import { horizontalData } from '../spaces/boundaries'
+import {
+  allocateIds,
+  type BoundaryRange,
+  CommandError,
+  type CommandErrorCode,
+  editProject,
+  findModule,
+} from './core'
 
 export function ids(prefix = 'new') {
   let next = 0
@@ -55,4 +64,24 @@ export function structuralCodes(action: () => unknown): string[] {
     throw error
   }
   throw new Error('Expected structural failure')
+}
+
+/** Test setup for a drawer front's own geometry and structural rules. The app
+ * always creates drawers through a design, so it has no equivalent command. */
+export function addBoxlessFront(
+  project: Project,
+  moduleId: string,
+  range: BoundaryRange,
+  generateId?: IdGenerator,
+): Project {
+  const id = allocateIds(project, generateId)
+  return editProject(project, (draft) => {
+    findModule(draft, moduleId).fronts.push({
+      id: id(),
+      type: 'drawer',
+      ...horizontalData(range),
+      bottomBoundary: { ...range.bottomBoundary },
+      topBoundary: { ...range.topBoundary },
+    })
+  })
 }

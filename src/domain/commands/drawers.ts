@@ -156,20 +156,3 @@ export function applyDrawerDesign(
     }
   })
 }
-
-/** Keeps the drawer front; only the box link is removed. */
-export function removeDrawerBox(
-  project: Project,
-  moduleId: string,
-  frontId: string,
-): Project {
-  return editProject(project, (draft) => {
-    const front = findModule(draft, moduleId).fronts.find(
-      (f) => f.id === frontId,
-    )
-    if (!front) throw new CommandError('front-not-found', { frontId })
-    if (front.type !== 'drawer')
-      throw new CommandError('not-a-drawer', { frontId })
-    delete front.drawerDesignId
-  })
-}

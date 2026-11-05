@@ -9,6 +9,7 @@ import { deriveFrontGeometry } from '../domain/fronts/deriveFrontGeometry'
 import { useProjectStore } from '../store/projectStore'
 import { mockResizeObserver } from '../test/mockResizeObserver'
 import { addShelfToSpace, removeFront } from '../domain/commands'
+import { addBoxlessFront } from '../domain/commands/testHelpers'
 import { deriveSpaces } from '../domain/spaces/deriveSpaces'
 
 afterEach(() => {
@@ -87,9 +88,10 @@ describe('Fronts mode', () => {
     await user.click(screen.getByRole('button', { name: 'Cabinet 1 space 2' }))
     await user.keyboard('{/Shift}')
     expect(screen.getByText('2 selected spaces')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Add drawer…' })).toBeEnabled()
     expect(
-      screen.getByRole('button', { name: 'Add drawer front' }),
-    ).toBeEnabled()
+      screen.queryByRole('button', { name: 'Add drawer front' }),
+    ).toBeNull()
     await user.click(screen.getByRole('button', { name: 'Add door' }))
     const front = useProjectStore.getState().present.modules[0].fronts[0]
     expect(front.bottomBoundary.type).toBe('module-bottom')
@@ -145,14 +147,22 @@ describe('Fronts mode', () => {
   })
   it('splits a drawer front atomically when adding a shelf and restores it with undo', async () => {
     clearFronts()
+    const project = useProjectStore.getState().present
+    const module = project.modules[0]
+    useProjectStore.setState({
+      present: addBoxlessFront(
+        project,
+        module.id,
+        deriveSpaces(module, project.settings)[0],
+      ),
+    })
     const user = userEvent.setup()
     render(<DesignerPage />)
     await user.click(screen.getByRole('button', { name: 'Cabinet 1 space 1' }))
-    await user.click(screen.getByRole('button', { name: 'Add drawer front' }))
     const originalId =
       useProjectStore.getState().present.modules[0].fronts[0].id
     await user.click(screen.getByRole('button', { name: 'Add shelf' }))
-    expect(useProjectStore.getState().past).toHaveLength(2)
+    expect(useProjectStore.getState().past).toHaveLength(1)
     await user.click(screen.getByRole('button', { name: 'Fronts' }))
     expect(
       screen.getAllByRole('button', { name: /Cabinet 1 drawer front/ }),

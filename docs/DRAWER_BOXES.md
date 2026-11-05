@@ -5,9 +5,9 @@ This post-V1 extension was requested by the user. It supersedes the V1 drawer-bo
 ## Reusable designs
 
 - A project owns a library of drawer designs (`Project.drawerDesigns`). A design is a construction recipe, not a placed object: it stores a stable ID, a name, the slide type, and integer-mm measurements. Width and the resulting height in millimetres are never stored; height is stored as a whole percentage of the space's inner height (1–100, default 50).
-- A drawer front may reference one design through `drawerDesignId`. The same design can be applied to any number of spaces; editing it updates every drawer that uses it. A drawer front without a design remains a front only.
+- A drawer front may reference one design through `drawerDesignId`. The same design can be applied to any number of spaces; editing it updates every drawer that uses it.
 - Only undermount slides are supported (`slideType: 'undermount'`). All four walls are grooved to hold the bottom. No hardware, notches or drilling are generated.
-- Designs in use cannot be deleted; remove the box from those drawers first. Commands reject internally inconsistent designs (blank name, non-integer measurements, side gap below 3 mm, a box too shallow for its walls, or a height outside 1–100%).
+- Designs in use cannot be deleted; delete those drawers first. Commands reject internally inconsistent designs (blank name, non-integer measurements, side gap below 3 mm, a box too shallow for its walls, or a height outside 1–100%).
 
 ## Construction
 
@@ -31,7 +31,7 @@ groove        = wall / 2 deep × bottomThickness wide, in all four walls
 
 ## Drawer fronts
 
-A design also sets the front of every drawer that uses it. A drawer front without a design keeps the default full overlay front.
+A design also sets the front of every drawer that uses it.
 
 - `frontStyle`: `full` is the plain rectangle, on which a handle would typically go. `wave` keeps the same blank, with a top edge that stays at full height at both sides and dips smoothly to `waveDip = round(frontHeight × 0.15)` at mid-width.
 - `frontMount`: `overlay` sits on the carcass front as before. `inset` sits inside the opening with `frontGap` on all four sides, its face flush with the carcass front.
@@ -41,7 +41,7 @@ The Cut List gives the uncut rectangular blank and names the wave dip. No handle
 
 ## Editing
 
-The drawer designer is a separate workspace. Open it from one or more selected spaces (**Add drawer…**) or from a selected drawer front (**Open drawer designer**). It lists the design library, previews the selected design in the first target space, and applies the design to every target in one undoable action. Spaces covered by a door are never replaced. The **Drawers** section of the left menu opens the same workspace without target spaces: it lists every design for editing, previews a design in a drawer that uses it, and offers no apply action. A drawer front's properties also let you switch its design or remove its box. Designer context is editor state and is never saved.
+The drawer designer is a separate workspace. Open it from one or more selected spaces (**Add drawer…**) or from a selected drawer front (**Open drawer designer**). It lists the design library, previews the selected design in the first target space, and applies the design to every target in one undoable action. Spaces covered by a door are never replaced. The **Drawers** section of the left menu opens the same workspace without target spaces: it lists every design for editing, previews a design in a drawer that uses it, and offers no apply action. Every drawer starts from a design: there is no way to add a bare drawer front or to remove a drawer's box. Older saves that hold a bare front get no special handling. A drawer front's properties also let you switch its design. Designer context is editor state and is never saved.
 
 ## Persistence
 
