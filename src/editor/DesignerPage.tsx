@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from '../i18n'
 import { deleteSelection, isTextEditing } from './deleteSelection'
 import { useCommandAction } from './useCommandAction'
 import { validateProject } from '../domain/validation/validateProject'
@@ -9,6 +10,8 @@ import { PropertiesInspector } from './properties/PropertiesInspector'
 import { DrawerDesigner } from '../drawer-designer/DrawerDesigner'
 
 export function DesignerPage() {
+  const { t } = useTranslation()
+
   const { error, run } = useCommandAction()
   useEffect(() => {
     const keydown = (event: KeyboardEvent) => {
@@ -45,12 +48,12 @@ export function DesignerPage() {
   const drawerDesigner = useProjectStore((state) => state.editor.drawerDesigner)
   const valid = validateProject(project).length === 0
   const saveStatus = persistence.loadError
-    ? 'Saved project could not be loaded. Autosave paused.'
+    ? t('status.loadError')
     : persistence.saveError
-      ? 'Changes could not be saved.'
+      ? t('status.saveError')
       : persistence.unsaved
-        ? 'Not yet saved'
-        : 'Saved locally'
+        ? t('status.unsaved')
+        : t('status.saved')
   if (drawerDesigner) return <DrawerDesigner context={drawerDesigner} />
   return (
     <section className="designer-layout" aria-labelledby="designer-title">
@@ -64,12 +67,9 @@ export function DesignerPage() {
         )}
         <footer className="editor-status">
           <span className="validation-badge" data-valid={valid}>
-            {valid ? '✓ Configuration valid' : '! Invalid geometry'}
+            {valid ? t('status.valid') : t('status.invalid')}
           </span>
-          <span>
-            {project.modules.length}{' '}
-            {project.modules.length === 1 ? 'cabinet' : 'cabinets'}
-          </span>
+          <span>{t('count.cabinets', { count: project.modules.length })}</span>
           <span className="save-status" role="status">
             {saveStatus}
           </span>

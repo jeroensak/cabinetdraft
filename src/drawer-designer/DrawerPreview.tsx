@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from '../i18n'
 import type { DrawerGeometry } from '../domain/drawers/deriveDrawerGeometry'
 import type { PhysicalPosition } from '../domain/geometry/physicalPanel'
 import { Dimension } from '../editor/canvas/Dimension'
@@ -18,7 +19,9 @@ export function DrawerPreview({
   geometry: DrawerGeometry
   showFront: boolean
 }) {
+  const { t } = useTranslation()
   const { opening } = geometry
+
   const walls = useMemo(
     () =>
       geometry.boxPanels.filter(
@@ -83,18 +86,17 @@ export function DrawerPreview({
   }
   const box = geometry.boxPanels[0]?.position
   const bottomLabel =
-    bottom &&
-    screen(
-      bottom.position.x + bottom.length / 2,
-      bottom.position.y + bottom.thickness,
-      bottom.position.z + bottom.width,
-    )
+    bottom && screen((opening.left + opening.right) / 2, opening.top)
   return (
     <svg
       className="drawer-preview"
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       role="img"
-      aria-label={`Drawer preview: ${geometry.width} × ${geometry.height} × ${geometry.depth} mm box`}
+      aria-label={t('drawer.previewLabel', {
+        width: geometry.width,
+        height: geometry.height,
+        depth: geometry.depth,
+      })}
     >
       {valid ? (
         <>
@@ -129,14 +131,17 @@ export function DrawerPreview({
                 <g className="dimension drawer-bottom-label">
                   <text
                     x={bottomLabel.x}
-                    y={bottomLabel.y - 26}
+                    y={bottomLabel.y - 30}
                     textAnchor="middle"
                   >
                     <tspan x={bottomLabel.x}>
-                      {`Bottom ${bottom.thickness} mm thick, ${groove.fromEdge} mm up`}
+                      {t('drawer.bottomLabel', {
+                        thickness: bottom.thickness,
+                        height: groove.fromEdge,
+                      })}
                     </tspan>
                     <tspan x={bottomLabel.x} dy={16}>
-                      {`In ${groove.depth} mm deep grooves`}
+                      {t('drawer.grooveLabel', { depth: groove.depth })}
                     </tspan>
                   </text>
                 </g>
@@ -145,13 +150,15 @@ export function DrawerPreview({
                 from={screen(box.x, opening.bottom)}
                 to={screen(box.x + geometry.width, opening.bottom)}
                 offset={30}
-                label={`${geometry.width} mm box width`}
+                label={t('drawer.boxWidth', { value: geometry.width })}
               />
               <Dimension
                 from={screen(opening.left, opening.bottom)}
                 to={screen(opening.right, opening.bottom)}
                 offset={54}
-                label={`${geometry.openingWidth} mm opening`}
+                label={t('drawer.openingWidth', {
+                  value: geometry.openingWidth,
+                })}
               />
               <Dimension
                 from={screen(box.x, box.y)}
@@ -168,7 +175,7 @@ export function DrawerPreview({
                   geometry.depth,
                 )}
                 offset={-18}
-                label={`${geometry.depth} mm deep`}
+                label={t('drawer.depthLabel', { value: geometry.depth })}
               />
             </g>
           )}
@@ -180,7 +187,7 @@ export function DrawerPreview({
           y={HEIGHT / 2}
           textAnchor="middle"
         >
-          Preview unavailable for this space
+          {t('drawer.previewUnavailable')}
         </text>
       )}
     </svg>

@@ -1,33 +1,26 @@
 import { useState } from 'react'
 import { CommandError } from '../domain/commands'
+import type { DrawerIssue } from '../domain/drawers/deriveDrawerGeometry'
+import { t } from '../i18n'
+import { drawerIssueMessage } from '../i18n/drawerIssues'
 
 export function commandMessage(error: unknown) {
   if (!(error instanceof CommandError)) throw error
-  if (error.code === 'structural-conflict')
-    return 'This change conflicts with an existing front or its boundaries. Remove the affected front before making this change.'
-  if (error.code === 'invalid-integer')
-    return 'Enter a whole number in millimetres.'
-  if (error.code === 'slot-too-narrow')
-    return 'This space is too narrow for a divider and two free openings.'
-  if (error.code === 'divider-in-use')
-    return 'Remove shelves and fronts attached to this divider first.'
-  if (error.code === 'shelf-has-dividers')
-    return 'Remove the dividers attached to this shelf before deleting it.'
+  if (error.code === 'structural-conflict') return t('error.structuralConflict')
+  if (error.code === 'invalid-integer') return t('field.wholeMm')
+  if (error.code === 'slot-too-narrow') return t('error.slotTooNarrow')
+  if (error.code === 'divider-in-use') return t('error.dividerInUse')
+  if (error.code === 'shelf-has-dividers') return t('error.shelfHasDividers')
   if (
     error.code === 'invalid-drawer-design' ||
     error.code === 'drawer-does-not-fit'
   ) {
-    const issues = error.data.issues as { message: string }[] | undefined
-    return (
-      issues?.[0]?.message ??
-      'This drawer design does not fit the selected space.'
-    )
+    const issue = (error.data.issues as DrawerIssue[] | undefined)?.[0]
+    return issue ? drawerIssueMessage(issue) : t('error.drawerNoFit')
   }
-  if (error.code === 'drawer-design-in-use')
-    return 'Remove this design from its drawers before deleting it.'
-  if (error.code === 'space-occupied')
-    return 'A door covers one of the selected spaces. Remove the door before adding a drawer.'
-  return 'This selection is no longer available. Select it again and retry.'
+  if (error.code === 'drawer-design-in-use') return t('error.designInUse')
+  if (error.code === 'space-occupied') return t('error.spaceOccupied')
+  return t('error.stale')
 }
 export function useCommandAction() {
   const [error, setError] = useState<string | null>(null)

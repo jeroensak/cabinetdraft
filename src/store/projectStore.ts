@@ -1,5 +1,6 @@
 import { parseProject } from '../domain/import-export/projectJson'
 import { create } from 'zustand'
+import { t } from '../i18n'
 import { reconcileSelection } from './selection'
 import { updateProjectSettings, type BoundaryRange } from '../domain/commands'
 import { projectData } from '../domain/project/projectData'
@@ -63,7 +64,11 @@ function readProject(storage?: ProjectStorage): {
     }
   }
   return {
-    project: createDefaultProject(),
+    project: createDefaultProject(createId, {
+      project: t('default.project'),
+      cabinet: `${t('default.cabinet')} 1`,
+    }),
+
     persistence: { loadError, saveError: null, recoveryData, unsaved: true },
   }
 }

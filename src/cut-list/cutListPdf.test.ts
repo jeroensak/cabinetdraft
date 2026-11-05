@@ -2,6 +2,7 @@
 import { readFileSync } from 'node:fs'
 import { expect, it } from 'vitest'
 import { createDefaultProject } from '../domain/project/createDefaultProject'
+import { setLanguage } from '../i18n'
 import { createCutListPdf } from './cutListPdf'
 
 const font = readFileSync(
@@ -28,4 +29,13 @@ it('refuses invalid and empty projects even outside the UI', () => {
   expect(() => createCutListPdf(project, font)).toThrow('No valid cut list')
   project.modules = []
   expect(() => createCutListPdf(project, font)).toThrow('No valid cut list')
+})
+it.each(['nl', 'de', 'fr'] as const)('creates a %s PDF', (language) => {
+  setLanguage(language)
+  try {
+    const pdf = createCutListPdf(createDefaultProject(), font)
+    expect(pdf.getNumberOfPages()).toBe(1)
+  } finally {
+    setLanguage('en')
+  }
 })

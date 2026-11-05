@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from '../i18n'
 import { Link } from 'react-router'
 import { deriveCutList } from '../domain/cutlist/deriveCutList'
 import { groupCutList } from './partGroups'
@@ -7,6 +8,8 @@ import { useProjectStore } from '../store/projectStore'
 import { trackEvent } from '../app/analytics'
 
 export function CutListPage() {
+  const { t } = useTranslation()
+
   const project = useProjectStore((state) => state.present)
   const result = useMemo(() => deriveCutList(project), [project])
   const [downloading, setDownloading] = useState(false)
@@ -20,7 +23,7 @@ export function CutListPage() {
       trackEvent('cut_list_pdf_downloaded')
     } catch {
       trackEvent('cut_list_pdf_failed')
-      setDownloadError('Could not create the PDF. Please try again.')
+      setDownloadError(t('cutList.pdfFailed'))
     } finally {
       setDownloading(false)
     }
@@ -29,16 +32,16 @@ export function CutListPage() {
     <section className="cut-list-page" aria-labelledby="cut-list-title">
       <div className="cut-list-heading">
         <div>
-          <h1 id="cut-list-title">Cut List</h1>
+          <h1 id="cut-list-title">{t('cutList.title')}</h1>
           <p>
-            {project.name} · {project.modules.length}{' '}
-            {project.modules.length === 1 ? 'cabinet' : 'cabinets'}
+            {project.name} ·{' '}
+            {t('count.cabinets', { count: project.modules.length })}
           </p>
         </div>
         <div className="cut-list-actions">
           {result.available && (
             <span className="validation-badge" data-valid="true" role="status">
-              ✓ Configuration valid
+              {t('status.valid')}
             </span>
           )}
           <button
@@ -48,7 +51,7 @@ export function CutListPage() {
               downloading || !result.available || result.items.length === 0
             }
           >
-            {downloading ? 'Creating PDF…' : 'Download PDF'}
+            {downloading ? t('cutList.creating') : t('cutList.download')}
           </button>
         </div>
       </div>
@@ -60,11 +63,8 @@ export function CutListPage() {
       {result.available ? (
         <div className="cut-list-card">
           <div className="cut-list-summary">
-            <strong>
-              {result.items.length}{' '}
-              {result.items.length === 1 ? 'part' : 'parts'}
-            </strong>
-            <span>All cabinets</span>
+            <strong>{t('count.parts', { count: result.items.length })}</strong>
+            <span>{t('cutList.allCabinets')}</span>
           </div>
           {result.items.length > 0 ? (
             <div className="cut-list-scroll">
@@ -79,17 +79,20 @@ export function CutListPage() {
                   </h2>
                   <table className="cut-list-table">
                     <caption className="sr-only">
-                      {group.title} for {project.name}
+                      {t('cutList.caption', {
+                        group: group.title,
+                        project: project.name,
+                      })}
                     </caption>
                     <thead>
                       <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Cabinet</th>
-                        <th scope="col">Part</th>
-                        <th scope="col">Qty</th>
-                        <th scope="col">Length (mm)</th>
-                        <th scope="col">Width (mm)</th>
-                        <th scope="col">Thickness (mm)</th>
+                        <th scope="col">{t('cutList.id')}</th>
+                        <th scope="col">{t('cutList.cabinet')}</th>
+                        <th scope="col">{t('cutList.part')}</th>
+                        <th scope="col">{t('cutList.qty')}</th>
+                        <th scope="col">{t('cutList.length')}</th>
+                        <th scope="col">{t('cutList.width')}</th>
+                        <th scope="col">{t('cutList.thickness')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -117,33 +120,27 @@ export function CutListPage() {
             </div>
           ) : (
             <div className="cut-list-empty">
-              <h2>No panels yet</h2>
-              <p>Add a cabinet in the Designer to create a cut list.</p>
+              <h2>{t('cutList.emptyTitle')}</h2>
+              <p>{t('cutList.emptyBody')}</p>
             </div>
           )}
-          <p className="cut-list-note">
-            All dimensions are in millimetres. Each row represents one physical
-            panel.
-          </p>
+          <p className="cut-list-note">{t('cutList.note')}</p>
         </div>
       ) : (
         <div className="cut-list-unavailable" role="status">
           <span aria-hidden="true">!</span>
-          <h2>Cut list unavailable</h2>
-          <p>Resolve configuration errors in the Designer first.</p>
+          <h2>{t('cutList.unavailableTitle')}</h2>
+          <p>{t('cutList.unavailableBody')}</p>
           <p className="muted">
-            {result.issues.length} configuration{' '}
-            {result.issues.length === 1 ? 'error requires' : 'errors require'}{' '}
-            attention. Manufacturing dimensions are withheld until the entire
-            project is valid.
+            {t('cutList.errors', { count: result.issues.length })}
           </p>
         </div>
       )}
       <footer className="cut-list-footer">
         <Link className="pill" to="/designer">
-          ← Back to Designer
+          {t('cutList.back')}
         </Link>
-        <p>Cut list updates automatically when the design changes.</p>
+        <p>{t('cutList.autoUpdate')}</p>
       </footer>
     </section>
   )

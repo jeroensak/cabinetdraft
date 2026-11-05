@@ -1,4 +1,5 @@
 import { useState, type DragEvent } from 'react'
+import { useTranslation } from '../../i18n'
 import { useProjectStore } from '../../store/projectStore'
 import { addDrawerDesign, reorderModules } from '../../domain/commands'
 import { defaultDrawerDesign } from '../../domain/drawers/types'
@@ -9,6 +10,8 @@ import { addCabinet } from './moduleActions'
 import { DesignPicker } from './DesignPicker'
 
 export function ModuleList() {
+  const { t } = useTranslation()
+
   const modules = useProjectStore((state) => state.present.modules)
   const selection = useProjectStore((state) => state.editor.selection)
   const hover = useProjectStore((state) => state.editor.hover)
@@ -35,7 +38,7 @@ export function ModuleList() {
       execute((project) =>
         addDrawerDesign(project, {
           ...defaultDrawerDesign(),
-          name: uniqueDesignName(project, 'Drawer design'),
+          name: uniqueDesignName(project, t('default.drawerDesign')),
         }),
       ),
     )
@@ -45,12 +48,9 @@ export function ModuleList() {
       )
   }
   return (
-    <aside
-      className="cabinet-sidebar"
-      aria-label="Designs, cabinets and drawers"
-    >
+    <aside className="cabinet-sidebar" aria-label={t('sidebar.label')}>
       <DesignPicker />
-      <h2 className="eyebrow sidebar-section">Cabinets</h2>
+      <h2 className="eyebrow sidebar-section">{t('sidebar.cabinets')}</h2>
       <ul
         className="module-list"
         onDragLeave={(event) => {
@@ -131,19 +131,19 @@ export function ModuleList() {
         ))}
       </ul>
       {modules.length === 0 && (
-        <p className="muted sidebar-note">No cabinets in this project.</p>
+        <p className="muted sidebar-note">{t('sidebar.noCabinets')}</p>
       )}
       <button className="add-cabinet" onClick={() => run(addCabinet)}>
-        + Add cabinet
+        {t('sidebar.addCabinet')}
       </button>
-      <h2 className="eyebrow sidebar-section">Drawers</h2>
+      <h2 className="eyebrow sidebar-section">{t('sidebar.drawers')}</h2>
       <DrawerDesignList onSelect={openDrawerDesign} />
       <button className="add-cabinet" onClick={newDrawerDesign}>
-        + New drawer design
+        {t('drawer.new')}
       </button>
       <div className="sidebar-tip">
-        <p className="eyebrow">Tip</p>
-        <p>Drag cabinets to reorder them.</p>
+        <p className="eyebrow">{t('sidebar.tip')}</p>
+        <p>{t('sidebar.reorderTip')}</p>
       </div>
       {error && (
         <p role="alert" className="field-error">

@@ -3,6 +3,7 @@ import { autoTable } from 'jspdf-autotable'
 import type { Project } from '../domain/project/types'
 import { deriveCutList } from '../domain/cutlist/deriveCutList'
 import { projectFilename } from '../domain/import-export/projectJson'
+import { t } from '../i18n'
 import { groupCutList } from './partGroups'
 import { partName } from './partNames'
 import fontUrl from '../assets/fonts/NotoSans-Regular.ttf?url'
@@ -23,17 +24,17 @@ export function createCutListPdf(project: Project, font: string) {
   doc.addFont('NotoSans.ttf', 'NotoSans', 'normal')
   doc.setFont('NotoSans', 'normal')
   doc.setProperties({
-    title: `${project.name} - Cut List`,
-    creator: 'Cabinet Designer',
+    title: `${project.name} - ${t('cutList.title')}`,
+    creator: t('app.name'),
   })
   const columns = [
-    'ID',
-    'Cabinet',
-    'Part',
-    'Qty',
-    'Length (mm)',
-    'Width (mm)',
-    'Thickness (mm)',
+    t('cutList.id'),
+    t('cutList.cabinet'),
+    t('cutList.part'),
+    t('cutList.qty'),
+    t('cutList.length'),
+    t('cutList.width'),
+    t('cutList.thickness'),
   ]
   let startY = 42
   for (const group of groupCutList(result.items)) {
@@ -78,9 +79,9 @@ export function createCutListPdf(project: Project, font: string) {
       alternateRowStyles: { fillColor: [246, 244, 239] },
       columnStyles: {
         0: { cellWidth: 50 },
-        1: { cellWidth: 47 },
+        1: { cellWidth: 43 },
         2: { cellWidth: 60 },
-        3: { cellWidth: 14, halign: 'right' },
+        3: { cellWidth: 18, halign: 'right' },
         4: { cellWidth: 30, halign: 'right' },
         5: { cellWidth: 30, halign: 'right' },
         6: { cellWidth: 36, halign: 'right' },
@@ -97,24 +98,23 @@ export function createCutListPdf(project: Project, font: string) {
     doc.setPage(page)
     doc.setFontSize(19)
     doc.setTextColor(31, 41, 51)
-    doc.text('Cut List', 15, 17)
+    doc.text(t('cutList.title'), 15, 17)
     doc.setFontSize(10)
     const lines: string[] = doc.splitTextToSize(project.name, 267)
     doc.text(lines.length > 2 ? [lines[0], lines[1] + '…'] : lines, 15, 24)
     doc.setFontSize(8)
     doc.setTextColor(100)
     doc.text(
-      `${project.modules.length} ${project.modules.length === 1 ? 'cabinet' : 'cabinets'}  ·  ${result.items.length} parts  ·  Configuration valid`,
+      t('pdf.summary', {
+        cabinets: t('count.cabinets', { count: project.modules.length }),
+        parts: t('count.parts', { count: result.items.length }),
+      }),
       15,
       36,
     )
     doc.setTextColor(100)
-    doc.text(
-      'All dimensions in millimetres. Each row represents one physical panel.',
-      15,
-      199,
-    )
-    doc.text(`Page ${page} of ${pages}`, 282, 199, { align: 'right' })
+    doc.text(t('pdf.note'), 15, 199)
+    doc.text(t('pdf.page', { page, pages }), 282, 199, { align: 'right' })
   }
   return doc
 }

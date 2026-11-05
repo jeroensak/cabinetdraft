@@ -1,4 +1,5 @@
 import { drawerDesignUsage } from '../domain/commands'
+import { useTranslation } from '../i18n'
 import { useProjectStore } from '../store/projectStore'
 
 export function DrawerDesignList({
@@ -9,6 +10,7 @@ export function DrawerDesignList({
   selectedId?: string
   onSelect(designId: string): void
 }) {
+  const { t } = useTranslation()
   const project = useProjectStore((state) => state.present)
   return (
     <>
@@ -26,8 +28,8 @@ export function DrawerDesignList({
                   <strong>{item.name}</strong>
                   <small>
                     {count === 0
-                      ? 'Not used yet'
-                      : `Used by ${count} ${count === 1 ? 'drawer' : 'drawers'}`}
+                      ? t('drawer.notUsed')
+                      : t('drawer.usedBy', { count })}
                   </small>
                 </span>
               </button>
@@ -36,9 +38,7 @@ export function DrawerDesignList({
         })}
       </ul>
       {project.drawerDesigns.length === 0 && (
-        <p className="muted sidebar-note">
-          No drawer designs yet. Create one to reuse it across spaces.
-        </p>
+        <p className="muted sidebar-note">{t('drawer.none')}</p>
       )}
     </>
   )

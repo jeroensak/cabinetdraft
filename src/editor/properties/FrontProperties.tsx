@@ -9,6 +9,8 @@ import {
 } from '../../domain/commands'
 import { deriveDrawerGeometry } from '../../domain/drawers/deriveDrawerGeometry'
 import { spaceRange } from '../../domain/spaces/spaceRanges'
+import { useTranslation } from '../../i18n'
+import { drawerIssueMessage } from '../../i18n/drawerIssues'
 import { useProjectStore } from '../../store/projectStore'
 import { useCommandAction } from '../useCommandAction'
 
@@ -21,6 +23,7 @@ export function FrontProperties({
   front: Front
   settings: ProjectSettings
 }) {
+  const { t } = useTranslation()
   const execute = useProjectStore((state) => state.execute)
   const designs = useProjectStore((state) => state.present.drawerDesigns)
   const openDrawerDesigner = useProjectStore(
@@ -38,18 +41,22 @@ export function FrontProperties({
   const geometry = deriveFrontGeometry(module, settings, front, design)
   const boundaryName = (boundary: Boundary) =>
     boundary.type === 'module-bottom'
-      ? 'Cabinet bottom'
+      ? t('frontInfo.cabinetBottom')
       : boundary.type === 'module-top'
-        ? 'Cabinet top'
-        : `Shelf at ${module.shelves.find((shelf) => shelf.id === boundary.shelfId)?.bottom ?? '?'} mm`
+        ? t('frontInfo.cabinetTop')
+        : t('frontInfo.shelfAt', {
+            bottom:
+              module.shelves.find((shelf) => shelf.id === boundary.shelfId)
+                ?.bottom ?? '?',
+          })
   return (
     <>
-      <h3 className="eyebrow dimension-heading">Type</h3>
+      <h3 className="eyebrow dimension-heading">{t('frontInfo.type')}</h3>
       {front.type === 'door' ? (
         <label className="property-field">
-          <span className="sr-only">Door leaves</span>
+          <span className="sr-only">{t('frontInfo.doorLeaves')}</span>
           <select
-            aria-label="Door leaves"
+            aria-label={t('frontInfo.doorLeaves')}
             value={front.leaves}
             onChange={(event) =>
               run(() =>
@@ -64,60 +71,61 @@ export function FrontProperties({
               )
             }
           >
-            <option value={1}>Single door</option>
-            <option value={2}>Double door</option>
+            <option value={1}>{t('front.single')}</option>
+            <option value={2}>{t('front.double')}</option>
           </select>
         </label>
       ) : (
-        <p className="semantic-value">Drawer front</p>
+        <p className="semantic-value">{t('front.drawer')}</p>
       )}
-      <h3 className="eyebrow dimension-heading">Coverage</h3>
+      <h3 className="eyebrow dimension-heading">{t('frontInfo.coverage')}</h3>
       <dl className="settings-values">
         <div>
-          <dt>From</dt>
+          <dt>{t('frontInfo.from')}</dt>
           <dd>{boundaryName(front.bottomBoundary)}</dd>
         </div>
         <div>
-          <dt>To</dt>
+          <dt>{t('frontInfo.to')}</dt>
           <dd>{boundaryName(front.topBoundary)}</dd>
         </div>
       </dl>
-      <h3 className="eyebrow dimension-heading">Derived size</h3>
+      <h3 className="eyebrow dimension-heading">
+        {t('frontInfo.derivedSize')}
+      </h3>
       {geometry.issues.length > 0 && (
-        <p className="field-error">
-          Invalid front dimensions. Resolve the configuration before
-          manufacturing.
-        </p>
+        <p className="field-error">{t('frontInfo.invalid')}</p>
       )}
       <dl className="settings-values">
         <div>
           <dt>
             {front.type === 'door' && front.leaves === 2
-              ? 'Each leaf'
-              : 'Panel'}
+              ? t('frontInfo.eachLeaf')
+              : t('frontInfo.panel')}
           </dt>
           <dd>
             {geometry.panels[0]
               ? `${geometry.panels[0].width} × ${geometry.panels[0].length} mm`
-              : 'Unavailable'}
+              : t('frontInfo.unavailable')}
           </dd>
         </div>
         <div>
-          <dt>Thickness</dt>
+          <dt>{t('frontInfo.thickness')}</dt>
           <dd>{settings.frontThickness} mm</dd>
         </div>
         <div>
-          <dt>Gap</dt>
+          <dt>{t('frontInfo.gap')}</dt>
           <dd>{settings.frontGap} mm</dd>
         </div>
       </dl>
       {front.type === 'drawer' && (
         <>
-          <h3 className="eyebrow dimension-heading">Drawer box</h3>
+          <h3 className="eyebrow dimension-heading">
+            {t('frontInfo.drawerBox')}
+          </h3>
           <label className="property-field">
-            <span className="sr-only">Drawer box design</span>
+            <span className="sr-only">{t('frontInfo.drawerBoxDesign')}</span>
             <select
-              aria-label="Drawer box design"
+              aria-label={t('frontInfo.drawerBoxDesign')}
               value={front.drawerDesignId ?? ''}
               onChange={(event) => {
                 const designId = event.target.value
@@ -132,21 +140,23 @@ export function FrontProperties({
                 )
               }}
             >
-              <option value="">No box (front only)</option>
+              <option value="">{t('frontInfo.noBox')}</option>
               {designs.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.name}
                 </option>
               ))}
               {front.drawerDesignId !== undefined && !design && (
-                <option value={front.drawerDesignId}>Missing design</option>
+                <option value={front.drawerDesignId}>
+                  {t('frontInfo.missingDesign')}
+                </option>
               )}
             </select>
           </label>
           {box && (
             <dl className="settings-values">
               <div>
-                <dt>Box (W × H × D)</dt>
+                <dt>{t('frontInfo.boxSize')}</dt>
                 <dd>
                   {box.width} × {box.height} × {box.depth} mm
                 </dd>
@@ -154,7 +164,7 @@ export function FrontProperties({
             </dl>
           )}
           {box && box.issues.length > 0 && (
-            <p className="field-error">{box.issues[0].message}</p>
+            <p className="field-error">{drawerIssueMessage(box.issues[0])}</p>
           )}
           <button
             className="pill"
@@ -166,14 +176,11 @@ export function FrontProperties({
               })
             }
           >
-            Open drawer designer
+            {t('frontInfo.openDesigner')}
           </button>
         </>
       )}
-      <p className="inspector-note muted">
-        Shift-click adjacent spaces to create a door spanning multiple spaces.
-        Use Structure to edit shelves behind fronts.
-      </p>
+      <p className="inspector-note muted">{t('frontInfo.note')}</p>
       {error && (
         <p role="alert" className="field-error">
           {error}

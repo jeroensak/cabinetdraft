@@ -6,6 +6,7 @@ import { spaceRange } from '../../domain/spaces/spaceRanges'
 import { spacesInRange, selectedSpaces } from '../../store/selection'
 import { selectSpace } from '../spaceSelection'
 import { moveShelf } from '../../domain/commands'
+import { useTranslation } from '../../i18n'
 import { useProjectStore } from '../../store/projectStore'
 import { commandMessage } from '../useCommandAction'
 import type { Point } from './projection'
@@ -21,6 +22,7 @@ export function StructureTargets({
   zoom: number
   frontsMode?: boolean
 }) {
+  const { t } = useTranslation()
   const { module, origin, geometry } = item
   const project = useProjectStore((state) => state.present)
   const selection = useProjectStore((state) => state.editor.selection)
@@ -87,7 +89,7 @@ export function StructureTargets({
             height={Math.max(0, space.height * zoom)}
             role="button"
             tabIndex={0}
-            aria-label={`${module.name} space ${index + 1}`}
+            aria-label={t('canvas.space', { name: module.name, n: index + 1 })}
             aria-pressed={selected}
             data-selected={selected}
             onClick={(event) => choose(event.shiftKey)}
@@ -128,7 +130,10 @@ export function StructureTargets({
                 height={Math.max(0, panel.length * zoom)}
                 role="button"
                 tabIndex={0}
-                aria-label={`${module.name} divider at ${panel.position.x} mm`}
+                aria-label={t('canvas.dividerAt', {
+                  name: module.name,
+                  value: panel.position.x,
+                })}
                 aria-pressed={selected}
                 onPointerEnter={() =>
                   setHover({ type: 'divider', moduleId: module.id, dividerId })
@@ -166,7 +171,10 @@ export function StructureTargets({
                   height={Math.max(8, panel.thickness * zoom + 6)}
                   role="button"
                   tabIndex={0}
-                  aria-label={`${module.name} shelf at ${panel.position.y} mm`}
+                  aria-label={t('canvas.shelfAt', {
+                    name: module.name,
+                    value: panel.position.y,
+                  })}
                   aria-pressed={
                     selection?.type === 'shelf' && selection.shelfId === shelfId
                   }

@@ -5,10 +5,13 @@ import {
   projectFilename,
   ProjectImportError,
 } from '../domain/import-export/projectJson'
+import { useTranslation } from '../i18n'
 import { useProjectStore } from '../store/projectStore'
 import { trackEvent } from './analytics'
 
 export function ProjectFiles() {
+  const { t } = useTranslation()
+
   const input = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [reading, setReading] = useState(false)
@@ -18,7 +21,7 @@ export function ProjectFiles() {
     try {
       const raw = await file.text()
       parseProject(raw)
-      if (window.confirm('Replace current design with imported project?')) {
+      if (window.confirm(t('files.confirmImport'))) {
         useProjectStore.getState().replaceProject(raw)
         trackEvent('project_imported')
       }
@@ -27,13 +30,11 @@ export function ProjectFiles() {
       setError(
         error instanceof ProjectImportError
           ? {
-              'malformed-json': 'This file is not valid JSON.',
-              'unsupported-version':
-                'This project uses an unsupported schema version.',
-              'invalid-structure':
-                'This file does not contain a structurally valid cabinet project.',
+              'malformed-json': t('files.errorJson'),
+              'unsupported-version': t('files.errorVersion'),
+              'invalid-structure': t('files.errorStructure'),
             }[error.code]
-          : 'Could not read the project file. Please try again.',
+          : t('files.errorRead'),
       )
     } finally {
       setReading(false)
@@ -59,7 +60,7 @@ export function ProjectFiles() {
         hidden
         type="file"
         accept=".json,application/json"
-        aria-label="Import project file"
+        aria-label={t('files.importLabel')}
         onChange={(event) => {
           const file = event.target.files?.[0]
           event.target.value = ''
@@ -71,16 +72,18 @@ export function ProjectFiles() {
         disabled={reading}
         onClick={() => input.current?.click()}
       >
-        {reading ? 'Reading…' : 'Import'}
+        {reading ? t('files.reading') : t('files.import')}
       </button>
       <button className="pill" onClick={download}>
-        Export
+        {' '}
+        {t('files.export')}{' '}
       </button>
       {error && (
         <div className="file-error" role="alert">
           {error}
           <button className="pill" onClick={() => setError(null)}>
-            Dismiss
+            {' '}
+            {t('files.dismiss')}{' '}
           </button>
         </div>
       )}

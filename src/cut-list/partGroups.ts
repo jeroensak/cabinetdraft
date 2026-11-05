@@ -1,10 +1,11 @@
 import type { CutListItem } from '../domain/cutlist/deriveCutList'
+import { t } from '../i18n'
 
 const groups = [
-  { id: 'bases', title: 'Cabinet bases' },
-  { id: 'shelves', title: 'Shelves and dividers' },
-  { id: 'doors', title: 'Doors' },
-  { id: 'drawers', title: 'Drawers' },
+  { id: 'bases', titleKey: 'group.bases' },
+  { id: 'shelves', titleKey: 'group.shelves' },
+  { id: 'doors', titleKey: 'group.doors' },
+  { id: 'drawers', titleKey: 'group.drawers' },
 ] as const
 
 type GroupId = (typeof groups)[number]['id']
@@ -43,9 +44,13 @@ function inDrawerOrder(items: CutListItem[]) {
 
 export function groupCutList(items: CutListItem[]) {
   return groups
-    .map(({ id, title }) => {
+    .map(({ id, titleKey }) => {
       const rows = items.filter((item) => partGroup[item.part] === id)
-      return { id, title, items: id === 'drawers' ? inDrawerOrder(rows) : rows }
+      return {
+        id,
+        title: t(titleKey),
+        items: id === 'drawers' ? inDrawerOrder(rows) : rows,
+      }
     })
     .filter((group) => group.items.length > 0)
 }

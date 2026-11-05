@@ -1,16 +1,19 @@
+import { useTranslation } from '../../i18n'
 import { useProjectStore } from '../../store/projectStore'
 import { renameProject } from '../../domain/commands'
 import { DraftField } from '../../components/DraftField'
 import { useCommandAction } from '../useCommandAction'
 
 const fields = [
-  ['corpusThickness', 'Corpus thickness'],
-  ['backPanelThickness', 'Back thickness'],
-  ['frontThickness', 'Front thickness'],
-  ['frontGap', 'Front gap'],
+  ['corpusThickness', 'settings.corpusThickness'],
+  ['backPanelThickness', 'settings.backThickness'],
+  ['frontThickness', 'settings.frontThickness'],
+  ['frontGap', 'settings.frontGap'],
 ] as const
 
 export function ProjectSettings() {
+  const { t } = useTranslation()
+
   const project = useProjectStore((state) => state.present)
   const execute = useProjectStore((state) => state.execute)
   const updateSettings = useProjectStore((state) => state.updateSettings)
@@ -19,7 +22,7 @@ export function ProjectSettings() {
     <div>
       <DraftField
         key={`${project.id}-${project.name}`}
-        label="Project name"
+        label={t('settings.projectName')}
         value={project.name}
         onCommit={(name) =>
           run(() => execute((project) => renameProject(project, name)))
@@ -28,7 +31,7 @@ export function ProjectSettings() {
       {fields.map(([field, label]) => (
         <DraftField
           key={`${project.id}-${field}-${project.settings[field]}`}
-          label={label}
+          label={t(label)}
           numeric
           value={project.settings[field]}
           onCommit={(value) =>
@@ -46,9 +49,9 @@ export function ProjectSettings() {
             )
           }
         />
-        Back panel enabled
+        {t('settings.backEnabled')}
       </label>
-      <p className="muted">Construction settings apply to every cabinet.</p>
+      <p className="muted">{t('settings.note')}</p>
       {error && (
         <p role="alert" className="field-error">
           {error}

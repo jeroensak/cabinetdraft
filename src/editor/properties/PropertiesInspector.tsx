@@ -1,6 +1,7 @@
 import { duplicateCabinet } from '../module-list/moduleActions'
 import { FrontProperties } from './FrontProperties'
 import { frontName } from '../frontName'
+import { useTranslation } from '../../i18n'
 import { useProjectStore } from '../../store/projectStore'
 import {
   renameModule,
@@ -19,6 +20,8 @@ import { deleteSelection } from '../deleteSelection'
 import { useCommandAction } from '../useCommandAction'
 
 export function PropertiesInspector() {
+  const { t } = useTranslation()
+
   const project = useProjectStore((state) => state.present)
   const selection = useProjectStore((state) => state.editor.selection)
   const setSelection = useProjectStore((state) => state.setSelection)
@@ -57,40 +60,42 @@ export function PropertiesInspector() {
       setSelection(null)
   }
   return (
-    <aside className="properties-inspector" aria-label="Properties">
+    <aside className="properties-inspector" aria-label={t('inspector.label')}>
       {selection?.type === 'space' && module && (
         <button
           className="pill mb-4"
-          title={`Select ${module.name}`}
+          title={t('inspector.select', { name: module.name })}
           onClick={() => setSelection({ type: 'module', moduleId: module.id })}
         >
-          ↑ Select cabinet
+          {t('inspector.selectCabinet')}
         </button>
       )}
-      <p className="eyebrow">{selection?.type ?? 'Cabinet'}</p>
+      <p className="eyebrow">{t(`selection.${selection?.type ?? 'none'}`)}</p>
       {module && selection ? (
         <>
           <h2>
             {selection.type === 'module'
               ? module.name
               : selection.type === 'shelf'
-                ? 'Shelf'
+                ? t('inspector.shelf')
                 : selection.type === 'divider'
-                  ? 'Divider'
+                  ? t('inspector.divider')
                   : selection.type === 'space'
-                    ? 'Selected space'
+                    ? t('inspector.selectedSpace')
                     : front
                       ? frontName(front)
-                      : 'Front'}
+                      : t('inspector.front')}
           </h2>
           <p className="muted">
-            {selection.type === 'module' ? 'Selected module' : module.name}
+            {selection.type === 'module'
+              ? t('inspector.selectedModule')
+              : module.name}
           </p>
           {selection.type === 'module' && (
             <>
               <DraftField
                 key={`${module.id}-${module.name}`}
-                label="Name"
+                label={t('inspector.name')}
                 value={module.name}
                 onCommit={(name) =>
                   run(() =>
@@ -100,11 +105,13 @@ export function PropertiesInspector() {
                   )
                 }
               />
-              <h3 className="eyebrow dimension-heading">Dimensions</h3>
+              <h3 className="eyebrow dimension-heading">
+                {t('inspector.dimensions')}
+              </h3>
               {(['width', 'height', 'depth'] as const).map((dimension) => (
                 <DraftField
                   key={`${module.id}-${dimension}-${module[dimension]}`}
-                  label={dimension}
+                  label={t(`dimension.${dimension}`)}
                   numeric
                   value={module[dimension]}
                   onCommit={(value) =>
@@ -119,12 +126,13 @@ export function PropertiesInspector() {
                 />
               ))}
               <p className="inspector-note muted">
-                Outside dimensions. Global construction settings are available
-                under Settings.
+                {t('inspector.outsideNote')}
               </p>
               {module.dividers.length > 0 && (
                 <>
-                  <h3 className="eyebrow dimension-heading">Dividers</h3>
+                  <h3 className="eyebrow dimension-heading">
+                    {t('inspector.dividers')}
+                  </h3>
                   <div className="context-actions">
                     {[...module.dividers]
                       .sort(
@@ -142,7 +150,10 @@ export function PropertiesInspector() {
                             })
                           }
                         >
-                          Select divider {index + 1} at {item.left} mm
+                          {t('inspector.selectDivider', {
+                            n: index + 1,
+                            left: item.left,
+                          })}
                         </button>
                       ))}
                   </div>
@@ -161,7 +172,7 @@ export function PropertiesInspector() {
             <>
               <DraftField
                 key={`${shelf.id}-${shelf.bottom}`}
-                label="Shelf bottom"
+                label={t('inspector.shelfBottom')}
                 numeric
                 value={shelf.bottom}
                 onCommit={(value) =>
@@ -172,17 +183,14 @@ export function PropertiesInspector() {
                   )
                 }
               />
-              <p className="inspector-note muted">
-                Position of the shelf’s bottom face, measured from the cabinet
-                bottom. Drag the shelf to move it.
-              </p>
+              <p className="inspector-note muted">{t('inspector.shelfNote')}</p>
             </>
           )}
           {divider && (
             <>
               <DraftField
                 key={`${divider.id}-${divider.left}`}
-                label="Divider left"
+                label={t('inspector.dividerLeft')}
                 numeric
                 value={divider.left}
                 onCommit={(value) =>
@@ -199,8 +207,7 @@ export function PropertiesInspector() {
                 }
               />
               <p className="inspector-note muted">
-                Position of the divider’s left face from the cabinet’s outside
-                left, in millimetres.
+                {t('inspector.dividerNote')}
               </p>
             </>
           )}
@@ -208,14 +215,13 @@ export function PropertiesInspector() {
             <>
               <p className="inspector-note muted">
                 {spaces.length === 1
-                  ? `${spaces[0].width} mm free width · ${spaces[0].height} mm free height`
-                  : `${spaces.length} selected spaces`}
+                  ? t('inspector.freeSize', {
+                      width: spaces[0].width,
+                      height: spaces[0].height,
+                    })
+                  : t('inspector.selectedSpaces', { n: spaces.length })}
               </p>
-              <p className="inspector-note muted">
-                Shift-click neighbouring spaces to select more. Shelves, drawer
-                fronts and drawers are added to each selected space. A door
-                covers the selected rectangle.
-              </p>
+              <p className="inspector-note muted">{t('inspector.spaceNote')}</p>
               <div className="context-actions">
                 <button
                   className="pill primary"
@@ -232,7 +238,7 @@ export function PropertiesInspector() {
                     )
                   }
                 >
-                  Add shelf
+                  {t('inspector.addShelf')}
                 </button>
                 <button
                   className="pill"
@@ -242,7 +248,7 @@ export function PropertiesInspector() {
                   }
                   onClick={addDivider}
                 >
-                  Add divider
+                  {t('inspector.addDivider')}
                 </button>
                 <button
                   className="pill"
@@ -256,7 +262,7 @@ export function PropertiesInspector() {
                       )
                   }}
                 >
-                  Add door
+                  {t('inspector.addDoor')}
                 </button>
                 <button
                   className="pill"
@@ -273,7 +279,7 @@ export function PropertiesInspector() {
                     )
                   }
                 >
-                  Add drawer front
+                  {t('inspector.addDrawerFront')}
                 </button>
                 <button
                   className="pill"
@@ -286,12 +292,12 @@ export function PropertiesInspector() {
                     })
                   }
                 >
-                  Add drawer…
+                  {t('inspector.addDrawer')}
                 </button>
               </div>
               {!doorRange && spaces.length > 1 && (
                 <p className="inspector-note muted">
-                  Select a rectangle of spaces to add one spanning door.
+                  {t('inspector.rectangleNote')}
                 </p>
               )}
             </>
@@ -303,7 +309,7 @@ export function PropertiesInspector() {
                   className="pill"
                   onClick={() => run(() => duplicateCabinet(module.id))}
                 >
-                  Duplicate
+                  {t('inspector.duplicate')}{' '}
                 </button>
               )}
               <button
@@ -314,17 +320,15 @@ export function PropertiesInspector() {
                   )
                 }
               >
-                Delete
+                {t('inspector.delete')}{' '}
               </button>
             </div>
           )}
         </>
       ) : (
         <div className="inspector-empty">
-          <h2>No cabinet selected</h2>
-          <p className="muted">
-            Select a cabinet, shelf, or space to edit its properties.
-          </p>
+          <h2>{t('inspector.noneTitle')}</h2>
+          <p className="muted">{t('inspector.noneBody')}</p>
         </div>
       )}
       {error && (

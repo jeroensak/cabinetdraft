@@ -15,7 +15,25 @@ export interface DrawerIssue {
   code: 'invalid-drawer-design' | 'drawer-does-not-fit' | 'invalid-drawer-panel'
   message: string
   field?: string
+  /** What went wrong, for the UI to word; `message` is the developer fallback. */
+  reason: DrawerIssueReason
+  values?: Record<string, string | number>
 }
+
+export type DrawerIssueReason =
+  | 'blank-name'
+  | 'slide-type'
+  | 'measurement'
+  | 'box-height-percent'
+  | 'front-height-percent'
+  | 'front-style'
+  | 'front-mount'
+  | 'box-too-shallow'
+  | 'height-overflow'
+  | 'depth-overflow'
+  | 'inset-depth-overflow'
+  | 'no-usable-height'
+  | 'panel-size'
 
 export type DrawerBoxPart =
   | 'drawer-side-left'
@@ -50,12 +68,14 @@ export function validateDrawerDesign(design: DrawerDesignInput): DrawerIssue[] {
     issues.push({
       code: 'invalid-drawer-design',
       field: 'name',
+      reason: 'blank-name',
       message: 'Give the drawer design a name.',
     })
   if (design.slideType !== 'undermount')
     issues.push({
       code: 'invalid-drawer-design',
       field: 'slideType',
+      reason: 'slide-type',
       message: 'Only undermount slides are supported.',
     })
   const minimums = {
@@ -74,6 +94,8 @@ export function validateDrawerDesign(design: DrawerDesignInput): DrawerIssue[] {
       issues.push({
         code: 'invalid-drawer-design',
         field,
+        reason: 'measurement',
+        values: { field, minimum: minimums[field] },
         message: `${measurementLabels[field]} must be a whole number of at least ${minimums[field]} mm.`,
       })
   }
@@ -85,6 +107,7 @@ export function validateDrawerDesign(design: DrawerDesignInput): DrawerIssue[] {
     issues.push({
       code: 'invalid-drawer-design',
       field: 'heightPercent',
+      reason: 'box-height-percent',
       message: 'Box height must be a whole percentage from 1 to 100.',
     })
   if (
@@ -95,24 +118,28 @@ export function validateDrawerDesign(design: DrawerDesignInput): DrawerIssue[] {
     issues.push({
       code: 'invalid-drawer-design',
       field: 'frontHeightPercent',
+      reason: 'front-height-percent',
       message: 'Front height must be a whole percentage from 1 to 100.',
     })
   if (design.frontStyle !== 'full' && design.frontStyle !== 'wave')
     issues.push({
       code: 'invalid-drawer-design',
       field: 'frontStyle',
+      reason: 'front-style',
       message: 'Choose a full or wave top drawer front.',
     })
   if (design.frontMount !== 'overlay' && design.frontMount !== 'inset')
     issues.push({
       code: 'invalid-drawer-design',
       field: 'frontMount',
+      reason: 'front-mount',
       message: 'Choose an overlay or inset drawer front.',
     })
   if (design.depth <= 2 * design.wallThickness)
     issues.push({
       code: 'invalid-drawer-design',
       field: 'depth',
+      reason: 'box-too-shallow',
       message: 'Box depth must leave room between the box front and back.',
     })
   return issues
@@ -164,12 +191,22 @@ export function deriveDrawerGeometry(
     issues.push({
       code: 'drawer-does-not-fit',
       field: 'height',
+      reason: 'height-overflow',
+      values: {
+        total: height + design.bottomClearance + design.topClearance,
+        opening: openingHeight,
+      },
       message: `The box height plus vertical clearances (${height + design.bottomClearance + design.topClearance} mm) exceeds the ${openingHeight} mm opening.`,
     })
   if (z + depth + design.rearClearance > carcassDepth)
     issues.push({
       code: 'drawer-does-not-fit',
       field: 'depth',
+      reason: z ? 'inset-depth-overflow' : 'depth-overflow',
+      values: {
+        total: z + depth + design.rearClearance,
+        carcass: carcassDepth,
+      },
       message: z
         ? `The inset front, box depth and rear clearance (${z + depth + design.rearClearance} mm) exceed the ${carcassDepth} mm cabinet depth.`
         : `The box depth plus rear clearance (${depth + design.rearClearance} mm) exceeds the ${carcassDepth} mm cabinet depth.`,
@@ -178,6 +215,7 @@ export function deriveDrawerGeometry(
     issues.push({
       code: 'drawer-does-not-fit',
       field: 'height',
+      reason: 'no-usable-height',
       message: 'The recessed bottom leaves no usable height in this drawer.',
     })
   const panel = (
@@ -241,6 +279,8 @@ export function deriveDrawerGeometry(
         issues.push({
           code: 'invalid-drawer-panel',
           field: dimension,
+          reason: 'panel-size',
+          values: { part: p.source.type, dimension },
           message: `${partLabels[p.source.type as DrawerBoxPart]}: ${dimension} must be a positive whole number of millimetres.`,
         })
   return {

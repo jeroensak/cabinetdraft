@@ -17,15 +17,21 @@ import {
   integer,
 } from './core'
 
-export function addModule(project: Project, generateId?: IdGenerator): Project {
+export function addModule(
+  project: Project,
+  generateId?: IdGenerator,
+  baseName = 'Cabinet',
+): Project {
   const id = allocateIds(project, generateId)
   return editProject(project, (draft) => {
     let number = 1
-    while (draft.modules.some((module) => module.name === `Cabinet ${number}`))
+    while (
+      draft.modules.some((module) => module.name === `${baseName} ${number}`)
+    )
       number++
     draft.modules.push({
       id: id(),
-      name: `Cabinet ${number}`,
+      name: `${baseName} ${number}`,
       ...DEFAULT_MODULE_DIMENSIONS,
       shelves: [],
       dividers: [],
@@ -38,13 +44,14 @@ export function duplicateModule(
   project: Project,
   moduleId: string,
   generateId?: IdGenerator,
+  copyLabel = 'copy',
 ): Project {
   const id = allocateIds(project, generateId)
   return editProject(project, (draft) => {
     const source = findModule(draft, moduleId)
     const copy = cloneModule(source)
     copy.id = id()
-    const base = `${source.name} copy`
+    const base = `${source.name} ${copyLabel}`
     copy.name = base
     let suffix = 2
     while (draft.modules.some((module) => module.name === copy.name))

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from '../i18n'
 
 /** Parent keys the field by entity and committed value to sync undo/external changes. */
 export function DraftField({
@@ -14,11 +15,12 @@ export function DraftField({
   unit?: 'mm' | '%'
   onCommit: (value: string) => boolean | void
 }) {
+  const { t } = useTranslation()
   const [draft, setDraft] = useState(String(value))
   const [error, setError] = useState(false)
   return (
     <label className="property-field">
-      <span className="capitalize">{label}</span>
+      <span className="block first-letter:uppercase">{label}</span>
       <span className={numeric ? 'dimension-input' : undefined}>
         <input
           aria-label={numeric ? `${label} (${unit})` : label}
@@ -58,9 +60,7 @@ export function DraftField({
       </span>
       {error && (
         <span className="field-error" role="alert">
-          {unit === 'mm'
-            ? 'Enter a whole number in millimetres.'
-            : 'Enter a whole number.'}
+          {unit === 'mm' ? t('field.wholeMm') : t('field.whole')}
         </span>
       )}
     </label>

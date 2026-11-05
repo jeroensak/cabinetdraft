@@ -1,4 +1,5 @@
 import { deriveModuleDrawerPanels } from '../../domain/drawers/deriveModuleDrawerPanels'
+import { useTranslation } from '../../i18n'
 import { frontDesign } from '../../domain/drawers/types'
 import { deriveFrontGeometry } from '../../domain/fronts/deriveFrontGeometry'
 import { FrontTargets } from './FrontTargets'
@@ -13,6 +14,7 @@ import { StructureTargets } from './StructureTargets'
 import { orderFaces } from './orderFaces'
 
 export function StructureCanvas() {
+  const { t } = useTranslation()
   const [mode, setMode] = useState<'structure' | 'fronts'>('structure')
   const project = useProjectStore((state) => state.present)
   const selection = useProjectStore((state) => state.editor.selection)
@@ -91,9 +93,12 @@ export function StructureCanvas() {
     <>
       <div className="editor-toolbar">
         <span className="muted">
-          {arrangement.totalWidth.toLocaleString('en-US')} mm total width
+          {t('canvas.totalWidth', { width: arrangement.totalWidth })}
         </span>
-        <div className="segmented view-switch" aria-label="Designer view">
+        <div
+          className="segmented view-switch"
+          aria-label={t('canvas.viewLabel')}
+        >
           {(['structure', 'fronts'] as const).map((view) => (
             <button
               key={view}
@@ -111,32 +116,38 @@ export function StructureCanvas() {
                   setSelection({ type: 'module', moduleId: selection.moduleId })
               }}
             >
-              {view === 'structure' ? 'Structure' : 'Fronts'}
+              {view === 'structure'
+                ? t('canvas.structure')
+                : t('canvas.fronts')}
             </button>
           ))}
         </div>
         <div className="canvas-controls">
           <div className="zoom-control">
-            <button onClick={() => zoom(1 / 1.2)} aria-label="Zoom out">
+            <button
+              onClick={() => zoom(1 / 1.2)}
+              aria-label={t('canvas.zoomOut')}
+            >
               −
             </button>
             <span>{Math.round(viewport.zoom * 100)}%</span>
-            <button onClick={() => zoom(1.2)} aria-label="Zoom in">
+            <button onClick={() => zoom(1.2)} aria-label={t('canvas.zoomIn')}>
               +
             </button>
           </div>
           <button className="pill" onClick={fit}>
-            Fit to view
+            {t('canvas.fit')}
           </button>
         </div>
       </div>
       <h1 id="designer-title" className="sr-only">
-        Designer
+        {' '}
+        {t('canvas.designerTitle')}{' '}
       </h1>
       <svg
         ref={svgRef}
         className="structure-canvas"
-        aria-label="Cabinet structure"
+        aria-label={t('canvas.label')}
         onPointerDown={(event) => {
           if (event.button !== 0 || event.target !== event.currentTarget) return
           drag.current = {
@@ -169,12 +180,12 @@ export function StructureCanvas() {
         }}
         onPointerLeave={() => setHover(null)}
       >
-        <title>Cabinet structure</title>
+        <title>{t('canvas.label')}</title>
         <desc>
           {mode === 'structure'
-            ? 'Structure view. Select spaces or shelves to edit.'
-            : 'Fronts view. Select a front to edit. Shift-click adjacent empty spaces to select a range.'}{' '}
-          Drag empty canvas to pan; scroll to zoom.
+            ? t('canvas.structureDesc')
+            : t('canvas.frontsDesc')}{' '}
+          {t('canvas.navigationDesc')}
         </desc>
         <g
           aria-hidden="true"
@@ -212,7 +223,7 @@ export function StructureCanvas() {
                 height={Math.max(1, Math.abs(module.height * viewport.zoom))}
                 role="button"
                 tabIndex={0}
-                aria-label={`Select ${module.name}`}
+                aria-label={t('canvas.selectModule', { name: module.name })}
                 aria-pressed={selection?.moduleId === module.id}
                 data-selected={selection?.moduleId === module.id}
                 data-hovered={hover?.moduleId === module.id}
@@ -235,7 +246,7 @@ export function StructureCanvas() {
                   x={top.x}
                   y={top.y - 12}
                 >
-                  ! Invalid geometry
+                  {t('status.invalid')}
                 </text>
               )}
             </g>
@@ -257,14 +268,14 @@ export function StructureCanvas() {
               from={screen(0, 0)}
               to={screen(arrangement.totalWidth, 0)}
               offset={60}
-              label={`${arrangement.totalWidth} mm total`}
+              label={t('canvas.total', { value: arrangement.totalWidth })}
             />
             <Dimension
               from={screen(0, 0)}
               to={screen(0, arrangement.maximumHeight)}
               vertical
               offset={-58}
-              label={`max ${arrangement.maximumHeight} mm`}
+              label={t('canvas.max', { value: arrangement.maximumHeight })}
             />
             {selected && (
               <>
@@ -272,7 +283,7 @@ export function StructureCanvas() {
                   from={screen(selected.origin.x, 0)}
                   to={screen(selected.origin.x + selected.module.width, 0)}
                   offset={28}
-                  label={`${selected.module.width} mm width`}
+                  label={t('canvas.width', { value: selected.module.width })}
                 />
                 <Dimension
                   from={screen(selected.origin.x + selected.module.width, 0)}
@@ -282,7 +293,7 @@ export function StructureCanvas() {
                   )}
                   vertical
                   offset={28}
-                  label={`${selected.module.height} mm height`}
+                  label={t('canvas.height', { value: selected.module.height })}
                 />
                 <Dimension
                   from={screen(
@@ -295,7 +306,7 @@ export function StructureCanvas() {
                     selected.module.depth,
                   )}
                   offset={-26}
-                  label={`${selected.module.depth} mm depth`}
+                  label={t('canvas.depth', { value: selected.module.depth })}
                 />
               </>
             )}
@@ -308,7 +319,7 @@ export function StructureCanvas() {
             y={size.height / 2}
             textAnchor="middle"
           >
-            No cabinets to display
+            {t('canvas.empty')}
           </text>
         )}
       </svg>

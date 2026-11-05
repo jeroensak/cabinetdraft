@@ -1,13 +1,18 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router'
+import { useTranslation } from '../i18n'
 import { defaultSiteUrl, pageMetadata } from './pageMetadata'
 
 /** Keep the build-time metadata accurate after client-side navigation. */
 export function RouteMetadata() {
   const { pathname } = useLocation()
+  const { t } = useTranslation()
+
   useEffect(() => {
     const metadata = pageMetadata(pathname)
-    document.title = metadata.title
+    const title = t(`meta.${metadata.key}.title`)
+    const description = t(`meta.${metadata.key}.description`)
+    document.title = title
     const setMeta = (
       attribute: 'name' | 'property',
       key: string,
@@ -23,12 +28,12 @@ export function RouteMetadata() {
       }
       element.content = value
     }
-    setMeta('name', 'description', metadata.description)
+    setMeta('name', 'description', description)
     setMeta('name', 'robots', metadata.robots)
-    setMeta('property', 'og:title', metadata.title)
-    setMeta('property', 'og:description', metadata.description)
-    setMeta('name', 'twitter:title', metadata.title)
-    setMeta('name', 'twitter:description', metadata.description)
+    setMeta('property', 'og:title', title)
+    setMeta('property', 'og:description', description)
+    setMeta('name', 'twitter:title', title)
+    setMeta('name', 'twitter:description', description)
     const origin =
       document.querySelector<HTMLMetaElement>('meta[name="site-url"]')
         ?.content ?? defaultSiteUrl
@@ -43,6 +48,6 @@ export function RouteMetadata() {
       document.head.append(canonical)
     }
     canonical.href = url
-  }, [pathname])
+  }, [pathname, t])
   return null
 }

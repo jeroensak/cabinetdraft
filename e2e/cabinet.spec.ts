@@ -367,3 +367,22 @@ test('new designs start from a template, keep their name and survive a reload', 
   await page.reload()
   await expect(page.getByLabel('Design name')).toHaveValue('Hall')
 })
+
+test('the language picker translates the app and is remembered, without touching the design', async ({
+  page,
+}) => {
+  await page.getByRole('combobox', { name: 'Language' }).selectOption('nl')
+  await expect(page.getByRole('link', { name: 'Zaaglijst' })).toBeVisible()
+  await expect(page.locator('html')).toHaveAttribute('lang', 'nl')
+  await page.reload()
+  await expect(page.getByRole('link', { name: 'Zaaglijst' })).toBeVisible()
+  await page.getByRole('link', { name: 'Zaaglijst' }).click()
+  await expect(
+    page.getByRole('heading', { name: 'Zaaglijst', exact: true }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('row').filter({ hasText: 'C1-SIDE-L' }),
+  ).toContainText('Zijkant')
+  await page.getByRole('combobox', { name: 'Taal' }).selectOption('en')
+  await expect(page.getByRole('heading', { name: 'Cut List' })).toBeVisible()
+})

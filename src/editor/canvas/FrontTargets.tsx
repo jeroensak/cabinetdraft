@@ -4,8 +4,10 @@ import { deriveFrontGeometry } from '../../domain/fronts/deriveFrontGeometry'
 import { useProjectStore } from '../../store/projectStore'
 import { panelFaces } from './projection'
 import { frontName } from '../frontName'
+import { useTranslation } from '../../i18n'
 
 export function FrontTargets({ arrangement }: { arrangement: Arrangement }) {
+  useTranslation()
   const settings = useProjectStore((state) => state.present.settings)
   const designs = useProjectStore((state) => state.present.drawerDesigns)
   const selection = useProjectStore((state) => state.editor.selection)

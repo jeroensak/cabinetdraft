@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useTranslation } from '../i18n'
+import { drawerIssueMessage } from '../i18n/drawerIssues'
 import { DraftField } from '../components/DraftField'
 import {
   addDrawerDesign,
@@ -37,17 +39,17 @@ type MeasurementField = Exclude<
   | 'frontMount'
   | 'frontHeightPercent'
 >
-const boxFields: [MeasurementField, string][] = [
-  ['wallThickness', 'Wall thickness'],
-  ['bottomThickness', 'Bottom thickness'],
-  ['depth', 'Box depth'],
+const boxFields: MeasurementField[] = [
+  'wallThickness',
+  'bottomThickness',
+  'depth',
 ]
-const clearanceFields: [MeasurementField, string][] = [
-  ['sideClearance', 'Side gap (each side)'],
-  ['bottomClearance', 'Gap below box'],
-  ['topClearance', 'Gap above box'],
-  ['rearClearance', 'Gap behind box'],
-  ['bottomRecess', 'Bottom recess'],
+const clearanceFields: MeasurementField[] = [
+  'sideClearance',
+  'bottomClearance',
+  'topClearance',
+  'rearClearance',
+  'bottomRecess',
 ]
 
 function designInput(design: DrawerDesign): DrawerDesignInput {
@@ -96,6 +98,8 @@ function resolveTargets(project: Project, context: DesignerScope) {
 }
 
 export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
+  const { t } = useTranslation()
+
   const project = useProjectStore((state) => state.present)
   const execute = useProjectStore((state) => state.execute)
   const close = useProjectStore((state) => state.closeDrawerDesigner)
@@ -176,21 +180,18 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
     )
       close()
   }
-  const targetLabel =
-    targets.length === 1
-      ? '1 selected space'
-      : `${targets.length} selected spaces`
+  const targetLabel = t('drawer.selectedSpaces', { count: targets.length })
   return (
     <section
       className="designer-layout drawer-designer"
       aria-labelledby="drawer-designer-title"
     >
-      <aside className="cabinet-sidebar" aria-label="Drawer designs">
+      <aside className="cabinet-sidebar" aria-label={t('drawer.designs')}>
         <button className="pill mb-4" onClick={close}>
-          ← Back to cabinet
+          {t('drawer.back')}
         </button>
-        <p className="eyebrow">Drawer designer</p>
-        <h2 id="drawer-designer-title">Drawer designs</h2>
+        <p className="eyebrow">{t('drawer.eyebrow')}</p>
+        <h2 id="drawer-designer-title">{t('drawer.designs')}</h2>
         <DrawerDesignList
           selectedId={design?.id ?? ''}
           onSelect={selectDesign}
@@ -200,18 +201,15 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
           onClick={() =>
             create({
               ...defaultDrawerDesign(),
-              name: uniqueDesignName(project, 'Drawer design'),
+              name: uniqueDesignName(project, t('default.drawerDesign')),
             })
           }
         >
-          + New drawer design
+          {t('drawer.new')}
         </button>
         <div className="sidebar-tip">
           <p className="eyebrow">Tip</p>
-          <p>
-            A design is shared: editing it updates every drawer that uses it.
-            Width and height always follow each space.
-          </p>
+          <p>{t('drawer.tip')}</p>
         </div>
       </aside>
       <div className="editor-area">
@@ -219,13 +217,16 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
           <span className="muted">
             {library
               ? module
-                ? `Previewed in ${module.name}`
-                : 'Design library'
+                ? t('drawer.previewedIn', { name: module.name })
+                : t('drawer.library')
               : module
                 ? `${module.name} · ${targetLabel}`
-                : 'Cabinet unavailable'}
+                : t('drawer.cabinetUnavailable')}
             {preview &&
-              ` · opening ${preview.openingWidth} × ${preview.openingHeight} mm`}
+              t('drawer.opening', {
+                width: preview.openingWidth,
+                height: preview.openingHeight,
+              })}
           </span>
           <label className="drawer-front-toggle">
             <input
@@ -233,7 +234,7 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
               checked={showFront}
               onChange={(event) => setShowFront(event.target.checked)}
             />
-            Show drawer front
+            {t('drawer.showFront')}
           </label>
         </div>
         {preview ? (
@@ -242,68 +243,71 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
           <div className="drawer-preview-empty muted">
             {library
               ? design
-                ? 'Add this design to a space to preview it. Its size follows the space.'
-                : 'Create a drawer design to get started.'
+                ? t('drawer.previewEmptyLibrary')
+                : t('drawer.previewCreate')
               : targets.length === 0
-                ? 'The selected space is no longer available. Go back and select a space.'
-                : 'Create a drawer design to preview it in this space.'}
+                ? t('drawer.previewGone')
+                : t('drawer.previewCreateSpace')}
           </div>
         )}
         <footer className="editor-status">
           {preview && (
             <span className="validation-badge" data-valid={!fitIssues.length}>
-              {fitIssues.length ? '! Does not fit' : '✓ Fits'}
+              {fitIssues.length ? t('drawer.doesNotFit') : t('drawer.fits')}
             </span>
           )}
           {preview && (
             <span>
-              Box {preview.width} × {preview.height} × {preview.depth} mm (W × H
-              × D)
+              {t('drawer.boxSummary', {
+                width: preview.width,
+                height: preview.height,
+                depth: preview.depth,
+              })}
             </span>
           )}
         </footer>
       </div>
-      <aside className="properties-inspector" aria-label="Drawer design">
+      <aside className="properties-inspector" aria-label={t('drawer.design')}>
         {design ? (
           <>
-            <p className="eyebrow">Drawer design</p>
+            <p className="eyebrow">{t('drawer.design')}</p>
             <h2>{design.name}</h2>
             <p className="muted">
               {usage === 0
-                ? 'Not used by any drawer yet'
-                : `Shared by ${usage} ${usage === 1 ? 'drawer' : 'drawers'}`}
+                ? t('drawer.notUsedByAny')
+                : t('drawer.sharedBy', { count: usage })}
             </p>
             <DraftField
               key={`${design.id}-name-${design.name}`}
-              label="Name"
+              label={t('drawer.name')}
               value={design.name}
               onCommit={(name) => update({ name: name.trim() })}
             />
-            <h3 className="eyebrow dimension-heading">Slides</h3>
-            <p className="semantic-value">Undermount</p>
-            <h3 className="eyebrow dimension-heading">Box</h3>
+            <h3 className="eyebrow dimension-heading">{t('drawer.slides')}</h3>
+            <p className="semantic-value">{t('drawer.undermount')}</p>
+            <h3 className="eyebrow dimension-heading">{t('drawer.box')}</h3>
             <DraftField
               key={`${design.id}-heightPercent-${design.heightPercent}`}
-              label="Box height"
+              label={t('drawer.boxHeight')}
               numeric
               unit="%"
               value={design.heightPercent}
               onCommit={(value) => update({ heightPercent: Number(value) })}
             />
-            {boxFields.map(([field, label]) => (
+            {boxFields.map((field) => (
               <DraftField
                 key={`${design.id}-${field}-${design[field]}`}
-                label={label}
+                label={t(`drawerField.${field}`)}
                 numeric
                 value={design[field]}
                 onCommit={(value) => update({ [field]: Number(value) })}
               />
             ))}
-            <h3 className="eyebrow dimension-heading">Drawer front</h3>
+            <h3 className="eyebrow dimension-heading">{t('drawer.front')}</h3>
             <label className="property-field">
-              <span>Style</span>
+              <span>{t('drawer.style')}</span>
               <select
-                aria-label="Front style"
+                aria-label={t('drawer.frontStyle')}
                 value={design.frontStyle}
                 onChange={(event) =>
                   updateFront({
@@ -312,14 +316,14 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
                   })
                 }
               >
-                <option value="full">Full front</option>
-                <option value="wave">Wave top</option>
+                <option value="full">{t('drawer.styleFull')}</option>
+                <option value="wave">{t('drawer.styleWave')}</option>
               </select>
             </label>
             <label className="property-field">
-              <span>Position</span>
+              <span>{t('drawer.position')}</span>
               <select
-                aria-label="Front position"
+                aria-label={t('drawer.frontPosition')}
                 value={design.frontMount}
                 onChange={(event) =>
                   updateFront({
@@ -328,13 +332,13 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
                   })
                 }
               >
-                <option value="overlay">Overlay (on the cabinet front)</option>
-                <option value="inset">Inset (inside the opening)</option>
+                <option value="overlay">{t('drawer.positionOverlay')}</option>
+                <option value="inset">{t('drawer.positionInset')}</option>
               </select>
             </label>
             <DraftField
               key={`${design.id}-frontHeightPercent-${design.frontHeightPercent}`}
-              label="Front height"
+              label={t('drawer.frontHeight')}
               numeric
               unit="%"
               value={design.frontHeightPercent}
@@ -342,35 +346,30 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
                 updateFront({ frontHeightPercent: Number(value) })
               }
             />
-            <h3 className="eyebrow dimension-heading">Clearances</h3>
-            {clearanceFields.map(([field, label]) => (
+            <h3 className="eyebrow dimension-heading">
+              {t('drawer.clearances')}
+            </h3>
+            {clearanceFields.map((field) => (
               <DraftField
                 key={`${design.id}-${field}-${design[field]}`}
-                label={label}
+                label={t(`drawerField.${field}`)}
                 numeric
                 value={design[field]}
                 onCommit={(value) => update({ [field]: Number(value) })}
               />
             ))}
             <p className="inspector-note muted">
-              Box width = opening width − 2 × side gap (at least{' '}
-              {MIN_DRAWER_SIDE_CLEARANCE} mm per side). Box height is a
-              percentage of the space’s inner height, shared by all four walls.
-              The bottom slots into a groove half a wall deep in each wall,
-              raised by the recess to clear the slides. Front height is a
-              percentage of the front’s full height, keeping its bottom edge. An
-              inset front moves the box back by its thickness.
+              {t('drawer.note', { minimum: MIN_DRAWER_SIDE_CLEARANCE })}
             </p>
             {blockedByDoor && (
-              <p className="field-error">
-                A door covers one of the selected spaces. Remove it before
-                adding a drawer.
-              </p>
+              <p className="field-error">{t('drawer.doorBlocks')}</p>
             )}
             {fitIssues.map((issue, index) => (
               <p key={index} className="field-error">
-                {targets.length > 1 ? `Space ${issue.target}: ` : ''}
-                {issue.message}
+                {targets.length > 1
+                  ? t('drawer.spacePrefix', { n: issue.target })
+                  : ''}
+                {drawerIssueMessage(issue)}
               </p>
             ))}
             <div className="context-actions">
@@ -385,7 +384,7 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
                   }
                   onClick={apply}
                 >
-                  Apply to {targetLabel}
+                  {t('drawer.apply', { target: targetLabel })}
                 </button>
               )}
               <button
@@ -393,22 +392,21 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
                 onClick={() =>
                   create({
                     ...designInput(design),
-                    name: uniqueDesignName(project, `${design.name} copy`),
+                    name: uniqueDesignName(
+                      project,
+                      t('drawer.copyName', { name: design.name }),
+                    ),
                   })
                 }
               >
-                Duplicate
+                {t('drawer.duplicate')}{' '}
               </button>
             </div>
             <div className="inspector-actions">
               <button
                 className="delete-button"
                 disabled={usage > 0}
-                title={
-                  usage > 0
-                    ? 'Remove this design from its drawers first'
-                    : undefined
-                }
+                title={usage > 0 ? t('drawer.deleteBlocked') : undefined}
                 onClick={() => {
                   if (
                     run(() =>
@@ -420,23 +418,17 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
                     selectDesign(null)
                 }}
               >
-                Delete design
+                {t('drawer.deleteDesign')}{' '}
               </button>
             </div>
             {usage > 0 && (
-              <p className="inspector-note muted">
-                Designs in use can’t be deleted. Remove the box from those
-                drawers in Fronts view first.
-              </p>
+              <p className="inspector-note muted">{t('drawer.inUseNote')}</p>
             )}
           </>
         ) : (
           <div className="inspector-empty">
-            <h2>No drawer design</h2>
-            <p className="muted">
-              Create a drawer design: four equal-height walls, a bottom, and an
-              overlay front on undermount slides.
-            </p>
+            <h2>{t('drawer.noneTitle')}</h2>
+            <p className="muted">{t('drawer.noneBody')}</p>
           </div>
         )}
         {error && (

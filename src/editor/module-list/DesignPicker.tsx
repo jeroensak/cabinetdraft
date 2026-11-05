@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from '../../i18n'
 import { DraftField } from '../../components/DraftField'
 import { renameProject } from '../../domain/commands'
 import { useProjectStore } from '../../store/projectStore'
@@ -6,6 +7,8 @@ import { useCommandAction } from '../useCommandAction'
 import { NewDesignDialog } from './NewDesignDialog'
 
 export function DesignPicker() {
+  const { t } = useTranslation()
+
   const project = useProjectStore((state) => state.present)
   const designs = useProjectStore((state) => state.designs)
   const blocked = useProjectStore((state) => state.persistence.loadError)
@@ -29,17 +32,16 @@ export function DesignPicker() {
   return (
     <section className="design-picker" aria-labelledby="design-picker-title">
       <h2 className="eyebrow" id="design-picker-title">
-        Design
+        {' '}
+        {t('design.heading')}{' '}
       </h2>
       <select
-        aria-label="Current design"
+        aria-label={t('design.current')}
         value={project.id}
         disabled={unavailable}
         onChange={(event) =>
           setFailure(
-            switchDesign(event.target.value)
-              ? null
-              : 'This design could not be opened.',
+            switchDesign(event.target.value) ? null : t('design.openFailed'),
           )
         }
       >
@@ -51,7 +53,7 @@ export function DesignPicker() {
       </select>
       <DraftField
         key={`${project.id}-${project.name}`}
-        label="Design name"
+        label={t('design.name')}
         value={project.name}
         onCommit={(name) =>
           Boolean(name.trim()) &&
@@ -63,20 +65,18 @@ export function DesignPicker() {
         disabled={unavailable}
         onClick={() => setCreating(true)}
       >
-        + New design
+        {t('design.new')}
       </button>
       <button
         className="delete-button design-delete"
         disabled={unavailable || options.length < 2}
-        title={options.length < 2 ? 'You need at least one design' : undefined}
+        title={options.length < 2 ? t('design.keepOne') : undefined}
         onClick={() => {
-          if (window.confirm(`Delete "${project.name}"? This can’t be undone.`))
-            setFailure(
-              deleteDesign() ? null : 'This design could not be deleted.',
-            )
+          if (window.confirm(t('design.confirmDelete', { name: project.name })))
+            setFailure(deleteDesign() ? null : t('design.deleteFailed'))
         }}
       >
-        Delete design
+        {t('design.delete')}{' '}
       </button>
       {(error || failure) && (
         <p role="alert" className="field-error">
@@ -84,9 +84,7 @@ export function DesignPicker() {
         </p>
       )}
       {unavailable && (
-        <p className="muted sidebar-note">
-          Saved designs can’t be read, so switching is turned off.
-        </p>
+        <p className="muted sidebar-note">{t('design.unreadable')}</p>
       )}
       {creating && <NewDesignDialog onClose={() => setCreating(false)} />}
     </section>

@@ -92,7 +92,7 @@ describe('Drawer designer', () => {
     await user.clear(sideGap)
     await user.type(sideGap, '2{Enter}')
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'Side clearance must be a whole number of at least 3 mm.',
+      'Side gap (each side) must be a whole number of at least 3 mm.',
     )
     expect(
       useProjectStore.getState().present.drawerDesigns[0].sideClearance,

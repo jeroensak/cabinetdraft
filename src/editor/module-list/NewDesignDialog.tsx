@@ -1,8 +1,11 @@
 import { useState, type FormEvent } from 'react'
-import { designTemplates } from '../../design-templates'
+import { useTranslation } from '../../i18n'
+import { designTemplates, localizedTemplate } from '../../design-templates'
 import { useProjectStore } from '../../store/projectStore'
 
 export function NewDesignDialog({ onClose }: { onClose(): void }) {
+  const { t } = useTranslation()
+
   const createDesign = useProjectStore((state) => state.createDesign)
   const [templateId, setTemplateId] = useState(designTemplates[0]?.id)
   const [name, setName] = useState('')
@@ -11,7 +14,13 @@ export function NewDesignDialog({ onClose }: { onClose(): void }) {
   const submit = (event: FormEvent) => {
     event.preventDefault()
     if (!template) return
-    if (createDesign(template.raw, name)) onClose()
+    if (
+      createDesign(
+        localizedTemplate(template.raw),
+        name.trim() || t(template.key),
+      )
+    )
+      onClose()
     else setFailed(true)
   }
   return (
@@ -26,18 +35,18 @@ export function NewDesignDialog({ onClose }: { onClose(): void }) {
           if (event.key === 'Escape') onClose()
         }}
       >
-        <h2 id="new-design-title">New design</h2>
+        <h2 id="new-design-title">{t('newDesign.title')}</h2>
         <label className="property-field">
-          <span>Name</span>
+          <span>{t('newDesign.name')}</span>
           <input
             autoFocus
             value={name}
-            placeholder={template?.name}
+            placeholder={template && t(template.key)}
             onChange={(event) => setName(event.target.value)}
           />
         </label>
         <fieldset>
-          <legend>Start from</legend>
+          <legend>{t('newDesign.startFrom')}</legend>
           {designTemplates.map((item) => (
             <label key={item.id} className="template-option">
               <input
@@ -46,21 +55,21 @@ export function NewDesignDialog({ onClose }: { onClose(): void }) {
                 checked={item.id === templateId}
                 onChange={() => setTemplateId(item.id)}
               />
-              {item.name}
+              {t(item.key)}
             </label>
           ))}
         </fieldset>
         {failed && (
           <p role="alert" className="field-error">
-            The design could not be saved in this browser.
+            {t('newDesign.failed')}
           </p>
         )}
         <div className="dialog-actions">
           <button type="button" className="pill" onClick={onClose}>
-            Cancel
+            {t('newDesign.cancel')}
           </button>
           <button type="submit" className="pill primary" disabled={!template}>
-            Create design
+            {t('newDesign.create')}
           </button>
         </div>
       </form>

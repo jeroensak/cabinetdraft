@@ -7,8 +7,12 @@ import { DesignerPage } from '../editor/DesignerPage'
 import { CutListPage } from '../cut-list/CutListPage'
 import { ProjectSettings } from '../editor/properties/ProjectSettings'
 import { installHistoryShortcuts, useProjectStore } from '../store/projectStore'
+import { useTranslation } from '../i18n'
+import { LanguagePicker } from './LanguagePicker'
 
 function Layout() {
+  const { t } = useTranslation()
+
   const name = useProjectStore((state) => state.present.name)
   const canUndo = useProjectStore((state) => state.past.length > 0)
   const canRedo = useProjectStore((state) => state.future.length > 0)
@@ -20,29 +24,26 @@ function Layout() {
   return (
     <>
       <div className="small-screen-message">
-        <strong>Cabinet Designer</strong>
-        <h1>A little more room to design</h1>
-        <p>
-          Plan DIY cabinets with shelves, doors and drawer fronts, then download
-          a panel cut list as a PDF. No account needed.
-        </p>
-        <p>Open this project in a desktop window at least 1024 pixels wide.</p>
+        <strong>{t('app.name')}</strong> <h1>{t('small.title')}</h1>
+        <p>{t('small.body')}</p>
+        <p>{t('small.hint')}</p>
       </div>
       <div className="application-shell">
         <header className="app-header">
           <div className="project-identity">
-            <strong>Cabinet Designer</strong>
+            {' '}
+            <strong>{t('app.name')}</strong>
             <span title={name}>{name}</span>
           </div>
-          <nav aria-label="Main navigation" className="segmented navigation">
-            <NavLink to="/designer">Designer</NavLink>
-            <NavLink to="/cut-list">Cut List</NavLink>
+          <nav aria-label={t('nav.main')} className="segmented navigation">
+            <NavLink to="/designer">{t('nav.designer')}</NavLink>
+            <NavLink to="/cut-list">{t('nav.cutList')}</NavLink>
           </nav>
           <div className="header-actions">
             <button
               className="history-button"
-              aria-label="Undo"
-              title="Undo (Ctrl/Cmd + Z)"
+              aria-label={t('header.undo')}
+              title={t('header.undoHint')}
               disabled={!canUndo}
               onClick={undo}
             >
@@ -50,13 +51,14 @@ function Layout() {
             </button>
             <button
               className="history-button"
-              aria-label="Redo"
-              title="Redo (Ctrl/Cmd + Shift + Z)"
+              aria-label={t('header.redo')}
+              title={t('header.redoHint')}
               disabled={!canRedo}
               onClick={redo}
             >
               ↷
             </button>
+            <LanguagePicker />
             <ProjectFiles />
             <button
               className="pill primary"
@@ -64,7 +66,8 @@ function Layout() {
               aria-controls="project-settings"
               onClick={() => setSettingsOpen(!settingsOpen)}
             >
-              Settings
+              {' '}
+              {t('header.settings')}{' '}
             </button>
           </div>
         </header>
@@ -72,12 +75,13 @@ function Layout() {
           <section
             className="settings-popover"
             id="project-settings"
-            aria-label="Project settings"
+            aria-label={t('settings.title')}
           >
             <div className="section-heading">
-              <h2>Project settings</h2>
+              <h2>{t('settings.title')}</h2>
               <button className="pill" onClick={() => setSettingsOpen(false)}>
-                Close
+                {' '}
+                {t('settings.close')}{' '}
               </button>
             </div>
             <ProjectSettings />
@@ -93,6 +97,8 @@ function Layout() {
 }
 
 export function App() {
+  const { t } = useTranslation()
+
   return (
     <>
       <RouteMetadata />
@@ -106,8 +112,8 @@ export function App() {
           path="*"
           element={
             <main>
-              <h1>Page not found</h1>
-              <Link to="/designer">Open the cabinet designer</Link>
+              <h1>{t('notFound.title')}</h1>
+              <Link to="/designer">{t('notFound.link')}</Link>
             </main>
           }
         />

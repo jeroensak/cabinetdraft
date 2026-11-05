@@ -5,11 +5,12 @@ import { PROJECT_SCHEMA_VERSION, type Project } from './types'
 /** Inject IDs to make project creation deterministic in tests or other callers. */
 export function createDefaultProject(
   generateId: IdGenerator = createId,
+  names = { project: 'Untitled cabinet', cabinet: 'Cabinet 1' },
 ): Project {
   return {
     schemaVersion: PROJECT_SCHEMA_VERSION,
     id: generateId(),
-    name: 'Untitled cabinet',
+    name: names.project,
     settings: {
       corpusThickness: 18,
       backPanelEnabled: true,
@@ -21,7 +22,7 @@ export function createDefaultProject(
     modules: [
       {
         id: generateId(),
-        name: 'Cabinet 1',
+        name: names.cabinet,
         ...DEFAULT_MODULE_DIMENSIONS,
         // Frozen specification §5: this position gives equal free heights.
         shelves: [{ id: generateId(), bottom: 1091 }],
