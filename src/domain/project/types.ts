@@ -1,3 +1,4 @@
+import type { DrawerDesign } from '../drawers/types'
 import type { CabinetModule } from '../cabinet/types'
 
 /** Global construction dimensions are integer millimetres. */
@@ -9,7 +10,7 @@ export interface ProjectSettings {
   frontGap: number
 }
 
-export const PROJECT_SCHEMA_VERSION = 3
+export const PROJECT_SCHEMA_VERSION = 4
 
 /** Persisted source of truth; deliberately contains no derived or editor state. */
 export interface Project {
@@ -17,6 +18,7 @@ export interface Project {
   id: string
   name: string
   settings: ProjectSettings
+  drawerDesigns: DrawerDesign[]
   /** Array order is physical left-to-right order. */
   modules: CabinetModule[]
 }

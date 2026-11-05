@@ -12,3 +12,5 @@ export {
 export { addDoor, addDrawerFront, setDoorLeaves, removeFront } from './fronts'
 export { addShelfToSpace, moveShelf, removeShelf } from './shelves'
 export { addDividerToSpace, moveDivider, removeDivider } from './dividers'
+
+export * from './drawers'

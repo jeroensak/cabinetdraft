@@ -71,6 +71,13 @@ export interface ViewportState {
   zoom: number
   pan: Point
 }
+/** Session-only context of the drawer designer workspace; never persisted. */
+export interface DrawerDesignerState {
+  /** Spaces the designer was opened from; a design is applied to all of them. */
+  moduleId: string
+  ranges: BoundaryRange[]
+  designId: string | null
+}
 export interface EditorState {
   /** Session-only context for preserving the viewport across route remounts. */
   viewportProjectId?: string
@@ -78,6 +85,7 @@ export interface EditorState {
   selection: Selection
   hover: Hover
   viewport: ViewportState
+  drawerDesigner?: DrawerDesignerState | null
 }
 
 export interface ProjectStoreState {
@@ -100,6 +108,9 @@ export interface ProjectStoreState {
   setSelection(selection: Selection): void
   setHover(hover: Hover): void
   setViewport(viewport: Partial<ViewportState>): void
+  openDrawerDesigner(context: DrawerDesignerState): void
+  closeDrawerDesigner(): void
+  selectDrawerDesign(designId: string | null): void
   updateSettings(settings: Partial<ProjectSettings>): void
 }
 
@@ -272,6 +283,31 @@ export function createProjectStore(options: CreateProjectStoreOptions = {}) {
             },
           },
         })),
+      openDrawerDesigner: (context) =>
+        set((state) => ({
+          editor: {
+            ...state.editor,
+            hover: null,
+            drawerDesigner: {
+              moduleId: context.moduleId,
+              ranges: context.ranges.map((range) => ({ ...range })),
+              designId: context.designId,
+            },
+          },
+        })),
+      closeDrawerDesigner: () =>
+        set((state) => ({ editor: { ...state.editor, drawerDesigner: null } })),
+      selectDrawerDesign: (designId) =>
+        set((state) =>
+          state.editor.drawerDesigner
+            ? {
+                editor: {
+                  ...state.editor,
+                  drawerDesigner: { ...state.editor.drawerDesigner, designId },
+                },
+              }
+            : {},
+        ),
       updateSettings: (settings) =>
         get().execute((project) => {
           return updateProjectSettings(project, settings)

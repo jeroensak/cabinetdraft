@@ -17,6 +17,7 @@ export function createDefaultProject(
       frontThickness: 18,
       frontGap: 2,
     },
+    drawerDesigns: [],
     modules: [
       {
         id: generateId(),

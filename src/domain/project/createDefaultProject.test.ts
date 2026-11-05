@@ -12,7 +12,7 @@ describe('createDefaultProject', () => {
     const project = createDefaultProject(sequentialIds())
 
     expect(project).toStrictEqual({
-      schemaVersion: 3,
+      schemaVersion: 4,
       id: 'id-1',
       name: 'Untitled cabinet',
       settings: {
@@ -22,6 +22,7 @@ describe('createDefaultProject', () => {
         frontThickness: 18,
         frontGap: 2,
       },
+      drawerDesigns: [],
       modules: [
         {
           id: 'id-2',

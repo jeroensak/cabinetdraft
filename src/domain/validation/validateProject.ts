@@ -1,3 +1,8 @@
+import {
+  deriveDrawerGeometry,
+  validateDrawerDesign,
+  type DrawerIssue,
+} from '../drawers/deriveDrawerGeometry'
 import { deriveCabinetGeometry } from '../cabinet/deriveCabinetGeometry'
 import {
   deriveFrontGeometry,
@@ -17,6 +22,8 @@ import { spacesForRange, rangeBounds } from '../spaces/spaceRanges'
 
 export type ValidationCode =
   | FrontGeometryIssue['code']
+  | DrawerIssue['code']
+  | 'missing-drawer-design'
   | 'invalid-measurement'
   | 'duplicate-id'
   | 'invalid-internal-width'
@@ -70,6 +77,18 @@ export function validateProject(project: Project): ValidationIssue[] {
     }
   }
   checkId(project.id)
+  for (const design of project.drawerDesigns) {
+    checkId(design.id)
+    for (const issue of validateDrawerDesign(design))
+      issues.push({
+        code: issue.code,
+        data: {
+          designId: design.id,
+          message: issue.message,
+          field: issue.field,
+        },
+      })
+  }
   for (const field of [
     'corpusThickness',
     'backPanelThickness',
@@ -306,6 +325,35 @@ export function validateProject(project: Project): ValidationIssue[] {
       !unresolved.length && spaces.every((s) => s.width > 0 && s.height > 0)
     for (const front of module.fronts) {
       checkId(front.id)
+      if (front.type === 'drawer' && front.drawerDesignId !== undefined) {
+        const design = project.drawerDesigns.find(
+          (d) => d.id === front.drawerDesignId,
+        )
+        if (!design)
+          issues.push({
+            code: 'missing-drawer-design',
+            moduleId,
+            frontId: front.id,
+            data: { designId: front.drawerDesignId },
+          })
+        else
+          for (const issue of deriveDrawerGeometry(
+            module,
+            project.settings,
+            front,
+            design,
+          ).issues)
+            issues.push({
+              code: issue.code,
+              moduleId,
+              frontId: front.id,
+              data: {
+                designId: design.id,
+                message: issue.message,
+                field: issue.field,
+              },
+            })
+      }
       const frontGeometry = deriveFrontGeometry(module, project.settings, front)
       for (const issue of frontGeometry.issues) {
         const { code, moduleId: issueModuleId, frontId, ...data } = issue

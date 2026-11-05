@@ -10,4 +10,9 @@ export const partNames: Record<CutListItem['part'], string> = {
   back: 'Back',
   door: 'Door',
   drawer: 'Drawer front',
+  'drawer-side-left': 'Drawer side (left)',
+  'drawer-side-right': 'Drawer side (right)',
+  'drawer-box-front': 'Drawer box front',
+  'drawer-box-back': 'Drawer box back',
+  'drawer-bottom': 'Drawer bottom',
 }

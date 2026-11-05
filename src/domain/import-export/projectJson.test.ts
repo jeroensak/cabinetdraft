@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createDefaultProject } from '../project/createDefaultProject'
 import { exportProject, parseProject, projectFilename } from './projectJson'
 import { validateProject } from '../validation/validateProject'
+import { defaultDrawerDesign } from '../drawers/types'
 
 describe('project JSON boundary', () => {
   it('migrates V1 projects without changing their physical design', () => {
@@ -21,7 +22,27 @@ describe('project JSON boundary', () => {
     })
     const migrated = parseProject(raw)
     expect(migrated).toStrictEqual(v2)
-    expect(JSON.parse(exportProject(migrated)).schemaVersion).toBe(3)
+    expect(JSON.parse(exportProject(migrated)).schemaVersion).toBe(4)
+  })
+
+  it('migrates V3 projects with an empty drawer library and keeps drawer designs on roundtrip', () => {
+    const project = createDefaultProject()
+    const { drawerDesigns: _omitted, ...v3 } = { ...project, schemaVersion: 3 }
+    expect(_omitted).toStrictEqual([])
+    expect(parseProject(JSON.stringify(v3))).toStrictEqual(project)
+    const withDesign = {
+      ...project,
+      drawerDesigns: [{ id: 'design-1', ...defaultDrawerDesign() }],
+    }
+    expect(parseProject(exportProject(withDesign))).toStrictEqual(withDesign)
+    expect(() =>
+      parseProject(
+        exportProject({
+          ...withDesign,
+          drawerDesigns: [{ ...withDesign.drawerDesigns[0]!, id: project.id }],
+        }),
+      ),
+    ).toThrow('invalid-structure')
   })
 
   it('rejects broken divider references and duplicate divider IDs', () => {
@@ -50,7 +71,7 @@ describe('project JSON boundary', () => {
       ...project,
       selection: 'ignored',
     } as typeof project)
-    expect(raw).toContain('\n  "schemaVersion": 3,')
+    expect(raw).toContain('\n  "schemaVersion": 4,')
     expect(raw).not.toContain('selection')
     expect(parseProject(raw)).toEqual(project)
   })

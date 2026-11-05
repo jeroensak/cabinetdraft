@@ -1,3 +1,4 @@
+import { drawerDesignData } from '../drawers/types'
 import { horizontalData } from '../spaces/boundaries'
 import type { Boundary } from '../fronts/types'
 import type { Project } from './types'
@@ -21,6 +22,7 @@ export function projectData(project: Project): Project {
       frontThickness: project.settings.frontThickness,
       frontGap: project.settings.frontGap,
     },
+    drawerDesigns: project.drawerDesigns.map(drawerDesignData),
     modules: project.modules.map((module) => ({
       id: module.id,
       name: module.name,
@@ -46,7 +48,14 @@ export function projectData(project: Project): Project {
         }
         return front.type === 'door'
           ? { id: front.id, type: 'door', ...common, leaves: front.leaves }
-          : { id: front.id, type: 'drawer', ...common }
+          : {
+              id: front.id,
+              type: 'drawer',
+              ...common,
+              ...(front.drawerDesignId !== undefined
+                ? { drawerDesignId: front.drawerDesignId }
+                : {}),
+            }
       }),
     })),
   }

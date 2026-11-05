@@ -23,6 +23,28 @@ function horizontalRange(value: Record<string, unknown>): boolean {
     )
   })
 }
+function drawerDesign(value: unknown): boolean {
+  if (
+    !record(value) ||
+    typeof value.id !== 'string' ||
+    typeof value.name !== 'string' ||
+    value.slideType !== 'undermount'
+  )
+    return false
+  return (
+    [
+      'wallThickness',
+      'bottomThickness',
+      'depth',
+      'sideClearance',
+      'bottomClearance',
+      'topClearance',
+      'rearClearance',
+      'bottomRecess',
+    ].every((field) => Number.isSafeInteger(value[field])) &&
+    (value.height === null || Number.isSafeInteger(value.height))
+  )
+}
 export function isProject(value: unknown): value is Project {
   if (
     !record(value) ||
@@ -30,6 +52,8 @@ export function isProject(value: unknown): value is Project {
     typeof value.id !== 'string' ||
     typeof value.name !== 'string' ||
     !record(value.settings) ||
+    !Array.isArray(value.drawerDesigns) ||
+    !value.drawerDesigns.every(drawerDesign) ||
     !Array.isArray(value.modules)
   )
     return false
@@ -87,7 +111,9 @@ export function isProject(value: unknown): value is Project {
         return false
       return front.type === 'door'
         ? front.leaves === 1 || front.leaves === 2
-        : front.type === 'drawer'
+        : front.type === 'drawer' &&
+            (front.drawerDesignId === undefined ||
+              typeof front.drawerDesignId === 'string')
     })
   })
 }
@@ -103,6 +129,7 @@ export function migrateV1(value: unknown): Project | null {
   const migrated = {
     ...value,
     schemaVersion: PROJECT_SCHEMA_VERSION,
+    drawerDesigns: [],
     modules: value.modules.map((module) =>
       record(module) ? { ...module, dividers: [] } : module,
     ),
@@ -113,6 +140,21 @@ export function migrateV1(value: unknown): Project | null {
 /** V2 already has dividers; omitted horizontal bounds retain full-width semantics. */
 export function migrateV2(value: unknown): Project | null {
   if (!record(value) || value.schemaVersion !== 2) return null
-  const migrated = { ...value, schemaVersion: PROJECT_SCHEMA_VERSION }
+  const migrated = {
+    ...value,
+    schemaVersion: PROJECT_SCHEMA_VERSION,
+    drawerDesigns: [],
+  }
+  return isProject(migrated) ? migrated : null
+}
+
+/** V3 spaces/fronts are unchanged; a new reusable drawer library starts empty. */
+export function migrateV3(value: unknown): Project | null {
+  if (!record(value) || value.schemaVersion !== 3) return null
+  const migrated = {
+    ...value,
+    schemaVersion: PROJECT_SCHEMA_VERSION,
+    drawerDesigns: [],
+  }
   return isProject(migrated) ? migrated : null
 }

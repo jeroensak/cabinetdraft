@@ -13,6 +13,20 @@ export function commandMessage(error: unknown) {
     return 'Remove shelves and fronts attached to this divider first.'
   if (error.code === 'shelf-has-dividers')
     return 'Remove the dividers attached to this shelf before deleting it.'
+  if (
+    error.code === 'invalid-drawer-design' ||
+    error.code === 'drawer-does-not-fit'
+  ) {
+    const issues = error.data.issues as { message: string }[] | undefined
+    return (
+      issues?.[0]?.message ??
+      'This drawer design does not fit the selected space.'
+    )
+  }
+  if (error.code === 'drawer-design-in-use')
+    return 'Remove this design from its drawers before deleting it.'
+  if (error.code === 'space-occupied')
+    return 'A door covers one of the selected spaces. Remove the door before adding a drawer.'
   return 'This selection is no longer available. Select it again and retry.'
 }
 export function useCommandAction() {
