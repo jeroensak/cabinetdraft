@@ -10,3 +10,7 @@ export const inches = (value: number) => value * UNITS_PER_INCH
 export function mmToInchUnits(mm: number, grid: number) {
   return Math.round(((mm / MM_PER_INCH) * UNITS_PER_INCH) / grid) * grid
 }
+
+/** Refuses typing slips such as an extra digit, not unusual furniture. */
+export const maxCabinetSize = (unit: MeasurementUnit = 'mm') =>
+  unit === 'inch' ? inches(4000) : 100_000

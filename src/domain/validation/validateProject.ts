@@ -86,6 +86,7 @@ export function validateProject(project: Project): ValidationIssue[] {
         data: {
           designId: design.id,
           message: issue.message,
+          issue,
           field: issue.field,
         },
       })
@@ -351,6 +352,7 @@ export function validateProject(project: Project): ValidationIssue[] {
               data: {
                 designId: design.id,
                 message: issue.message,
+                issue,
                 field: issue.field,
               },
             })

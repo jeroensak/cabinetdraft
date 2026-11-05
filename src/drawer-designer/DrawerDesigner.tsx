@@ -146,6 +146,14 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
     })),
   )
   const usage = design ? drawerDesignUsage(project, design.id) : 0
+  const previewFront = preview?.frontPanels[0]
+  const previewBox = preview?.boxPanels[0]
+  const boxAboveFront =
+    preview &&
+    previewFront &&
+    previewBox &&
+    previewFront.position.y + previewFront.length <
+      previewBox.position.y + preview.height
   const update = (patch: Partial<DrawerDesignInput>) =>
     design
       ? run(() =>
@@ -363,46 +371,53 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
                 minimum: measure(minDrawerSideClearance(unit)),
               })}
             </p>
-            {blockedByDoor && (
-              <p className="field-error">{t('drawer.doorBlocks')}</p>
-            )}
-            {fitIssues.map((issue, index) => (
-              <p key={index} className="field-error">
-                {targets.length > 1
-                  ? t('drawer.spacePrefix', { n: issue.target })
-                  : ''}
-                {drawerIssueMessage(issue, unit)}
-              </p>
-            ))}
-            <div className="context-actions">
-              {!library && (
-                <button
-                  className="pill primary"
-                  disabled={
-                    !module ||
-                    !targets.length ||
-                    blockedByDoor ||
-                    fitIssues.length > 0
-                  }
-                  onClick={apply}
-                >
-                  {t('drawer.apply', { target: targetLabel })}
-                </button>
+            <div className="drawer-apply-bar">
+              {boxAboveFront && (
+                <p className="inspector-note muted">
+                  {t('drawer.boxAboveFront')}
+                </p>
               )}
-              <button
-                className="pill"
-                onClick={() =>
-                  create({
-                    ...designInput(design),
-                    name: uniqueDesignName(
-                      project,
-                      t('drawer.copyName', { name: design.name }),
-                    ),
-                  })
-                }
-              >
-                {t('drawer.duplicate')}
-              </button>
+              {blockedByDoor && (
+                <p className="field-error">{t('drawer.doorBlocks')}</p>
+              )}
+              {fitIssues.map((issue, index) => (
+                <p key={index} className="field-error">
+                  {targets.length > 1
+                    ? t('drawer.spacePrefix', { n: issue.target })
+                    : ''}
+                  {drawerIssueMessage(issue, unit)}
+                </p>
+              ))}
+              <div className="context-actions">
+                {!library && (
+                  <button
+                    className="pill primary"
+                    disabled={
+                      !module ||
+                      !targets.length ||
+                      blockedByDoor ||
+                      fitIssues.length > 0
+                    }
+                    onClick={apply}
+                  >
+                    {t('drawer.apply', { target: targetLabel })}
+                  </button>
+                )}
+                <button
+                  className="pill"
+                  onClick={() =>
+                    create({
+                      ...designInput(design),
+                      name: uniqueDesignName(
+                        project,
+                        t('drawer.copyName', { name: design.name }),
+                      ),
+                    })
+                  }
+                >
+                  {t('drawer.duplicate')}
+                </button>
+              </div>
             </div>
             <div className="inspector-actions">
               <button

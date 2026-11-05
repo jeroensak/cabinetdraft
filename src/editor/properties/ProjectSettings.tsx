@@ -2,7 +2,6 @@ import { useTranslation } from '../../i18n'
 import { useMeasure } from '../../units/useMeasure'
 
 import { useProjectStore } from '../../store/projectStore'
-import { renameProject } from '../../domain/commands'
 import { DraftField } from '../../components/DraftField'
 import { useCommandAction } from '../useCommandAction'
 
@@ -18,19 +17,10 @@ export function ProjectSettings() {
   const { unit } = useMeasure()
 
   const project = useProjectStore((state) => state.present)
-  const execute = useProjectStore((state) => state.execute)
   const updateSettings = useProjectStore((state) => state.updateSettings)
   const { error, run } = useCommandAction()
   return (
     <div>
-      <DraftField
-        key={`${project.id}-${project.name}`}
-        label={t('settings.projectName')}
-        value={project.name}
-        onCommit={(name) =>
-          run(() => execute((project) => renameProject(project, name)))
-        }
-      />
       {fields.map(([field, label]) => (
         <DraftField
           key={`${project.id}-${field}-${project.settings[field]}`}

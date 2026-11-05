@@ -133,6 +133,21 @@ describe('Drawer designer', () => {
     ).toBeNull()
   })
 
+  it('notes a box that rises above a lowered front', async () => {
+    const user = userEvent.setup()
+    render(<DesignerPage />)
+    await user.click(screen.getByRole('button', { name: 'Cabinet 1 space 1' }))
+    await user.click(screen.getByRole('button', { name: 'Add drawer' }))
+    await user.click(
+      screen.getByRole('button', { name: '+ New drawer design' }),
+    )
+    expect(screen.queryByText(/rises above this front/)).toBeNull()
+    const height = screen.getByRole('textbox', { name: 'Front height (%)' })
+    await user.clear(height)
+    await user.type(height, '20{Enter}')
+    expect(screen.getByText(/rises above this front/)).toBeInTheDocument()
+  })
+
   it('sets the drawer front style, position and height on the design', async () => {
     const user = userEvent.setup()
     render(<DesignerPage />)

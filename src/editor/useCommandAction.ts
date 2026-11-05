@@ -26,6 +26,9 @@ export function commandMessage(error: unknown) {
   }
   if (error.code === 'drawer-design-in-use') return t('error.designInUse')
   if (error.code === 'space-occupied') return t('error.spaceOccupied')
+  if (error.code === 'blank-name') return t('error.blankName')
+  if (error.code === 'invalid-size') return t('error.invalidSize')
+  if (error.code === 'size-too-large') return t('error.sizeTooLarge')
   return t('error.stale')
 }
 export function useCommandAction() {

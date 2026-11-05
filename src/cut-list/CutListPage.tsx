@@ -8,6 +8,7 @@ import { deriveCutList } from '../domain/cutlist/deriveCutList'
 import { cutListRows, groupCutList } from './partGroups'
 import { useProjectStore } from '../store/projectStore'
 import { trackEvent } from '../app/analytics'
+import { ValidationIssues } from '../app/ValidationIssues'
 
 export function CutListPage() {
   const { t } = useTranslation()
@@ -159,6 +160,7 @@ export function CutListPage() {
           <p className="muted">
             {t('cutList.errors', { count: result.issues.length })}
           </p>
+          <ValidationIssues project={project} issues={result.issues} />{' '}
         </div>
       )}
       <footer className="cut-list-footer">

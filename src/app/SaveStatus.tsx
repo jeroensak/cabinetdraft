@@ -6,6 +6,17 @@ export function SaveStatus() {
 
   const persistence = useProjectStore((state) => state.persistence)
   const retry = useProjectStore((state) => state.retrySave)
+  const updatedInOtherTab = useProjectStore((state) => state.updatedInOtherTab)
+  const dismiss = useProjectStore((state) => state.dismissTabUpdate)
+  if (updatedInOtherTab && !persistence.loadError && !persistence.saveError)
+    return (
+      <div className="save-warning" role="status">
+        <span>{t('save.otherTab')}</span>
+        <button className="pill" onClick={dismiss}>
+          {t('files.dismiss')}
+        </button>
+      </div>
+    )
   if (!persistence.loadError && !persistence.saveError) return null
   return (
     <div className="save-warning" role="status">

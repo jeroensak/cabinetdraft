@@ -17,7 +17,7 @@ import {
 import { enclosingRange, spaceRange } from '../../domain/spaces/spaceRanges'
 import { selectedSpaces } from '../../store/selection'
 import { DraftField } from '../../components/DraftField'
-import { deleteSelection } from '../deleteSelection'
+import { deleteWithNotice } from '../deleteSelection'
 import { useCommandAction } from '../useCommandAction'
 
 export function PropertiesInspector() {
@@ -77,7 +77,7 @@ export function PropertiesInspector() {
       <p className="eyebrow">{t(`selection.${selection?.type ?? 'none'}`)}</p>
       {module && selection ? (
         <>
-          <h2>
+          <h2 className="clamped" title={module.name}>
             {selection.type === 'module'
               ? module.name
               : selection.type === 'shelf'
@@ -301,11 +301,7 @@ export function PropertiesInspector() {
               )}
               <button
                 className="delete-button"
-                onClick={() =>
-                  run(() =>
-                    execute((project) => deleteSelection(project, selection)),
-                  )
-                }
+                onClick={() => deleteWithNotice(run)}
               >
                 {t('inspector.delete')}
               </button>

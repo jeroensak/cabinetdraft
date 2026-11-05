@@ -171,6 +171,32 @@ describe('local designs', () => {
     ).toBe('inch')
   })
 
+  it('follows another tab instead of overwriting it with an older copy', () => {
+    const disk = memory()
+    const tabA = existingStore(disk)
+    const tabB = existingStore(disk)
+    tabA.getState().execute((p) => renameProject(p, 'From tab A'))
+    tabB.getState().adoptFromOtherTab(disk.getItem(PROJECT_STORAGE_KEY)!)
+    expect(tabB.getState().present.name).toBe('From tab A')
+    expect(tabB.getState().updatedInOtherTab).toBe(true)
+    expect(tabB.getState().past).toHaveLength(0)
+    tabB.getState().execute((p) => renameProject(p, 'Then tab B'))
+    expect(tabB.getState().updatedInOtherTab).toBe(false)
+    expect(JSON.parse(disk.getItem(PROJECT_STORAGE_KEY)!).name).toBe(
+      'Then tab B',
+    )
+  })
+
+  it('ignores unreadable data and its own save from another tab', () => {
+    const disk = memory()
+    const store = existingStore(disk)
+    store.getState().execute((p) => renameProject(p, 'Mine'))
+    store.getState().adoptFromOtherTab('not json')
+    store.getState().adoptFromOtherTab(disk.getItem(PROJECT_STORAGE_KEY)!)
+    expect(store.getState().updatedInOtherTab).toBe(false)
+    expect(store.getState().past).toHaveLength(1)
+  })
+
   it('stays on the open design and keeps its history when saving fails', () => {
     const disk = memory()
     const store = createProjectStore({ storage: disk })

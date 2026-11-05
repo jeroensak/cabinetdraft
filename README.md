@@ -87,4 +87,18 @@ This is an approved post-V1 extension. See [construction and migration rules](do
 
 Select one or more spaces and choose **Add drawer** to open the drawer designer. Create reusable drawer designs (four equal-height walls, a bottom and an overlay front on undermount slides) and apply one to every selected space in a single undoable action. The box width always follows each space, minus a side gap of at least 3 mm per side; the height defaults to half the space height. Box panels appear in the canvas, the Cut List and the PDF. See [drawer box rules](docs/DRAWER_BOXES.md).
 
-Project JSON uses schema version 4; existing V1–V3 local saves and imports migrate without changing their design.
+Project JSON uses schema version 6; older local saves and imports migrate without changing their design.
+
+## Fronts
+
+Drawer designs choose a full or wave top front, overlay or inset, with a front height percentage. Doors are overlay or inset; shelves and dividers behind an inset door are set back automatically.
+
+## Designs, units and languages
+
+One browser can hold several named designs. A first visit starts from one of the templates in `src/design-templates/`. Each design is in millimetres or inches, chosen when it is created. Inch designs show fractions and store whole 1/32 inch units. Designs can be duplicated, exported as JSON, or shared by link.
+
+The interface is available in English, Dutch, German and French through i18next, with locale files in `src/i18n/locales/`.
+
+## Cut List
+
+Parts are grouped into cabinet bases, shelves and dividers, doors, and drawers, and identical parts share a row by default. The PDF adds an assembly page per cabinet.
