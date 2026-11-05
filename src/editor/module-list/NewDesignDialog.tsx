@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from '../../i18n'
 import { designTemplates, localizedTemplate } from '../../design-templates'
+import type { MeasurementUnit } from '../../domain/project/units'
 import { useProjectStore } from '../../store/projectStore'
 
 export function NewDesignDialog({
@@ -16,6 +17,7 @@ export function NewDesignDialog({
   const createDesign = useProjectStore((state) => state.createDesign)
   const [templateId, setTemplateId] = useState(designTemplates[0]?.id)
   const [name, setName] = useState('')
+  const [unit, setUnit] = useState<MeasurementUnit>('mm')
   const [failed, setFailed] = useState(false)
   const template = designTemplates.find((item) => item.id === templateId)
   const closable = !required || failed
@@ -26,6 +28,7 @@ export function NewDesignDialog({
       createDesign(
         localizedTemplate(template.raw),
         name.trim() || t(template.key),
+        unit,
       )
     )
       onClose()
@@ -67,6 +70,18 @@ export function NewDesignDialog({
             </label>
           ))}
         </fieldset>
+        <label className="property-field">
+          <span>{t('newDesign.units')}</span>
+          <select
+            aria-label={t('newDesign.units')}
+            value={unit}
+            onChange={(event) => setUnit(event.target.value as MeasurementUnit)}
+          >
+            <option value="mm">{t('unit.mm')}</option>
+            <option value="inch">{t('unit.inch')}</option>
+          </select>
+        </label>
+        <p className="muted">{t('newDesign.unitsNote')}</p>
         {failed && (
           <p role="alert" className="field-error">
             {t('newDesign.failed')}

@@ -1,4 +1,6 @@
 import { useTranslation } from '../../i18n'
+import { useMeasure } from '../../units/useMeasure'
+
 import { useProjectStore } from '../../store/projectStore'
 import { renameProject } from '../../domain/commands'
 import { DraftField } from '../../components/DraftField'
@@ -13,6 +15,7 @@ const fields = [
 
 export function ProjectSettings() {
   const { t } = useTranslation()
+  const { unit } = useMeasure()
 
   const project = useProjectStore((state) => state.present)
   const execute = useProjectStore((state) => state.execute)
@@ -51,6 +54,12 @@ export function ProjectSettings() {
         />
         {t('settings.backEnabled')}
       </label>
+      <dl className="settings-values">
+        <div>
+          <dt>{t('settings.units')}</dt>
+          <dd>{t(unit === 'inch' ? 'unit.inch' : 'unit.mm')}</dd>
+        </div>
+      </dl>
       <p className="muted">{t('settings.note')}</p>
       {error && (
         <p role="alert" className="field-error">

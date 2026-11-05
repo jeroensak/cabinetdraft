@@ -16,6 +16,7 @@ export function projectData(project: Project): Project {
     id: project.id,
     name: project.name,
     settings: {
+      ...(project.settings.unit === 'inch' ? { unit: 'inch' as const } : {}),
       corpusThickness: project.settings.corpusThickness,
       backPanelEnabled: project.settings.backPanelEnabled,
       backPanelThickness: project.settings.backPanelThickness,

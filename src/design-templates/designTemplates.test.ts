@@ -1,5 +1,7 @@
 import { expect, it } from 'vitest'
+import { deriveCutList } from '../domain/cutlist/deriveCutList'
 import { defaultDrawerDesign } from '../domain/drawers/types'
+import { convertToInches } from '../domain/project/convertToInches'
 import { parseProject } from '../domain/import-export/projectJson'
 import { validateProject } from '../domain/validation/validateProject'
 import { setLanguage } from '../i18n'
@@ -18,6 +20,14 @@ it('ships exactly three valid starting templates', () => {
     'Wave drawer sideboard',
     'Drawers and door',
   ])
+})
+
+it('gives a valid, cuttable inch design from every template', () => {
+  for (const template of designTemplates) {
+    const project = convertToInches(parseProject(template.raw))
+    expect(validateProject(project), template.id).toStrictEqual([])
+    expect(deriveCutList(project).available, template.id).toBe(true)
+  }
 })
 
 it('uses the default 18 mm drawer walls in every template', () => {

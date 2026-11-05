@@ -1,5 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from '../i18n'
+import { useMeasure } from '../units/useMeasure'
+
 import type { DrawerGeometry } from '../domain/drawers/deriveDrawerGeometry'
 import type { PhysicalPosition } from '../domain/geometry/physicalPanel'
 import { Dimension } from '../editor/canvas/Dimension'
@@ -20,6 +22,8 @@ export function DrawerPreview({
   showFront: boolean
 }) {
   const { t } = useTranslation()
+  const { measure, size } = useMeasure()
+
   const { opening } = geometry
 
   const walls = useMemo(
@@ -93,9 +97,7 @@ export function DrawerPreview({
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       role="img"
       aria-label={t('drawer.previewLabel', {
-        width: geometry.width,
-        height: geometry.height,
-        depth: geometry.depth,
+        size: size(geometry.width, geometry.height, geometry.depth),
       })}
     >
       {valid ? (
@@ -136,12 +138,14 @@ export function DrawerPreview({
                   >
                     <tspan x={bottomLabel.x}>
                       {t('drawer.bottomLabel', {
-                        thickness: bottom.thickness,
-                        height: groove.fromEdge,
+                        thickness: measure(bottom.thickness),
+                        height: measure(groove.fromEdge),
                       })}
                     </tspan>
                     <tspan x={bottomLabel.x} dy={16}>
-                      {t('drawer.grooveLabel', { depth: groove.depth })}
+                      {t('drawer.grooveLabel', {
+                        depth: measure(groove.depth),
+                      })}
                     </tspan>
                   </text>
                 </g>
@@ -150,14 +154,14 @@ export function DrawerPreview({
                 from={screen(box.x, opening.bottom)}
                 to={screen(box.x + geometry.width, opening.bottom)}
                 offset={30}
-                label={t('drawer.boxWidth', { value: geometry.width })}
+                label={t('drawer.boxWidth', { value: measure(geometry.width) })}
               />
               <Dimension
                 from={screen(opening.left, opening.bottom)}
                 to={screen(opening.right, opening.bottom)}
                 offset={54}
                 label={t('drawer.openingWidth', {
-                  value: geometry.openingWidth,
+                  value: measure(geometry.openingWidth),
                 })}
               />
               <Dimension
@@ -165,7 +169,7 @@ export function DrawerPreview({
                 to={screen(box.x, box.y + geometry.height)}
                 vertical
                 offset={-24}
-                label={`${geometry.height} mm`}
+                label={measure(geometry.height)}
               />
               <Dimension
                 from={screen(box.x + geometry.width, box.y + geometry.height)}
@@ -175,7 +179,9 @@ export function DrawerPreview({
                   geometry.depth,
                 )}
                 offset={-18}
-                label={t('drawer.depthLabel', { value: geometry.depth })}
+                label={t('drawer.depthLabel', {
+                  value: measure(geometry.depth),
+                })}
               />
             </g>
           )}

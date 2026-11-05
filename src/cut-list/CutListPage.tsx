@@ -1,5 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from '../i18n'
+import { formatBare, unitSymbol } from '../units'
+import { useMeasure } from '../units/useMeasure'
+
 import { Link } from 'react-router'
 import { deriveCutList } from '../domain/cutlist/deriveCutList'
 import { groupCutList } from './partGroups'
@@ -9,6 +12,8 @@ import { trackEvent } from '../app/analytics'
 
 export function CutListPage() {
   const { t } = useTranslation()
+  const { unit } = useMeasure()
+  const symbol = unitSymbol(unit)
 
   const project = useProjectStore((state) => state.present)
   const result = useMemo(() => deriveCutList(project), [project])
@@ -90,9 +95,15 @@ export function CutListPage() {
                         <th scope="col">{t('cutList.cabinet')}</th>
                         <th scope="col">{t('cutList.part')}</th>
                         <th scope="col">{t('cutList.qty')}</th>
-                        <th scope="col">{t('cutList.length')}</th>
-                        <th scope="col">{t('cutList.width')}</th>
-                        <th scope="col">{t('cutList.thickness')}</th>
+                        <th scope="col">
+                          {t('cutList.length', { unit: symbol })}
+                        </th>
+                        <th scope="col">
+                          {t('cutList.width', { unit: symbol })}
+                        </th>
+                        <th scope="col">
+                          {t('cutList.thickness', { unit: symbol })}
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -106,11 +117,11 @@ export function CutListPage() {
                         >
                           <th scope="row">{item.id}</th>
                           <td>{item.moduleName}</td>
-                          <td>{partName(item)}</td>
+                          <td>{partName(item, unit)}</td>
                           <td>{item.quantity}</td>
-                          <td>{item.length}</td>
-                          <td>{item.width}</td>
-                          <td>{item.thickness}</td>
+                          <td>{formatBare(item.length, unit)}</td>
+                          <td>{formatBare(item.width, unit)}</td>
+                          <td>{formatBare(item.thickness, unit)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -124,7 +135,11 @@ export function CutListPage() {
               <p>{t('cutList.emptyBody')}</p>
             </div>
           )}
-          <p className="cut-list-note">{t('cutList.note')}</p>
+          <p className="cut-list-note">
+            {t('cutList.note', {
+              unit: t(unit === 'inch' ? 'unit.inchPlural' : 'unit.mmPlural'),
+            })}
+          </p>
         </div>
       ) : (
         <div className="cut-list-unavailable" role="status">

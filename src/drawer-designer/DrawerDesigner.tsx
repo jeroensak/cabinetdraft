@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from '../i18n'
+import { useMeasure } from '../units/useMeasure'
+
 import { drawerIssueMessage } from '../i18n/drawerIssues'
 import { DraftField } from '../components/DraftField'
 import {
@@ -12,7 +14,7 @@ import {
 import { deriveDrawerGeometry } from '../domain/drawers/deriveDrawerGeometry'
 import {
   defaultDrawerDesign,
-  MIN_DRAWER_SIDE_CLEARANCE,
+  minDrawerSideClearance,
   type DrawerDesign,
   type DrawerDesignInput,
 } from '../domain/drawers/types'
@@ -99,6 +101,7 @@ function resolveTargets(project: Project, context: DesignerScope) {
 
 export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
   const { t } = useTranslation()
+  const { measure, size, unit } = useMeasure()
 
   const project = useProjectStore((state) => state.present)
   const execute = useProjectStore((state) => state.execute)
@@ -200,7 +203,7 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
           className="add-cabinet"
           onClick={() =>
             create({
-              ...defaultDrawerDesign(),
+              ...defaultDrawerDesign(unit),
               name: uniqueDesignName(project, t('default.drawerDesign')),
             })
           }
@@ -224,8 +227,7 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
                 : t('drawer.cabinetUnavailable')}
             {preview &&
               t('drawer.opening', {
-                width: preview.openingWidth,
-                height: preview.openingHeight,
+                size: size(preview.openingWidth, preview.openingHeight),
               })}
           </span>
           <label className="drawer-front-toggle">
@@ -259,9 +261,7 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
           {preview && (
             <span>
               {t('drawer.boxSummary', {
-                width: preview.width,
-                height: preview.height,
-                depth: preview.depth,
+                size: size(preview.width, preview.height, preview.depth),
               })}
             </span>
           )}
@@ -290,7 +290,7 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
               key={`${design.id}-heightPercent-${design.heightPercent}`}
               label={t('drawer.boxHeight')}
               numeric
-              unit="%"
+              percent
               value={design.heightPercent}
               onCommit={(value) => update({ heightPercent: Number(value) })}
             />
@@ -340,7 +340,7 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
               key={`${design.id}-frontHeightPercent-${design.frontHeightPercent}`}
               label={t('drawer.frontHeight')}
               numeric
-              unit="%"
+              percent
               value={design.frontHeightPercent}
               onCommit={(value) =>
                 updateFront({ frontHeightPercent: Number(value) })
@@ -359,7 +359,9 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
               />
             ))}
             <p className="inspector-note muted">
-              {t('drawer.note', { minimum: MIN_DRAWER_SIDE_CLEARANCE })}
+              {t('drawer.note', {
+                minimum: measure(minDrawerSideClearance(unit)),
+              })}
             </p>
             {blockedByDoor && (
               <p className="field-error">{t('drawer.doorBlocks')}</p>
@@ -369,7 +371,7 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
                 {targets.length > 1
                   ? t('drawer.spacePrefix', { n: issue.target })
                   : ''}
-                {drawerIssueMessage(issue)}
+                {drawerIssueMessage(issue, unit)}
               </p>
             ))}
             <div className="context-actions">

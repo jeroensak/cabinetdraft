@@ -92,3 +92,11 @@ The language is an editor preference stored under `cabinet-designer:language`, n
 The user requested doors that are either overlay or inset. This supersedes specification sections 10 and 20–23 only for inset doors; the frozen specification remains unchanged. A door may store `mount: 'inset'`; omitted means overlay, so existing projects need no migration and overlay is never written out.
 
 An inset door sits inside its opening with `frontGap` on all four sides, its face flush with the carcass front. A double door's leaves divide the width as they do for overlay, so a non-integer leaf remains a validation problem. Any shelf or divider inside the opening of an inset door would block it, so it is set back by `frontThickness + frontGap` and its depth shrinks by the same amount. `insetDoorSetback` is the one canonical rule. The setback is derived, never stored, and panels that only bound the opening do not move.
+
+## Approved post-V1 extension: inch designs
+
+The user requested designs in inches, in the fractional notation used in America, next to millimetres, with the unit set per design so that free switching can't cause rounding errors. This supersedes the measurement rule of specification section 6 for inch designs only; the frozen specification remains unchanged.
+
+A project with `settings.unit: 'inch'` stores every measurement as a whole number of 1/32 inch units. Omitted means millimetres, so existing projects need no migration. All domain formulas stay unit-agnostic and still require whole numbers, which keeps inch sizes exact: 1/16 inch has no whole-millimetre value, and a halved 1/16 inch size is still a whole unit. Percentage heights and centred placements round to a whole 1/32 inch, as they round to a whole millimetre otherwise. Groove depths may be half a unit, shown in 1/64ths.
+
+The unit is chosen in the New design dialog and can't be changed afterwards. Templates are millimetre files, converted once at creation by `convertToInches`: sheet thicknesses to the nearest 1/8 inch, everything else to the nearest 1/16 inch. That rounding is why no conversion exists for a design already in use. An imported project keeps its unit. Formatting and parsing live in `src/units`; input finer than 1/32 inch is refused, never rounded.

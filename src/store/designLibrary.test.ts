@@ -138,6 +138,17 @@ describe('local designs', () => {
     expect(store.getState().present.modules).toHaveLength(1)
   })
 
+  it('creates an inch design from a millimetre template and keeps it on reload', () => {
+    const disk = memory()
+    const store = createProjectStore({ storage: disk })
+    store.getState().createDesign(template(), 'Inch', 'inch')
+    expect(store.getState().present.settings.unit).toBe('inch')
+    expect(store.getState().present.modules[0]!.width).toBe(1008)
+    expect(
+      createProjectStore({ storage: disk }).getState().present.settings.unit,
+    ).toBe('inch')
+  })
+
   it('stays on the open design and keeps its history when saving fails', () => {
     const disk = memory()
     const store = createProjectStore({ storage: disk })

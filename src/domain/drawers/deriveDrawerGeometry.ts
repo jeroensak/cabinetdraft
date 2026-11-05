@@ -3,10 +3,12 @@ import { deriveCarcassDimensions } from '../cabinet/deriveCarcassDimensions'
 import type { DrawerFront } from '../fronts/types'
 import { deriveFrontGeometry } from '../fronts/deriveFrontGeometry'
 import type { ProjectSettings } from '../project/types'
+import type { MeasurementUnit } from '../project/units'
+
 import type { PhysicalPanel } from '../geometry/physicalPanel'
 import { horizontalBounds, verticalBounds } from '../spaces/boundaries'
 import {
-  MIN_DRAWER_SIDE_CLEARANCE,
+  minDrawerSideClearance,
   type DrawerDesign,
   type DrawerDesignInput,
 } from './types'
@@ -62,7 +64,10 @@ const measurementLabels = {
 } as const
 
 /** Space-independent checks. Commands reject designs that fail these. */
-export function validateDrawerDesign(design: DrawerDesignInput): DrawerIssue[] {
+export function validateDrawerDesign(
+  design: DrawerDesignInput,
+  unit: MeasurementUnit = 'mm',
+): DrawerIssue[] {
   const issues: DrawerIssue[] = []
   if (!design.name.trim())
     issues.push({
@@ -82,7 +87,7 @@ export function validateDrawerDesign(design: DrawerDesignInput): DrawerIssue[] {
     wallThickness: 1,
     bottomThickness: 1,
     depth: 1,
-    sideClearance: MIN_DRAWER_SIDE_CLEARANCE,
+    sideClearance: minDrawerSideClearance(unit),
     bottomClearance: 0,
     topClearance: 0,
     rearClearance: 0,
@@ -185,7 +190,8 @@ export function deriveDrawerGeometry(
   const y = vertical.bottom + design.bottomClearance
   // An inset front fills the first part of the opening, so the box starts behind it.
   const z = design.frontMount === 'inset' ? settings.frontThickness : 0
-  const issues = validateDrawerDesign(design)
+  const issues = validateDrawerDesign(design, settings.unit)
+
   const { carcassDepth } = deriveCarcassDimensions(module, settings)
   if (height + design.bottomClearance + design.topClearance > openingHeight)
     issues.push({

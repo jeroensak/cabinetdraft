@@ -6,6 +6,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { createDefaultProject } from '../../domain/project/createDefaultProject'
 import { useProjectStore } from '../../store/projectStore'
 import { DESIGN_LIBRARY_KEY } from '../../store/designLibrary'
+import { ProjectSettings } from '../properties/ProjectSettings'
 import { DesignPicker } from './DesignPicker'
 import { NewDesignDialog } from './NewDesignDialog'
 
@@ -100,6 +101,42 @@ it('deletes the open design only after confirmation, never the last one', async 
   expect(useProjectStore.getState().present.name).toBe('Kitchen')
   expect(screen.getAllByRole('option')).toHaveLength(1)
   expect(remove).toBeDisabled()
+})
+
+it('sets inches when creating a design, entered and shown as fractions', async () => {
+  const user = userEvent.setup()
+  render(
+    <>
+      <DesignPicker />
+      <ProjectSettings />
+    </>,
+  )
+  await user.click(screen.getByRole('button', { name: '+ New design' }))
+  const dialog = screen.getByRole('dialog', { name: 'New design' })
+  await user.selectOptions(
+    within(dialog).getByRole('combobox', { name: 'Units' }),
+    'inch',
+  )
+  await user.click(
+    within(dialog).getByRole('button', { name: 'Create design' }),
+  )
+  expect(screen.getByText('Inches')).toBeInTheDocument()
+  const thickness = screen.getByRole('textbox', {
+    name: 'Corpus thickness (in)',
+  })
+  expect(thickness).toHaveValue('3/4')
+
+  await user.clear(thickness)
+  await user.type(thickness, '1/64{Enter}')
+  expect(screen.getByRole('alert')).toHaveTextContent('nearest 1/32')
+  expect(useProjectStore.getState().present.settings.corpusThickness).toBe(24)
+
+  await user.clear(thickness)
+  await user.type(thickness, '5/8{Enter}')
+  expect(useProjectStore.getState().present.settings.corpusThickness).toBe(20)
+  expect(
+    screen.getByRole('textbox', { name: 'Corpus thickness (in)' }),
+  ).toHaveValue('5/8')
 })
 
 it('cannot be dismissed on a first visit unless saving fails', async () => {

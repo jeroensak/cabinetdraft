@@ -5,7 +5,10 @@ import { reconcileSelection } from './selection'
 import { updateProjectSettings, type BoundaryRange } from '../domain/commands'
 import { projectData } from '../domain/project/projectData'
 import { createDefaultProject } from '../domain/project/createDefaultProject'
+import { convertToInches } from '../domain/project/convertToInches'
 import { createId } from '../domain/project/id'
+import type { MeasurementUnit } from '../domain/project/units'
+
 import {
   DESIGN_LIBRARY_KEY,
   readLibrary,
@@ -123,7 +126,7 @@ export interface ProjectStoreState {
   skipFirstDesign(): void
   /** Both return false, leaving the open design as it was, when nothing changed. */
   switchDesign(id: string): boolean
-  createDesign(raw: string, name: string): boolean
+  createDesign(raw: string, name: string, unit?: MeasurementUnit): boolean
   /** Removes the open design and opens its neighbour; never the last design. */
   deleteDesign(): boolean
   replaceProject(raw: string): void
@@ -238,13 +241,14 @@ export function createProjectStore(options: CreateProjectStoreOptions = {}) {
           return false
         }
       },
-      createDesign: (raw, name) => {
+      createDesign: (raw, name, unit = 'mm') => {
         // The unsaved fallback project must not become a design of its own.
         const library = get().needsFirstDesign
           ? storage && readLibrary(storage)
           : currentLibrary()
         if (!library) return false
-        const template = parseProject(raw)
+        const parsed = parseProject(raw)
+        const template = unit === 'inch' ? convertToInches(parsed) : parsed
         const project = projectData({
           ...template,
           // Templates can be reused, so a design can't keep the file's ID.

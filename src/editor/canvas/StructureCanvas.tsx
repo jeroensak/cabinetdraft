@@ -1,5 +1,7 @@
 import { deriveModuleDrawerPanels } from '../../domain/drawers/deriveModuleDrawerPanels'
 import { useTranslation } from '../../i18n'
+import { useMeasure } from '../../units/useMeasure'
+
 import { frontDesign } from '../../domain/drawers/types'
 import { deriveFrontGeometry } from '../../domain/fronts/deriveFrontGeometry'
 import { FrontTargets } from './FrontTargets'
@@ -15,6 +17,8 @@ import { orderFaces } from './orderFaces'
 
 export function StructureCanvas() {
   const { t } = useTranslation()
+  const { measure } = useMeasure()
+
   const [mode, setMode] = useState<'structure' | 'fronts'>('structure')
   const project = useProjectStore((state) => state.present)
   const selection = useProjectStore((state) => state.editor.selection)
@@ -93,7 +97,9 @@ export function StructureCanvas() {
     <>
       <div className="editor-toolbar">
         <span className="muted">
-          {t('canvas.totalWidth', { width: arrangement.totalWidth })}
+          {t('canvas.totalWidth', {
+            width: measure(arrangement.totalWidth, true),
+          })}
         </span>
         <div
           className="segmented view-switch"
@@ -268,14 +274,18 @@ export function StructureCanvas() {
               from={screen(0, 0)}
               to={screen(arrangement.totalWidth, 0)}
               offset={60}
-              label={t('canvas.total', { value: arrangement.totalWidth })}
+              label={t('canvas.total', {
+                value: measure(arrangement.totalWidth),
+              })}
             />
             <Dimension
               from={screen(0, 0)}
               to={screen(0, arrangement.maximumHeight)}
               vertical
               offset={-58}
-              label={t('canvas.max', { value: arrangement.maximumHeight })}
+              label={t('canvas.max', {
+                value: measure(arrangement.maximumHeight),
+              })}
             />
             {selected && (
               <>
@@ -283,7 +293,9 @@ export function StructureCanvas() {
                   from={screen(selected.origin.x, 0)}
                   to={screen(selected.origin.x + selected.module.width, 0)}
                   offset={28}
-                  label={t('canvas.width', { value: selected.module.width })}
+                  label={t('canvas.width', {
+                    value: measure(selected.module.width),
+                  })}
                 />
                 <Dimension
                   from={screen(selected.origin.x + selected.module.width, 0)}
@@ -293,7 +305,9 @@ export function StructureCanvas() {
                   )}
                   vertical
                   offset={28}
-                  label={t('canvas.height', { value: selected.module.height })}
+                  label={t('canvas.height', {
+                    value: measure(selected.module.height),
+                  })}
                 />
                 <Dimension
                   from={screen(
@@ -306,7 +320,9 @@ export function StructureCanvas() {
                     selected.module.depth,
                   )}
                   offset={-26}
-                  label={t('canvas.depth', { value: selected.module.depth })}
+                  label={t('canvas.depth', {
+                    value: measure(selected.module.depth),
+                  })}
                 />
               </>
             )}

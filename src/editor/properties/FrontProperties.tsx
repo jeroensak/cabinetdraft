@@ -10,6 +10,8 @@ import {
 import { deriveDrawerGeometry } from '../../domain/drawers/deriveDrawerGeometry'
 import { spaceRange } from '../../domain/spaces/spaceRanges'
 import { useTranslation } from '../../i18n'
+import { useMeasure } from '../../units/useMeasure'
+
 import { drawerIssueMessage } from '../../i18n/drawerIssues'
 import { useProjectStore } from '../../store/projectStore'
 import { useCommandAction } from '../useCommandAction'
@@ -24,6 +26,8 @@ export function FrontProperties({
   settings: ProjectSettings
 }) {
   const { t } = useTranslation()
+  const { measure, size, unit } = useMeasure()
+
   const execute = useProjectStore((state) => state.execute)
   const designs = useProjectStore((state) => state.present.drawerDesigns)
   const openDrawerDesigner = useProjectStore(
@@ -39,16 +43,18 @@ export function FrontProperties({
       : null
   const { error, run } = useCommandAction()
   const geometry = deriveFrontGeometry(module, settings, front, design)
+  const shelfAt = (shelfId: string) => {
+    const shelf = module.shelves.find((item) => item.id === shelfId)
+    return t('frontInfo.shelfAt', {
+      bottom: shelf ? measure(shelf.bottom) : '?',
+    })
+  }
   const boundaryName = (boundary: Boundary) =>
     boundary.type === 'module-bottom'
       ? t('frontInfo.cabinetBottom')
       : boundary.type === 'module-top'
         ? t('frontInfo.cabinetTop')
-        : t('frontInfo.shelfAt', {
-            bottom:
-              module.shelves.find((shelf) => shelf.id === boundary.shelfId)
-                ?.bottom ?? '?',
-          })
+        : shelfAt(boundary.shelfId)
   return (
     <>
       <h3 className="eyebrow dimension-heading">{t('frontInfo.type')}</h3>
@@ -101,7 +107,7 @@ export function FrontProperties({
           {front.mount === 'inset' && (
             <p className="inspector-note muted">
               {t('frontInfo.insetNote', {
-                value: settings.frontThickness + settings.frontGap,
+                value: measure(settings.frontThickness + settings.frontGap),
               })}
             </p>
           )}
@@ -135,17 +141,17 @@ export function FrontProperties({
           </dt>
           <dd>
             {geometry.panels[0]
-              ? `${geometry.panels[0].width} × ${geometry.panels[0].length} mm`
+              ? size(geometry.panels[0].width, geometry.panels[0].length)
               : t('frontInfo.unavailable')}
           </dd>
         </div>
         <div>
           <dt>{t('frontInfo.thickness')}</dt>
-          <dd>{settings.frontThickness} mm</dd>
+          <dd>{measure(settings.frontThickness)}</dd>
         </div>
         <div>
           <dt>{t('frontInfo.gap')}</dt>
-          <dd>{settings.frontGap} mm</dd>
+          <dd>{measure(settings.frontGap)}</dd>
         </div>
       </dl>
       {front.type === 'drawer' && (
@@ -185,14 +191,14 @@ export function FrontProperties({
             <dl className="settings-values">
               <div>
                 <dt>{t('frontInfo.boxSize')}</dt>
-                <dd>
-                  {box.width} × {box.height} × {box.depth} mm
-                </dd>
+                <dd>{size(box.width, box.height, box.depth)}</dd>
               </div>
             </dl>
           )}
           {box && box.issues.length > 0 && (
-            <p className="field-error">{drawerIssueMessage(box.issues[0])}</p>
+            <p className="field-error">
+              {drawerIssueMessage(box.issues[0], unit)}
+            </p>
           )}
           <button
             className="pill"

@@ -6,7 +6,10 @@ import {
 import type { CabinetModule } from '../cabinet/types'
 import type { Boundary } from '../fronts/types'
 import type { IdGenerator } from '../project/id'
-import { DEFAULT_MODULE_DIMENSIONS } from '../project/defaults'
+import {
+  DEFAULT_INCH_MODULE_DIMENSIONS,
+  DEFAULT_MODULE_DIMENSIONS,
+} from '../project/defaults'
 import type { Project, ProjectSettings } from '../project/types'
 import {
   allocateIds,
@@ -32,7 +35,9 @@ export function addModule(
     draft.modules.push({
       id: id(),
       name: `${baseName} ${number}`,
-      ...DEFAULT_MODULE_DIMENSIONS,
+      ...(draft.settings.unit === 'inch'
+        ? DEFAULT_INCH_MODULE_DIMENSIONS
+        : DEFAULT_MODULE_DIMENSIONS),
       shelves: [],
       dividers: [],
       fronts: [],

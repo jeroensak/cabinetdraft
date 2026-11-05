@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest'
 import { pageMetadata } from '../app/pageMetadata'
+import { formatMeasure } from '../units'
 import { i18n, LANGUAGE_STORAGE_KEY, setLanguage, t } from './index'
 import { drawerIssueMessage } from './drawerIssues'
 import de from './locales/de.json'
@@ -55,22 +56,26 @@ describe('language handling', () => {
 
   it('formats half millimetres and thousands for each language', () => {
     setLanguage('de')
-    expect(t('drawer.grooveLabel', { depth: 7.5 })).toContain('7,5')
-    expect(t('canvas.totalWidth', { width: 2600 })).toContain('2.600')
+    expect(formatMeasure(7.5, 'mm')).toBe('7,5 mm')
+    expect(formatMeasure(2600, 'mm', true)).toBe('2.600 mm')
     setLanguage('en')
-    expect(t('drawer.grooveLabel', { depth: 7.5 })).toContain('7.5')
-    expect(t('canvas.totalWidth', { width: 2600 })).toContain('2,600')
+    expect(formatMeasure(7.5, 'mm')).toBe('7.5 mm')
+    expect(formatMeasure(2600, 'mm', true)).toBe('2,600 mm')
+    expect(formatMeasure(2196, 'mm')).toBe('2196 mm')
   })
 
   it('words domain drawer issues from their reason and values', () => {
     setLanguage('de')
     expect(
-      drawerIssueMessage({
-        code: 'invalid-drawer-design',
-        reason: 'measurement',
-        values: { field: 'wallThickness', minimum: 1 },
-        message: 'Wall thickness must be a whole number of at least 1 mm.',
-      }),
+      drawerIssueMessage(
+        {
+          code: 'invalid-drawer-design',
+          reason: 'measurement',
+          values: { field: 'wallThickness', minimum: 1 },
+          message: 'Wall thickness must be a whole number of at least 1 mm.',
+        },
+        'mm',
+      ),
     ).toBe('Wandstärke muss eine ganze Zahl von mindestens 1 mm sein.')
   })
 

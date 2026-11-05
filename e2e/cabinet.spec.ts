@@ -396,3 +396,31 @@ test('the language picker translates the app and is remembered, without touching
   await page.getByRole('combobox', { name: 'Taal' }).selectOption('en')
   await expect(page.getByRole('heading', { name: 'Cut List' })).toBeVisible()
 })
+
+test('an inch design stays in fractions through the designer, cut list and reload', async ({
+  page,
+}) => {
+  await page.getByRole('button', { name: '+ New design' }).click()
+  await page.getByRole('radio').nth(0).check()
+  await page.getByLabel('Name', { exact: true }).fill('Shop cabinet')
+  await page.getByRole('combobox', { name: 'Units' }).selectOption('inch')
+  await page.getByRole('button', { name: 'Create design' }).click()
+  await page.getByRole('button', { name: /^Cabinet 1, / }).click()
+  const width = page.getByRole('textbox', { name: 'width (in)' })
+  await width.fill('31 1/2')
+  await width.press('Enter')
+  await expect(
+    page.getByRole('button', { name: 'Cabinet 1, 31 1/2"', exact: true }),
+  ).toBeVisible()
+  await page.getByRole('link', { name: 'Cut List', exact: true }).click()
+  await expect(
+    page.getByRole('columnheader', { name: 'Length (in)' }).first(),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('row').filter({ hasText: 'C1-TOP' }),
+  ).toContainText('30')
+  await page.reload()
+  await expect(
+    page.getByRole('columnheader', { name: 'Length (in)' }).first(),
+  ).toBeVisible()
+})

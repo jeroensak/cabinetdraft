@@ -1,5 +1,7 @@
 import type { Project } from '../project/types'
 import type { IdGenerator } from '../project/id'
+import type { MeasurementUnit } from '../project/units'
+
 import type { DrawerFront, SpaceRange } from '../fronts/types'
 import { drawerDesignData, type DrawerDesignInput } from '../drawers/types'
 import {
@@ -29,11 +31,11 @@ const measurementFields = [
 ] as const
 
 /** Library entries are always internally consistent; fit is checked per space. */
-function checkDesign(input: DrawerDesignInput) {
+function checkDesign(input: DrawerDesignInput, unit?: MeasurementUnit) {
   for (const field of measurementFields) integer(input[field], field)
   integer(input.heightPercent, 'heightPercent')
   integer(input.frontHeightPercent, 'frontHeightPercent')
-  const issues = validateDrawerDesign(input)
+  const issues = validateDrawerDesign(input, unit)
   if (issues.length) throw new CommandError('invalid-drawer-design', { issues })
 }
 
@@ -43,7 +45,7 @@ export function addDrawerDesign(
   input: DrawerDesignInput,
   generateId?: IdGenerator,
 ): Project {
-  checkDesign(input)
+  checkDesign(input, project.settings.unit)
   const id = allocateIds(project, generateId)
   return editProject(project, (draft) => {
     draft.drawerDesigns.push(drawerDesignData({ ...input, id: id() }))
@@ -56,7 +58,7 @@ export function updateDrawerDesign(
   designId: string,
   input: DrawerDesignInput,
 ): Project {
-  checkDesign(input)
+  checkDesign(input, project.settings.unit)
   return editProject(project, (draft) => {
     const index = draft.drawerDesigns.findIndex((d) => d.id === designId)
     if (index < 0)

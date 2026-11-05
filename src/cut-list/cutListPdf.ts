@@ -4,6 +4,8 @@ import type { Project } from '../domain/project/types'
 import { deriveCutList } from '../domain/cutlist/deriveCutList'
 import { projectFilename } from '../domain/import-export/projectJson'
 import { t } from '../i18n'
+import { formatBare, unitSymbol } from '../units'
+
 import { groupCutList } from './partGroups'
 import { partName } from './partNames'
 import fontUrl from '../assets/fonts/NotoSans-Regular.ttf?url'
@@ -13,6 +15,8 @@ export function createCutListPdf(project: Project, font: string) {
   const result = deriveCutList(project)
   if (!result.available || result.items.length === 0)
     throw new Error('No valid cut list is available')
+  const measureUnit = project.settings.unit ?? 'mm'
+  const symbol = unitSymbol(measureUnit)
   const doc = new jsPDF({
     orientation: 'landscape',
     unit: 'mm',
@@ -32,9 +36,9 @@ export function createCutListPdf(project: Project, font: string) {
     t('cutList.cabinet'),
     t('cutList.part'),
     t('cutList.qty'),
-    t('cutList.length'),
-    t('cutList.width'),
-    t('cutList.thickness'),
+    t('cutList.length', { unit: symbol }),
+    t('cutList.width', { unit: symbol }),
+    t('cutList.thickness', { unit: symbol }),
   ]
   let startY = 42
   for (const group of groupCutList(result.items)) {
@@ -56,11 +60,11 @@ export function createCutListPdf(project: Project, font: string) {
       body: group.items.map((item) => [
         item.id,
         item.moduleName,
-        partName(item),
+        partName(item, measureUnit),
         item.quantity,
-        item.length,
-        item.width,
-        item.thickness,
+        formatBare(item.length, measureUnit),
+        formatBare(item.width, measureUnit),
+        formatBare(item.thickness, measureUnit),
       ]),
       theme: 'striped',
       styles: {
@@ -113,7 +117,13 @@ export function createCutListPdf(project: Project, font: string) {
       36,
     )
     doc.setTextColor(100)
-    doc.text(t('pdf.note'), 15, 199)
+    doc.text(
+      t('pdf.note', {
+        unit: t(measureUnit === 'inch' ? 'unit.inchPlural' : 'unit.mmPlural'),
+      }),
+      15,
+      199,
+    )
     doc.text(t('pdf.page', { page, pages }), 282, 199, { align: 'right' })
   }
   return doc
