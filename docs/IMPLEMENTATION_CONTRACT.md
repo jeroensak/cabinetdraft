@@ -108,3 +108,7 @@ The unit is chosen in the New design dialog and can't be changed afterwards. Tem
 ## Cut List PDF assembly pages
 
 The user requested a printable assembly view. After its lists, the PDF adds one page per cabinet: the structure and the fronts side by side, labelled with the cut list IDs. `deriveLabelledPanels` is the one source of those IDs for both, and the drawing uses canonical panels with the Designer's projection helpers only. The Cut List page itself still renders no drawing.
+
+## Approved post-V1 extension: share links
+
+The user requested sharing a design by link. There is still no backend: the design's project JSON is gzipped into the URL fragment, which browsers don't send to servers, and analytics already strip fragments. Opening a link goes through the same parse, validate and migrate boundary as a file import, asks for confirmation, and adds a new design with its own ID and its original unit instead of replacing anything. The fragment is cleared from the address bar once read. A link expanding past 5 MB is refused.

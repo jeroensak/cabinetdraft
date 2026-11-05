@@ -54,3 +54,47 @@ test('a first visit can change language or import a file before choosing', async
     page.getByRole('combobox', { name: 'Aktueller Entwurf' }).locator('option'),
   ).toHaveCount(1)
 })
+
+test('a share link opens as a new design for someone else, after asking', async ({
+  browser,
+}) => {
+  const sender = await browser.newContext()
+  await sender.grantPermissions(['clipboard-read', 'clipboard-write'])
+  const from = await sender.newPage()
+  await from.goto('/designer')
+  await from.getByLabel('Name', { exact: true }).fill('Shared hallway')
+  await from.getByRole('radio').nth(1).check()
+  await from.getByRole('button', { name: 'Create design' }).click()
+  await from.getByRole('button', { name: 'Share', exact: true }).click()
+  await expect(from.getByRole('button', { name: 'Link copied' })).toBeVisible()
+  const link = String(await from.evaluate('navigator.clipboard.readText()'))
+  expect(link).toMatch(/\/designer#design=/)
+
+  const receiver = await browser.newContext()
+  const to = await receiver.newPage()
+  let message = ''
+  to.once('dialog', (dialog) => {
+    message = dialog.message()
+    void dialog.accept()
+  })
+  await to.goto(link)
+  await expect(to.getByLabel('Design name')).toHaveValue('Shared hallway')
+  expect(message).toContain('Shared hallway')
+  await expect(to).toHaveURL(/\/designer$/)
+  await expect(
+    to.getByRole('button', { name: 'Wide cabinet, 2000 mm', exact: true }),
+  ).toBeVisible()
+  await to.reload()
+  await expect(to.getByLabel('Design name')).toHaveValue('Shared hallway')
+
+  await sender.close()
+  await receiver.close()
+})
+
+test('a broken share link explains itself and changes nothing', async ({
+  page,
+}) => {
+  await page.goto('/designer#design=broken')
+  await expect(page.getByRole('alert')).toContainText('share link')
+  await expect(page.getByRole('dialog', { name: 'New design' })).toBeVisible()
+})

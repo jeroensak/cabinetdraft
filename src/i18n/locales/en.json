@@ -329,5 +329,10 @@
   "design.duplicate": "Duplicate design",
   "design.duplicateFailed": "This design could not be duplicated.",
   "pdf.assembly": "Assembly: {{cabinet}}",
-  "pdf.assemblyNote": "Labels are the cut list IDs without the {{prefix}} prefix."
+  "pdf.assemblyNote": "Labels are the cut list IDs without the {{prefix}} prefix.",
+  "files.share": "Share",
+  "files.linkCopied": "Link copied",
+  "files.shareFailed": "Could not copy the link. Export the design instead.",
+  "share.confirm": "Open the shared design \"{{name}}\"? It will be added to your designs.",
+  "share.invalid": "This share link is broken or does not contain a valid design."
 }

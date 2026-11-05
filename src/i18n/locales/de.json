@@ -329,5 +329,10 @@
   "design.duplicate": "Entwurf duplizieren",
   "design.duplicateFailed": "Dieser Entwurf konnte nicht dupliziert werden.",
   "pdf.assembly": "Montage: {{cabinet}}",
-  "pdf.assemblyNote": "Beschriftungen sind die IDs der Zuschnittliste ohne das Präfix {{prefix}}."
+  "pdf.assemblyNote": "Beschriftungen sind die IDs der Zuschnittliste ohne das Präfix {{prefix}}.",
+  "files.share": "Teilen",
+  "files.linkCopied": "Link kopiert",
+  "files.shareFailed": "Der Link konnte nicht kopiert werden. Exportiere stattdessen den Entwurf.",
+  "share.confirm": "Geteilten Entwurf „{{name}}“ öffnen? Er wird zu deinen Entwürfen hinzugefügt.",
+  "share.invalid": "Dieser Link ist beschädigt oder enthält keinen gültigen Entwurf."
 }

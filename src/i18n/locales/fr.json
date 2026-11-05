@@ -329,5 +329,10 @@
   "design.duplicate": "Dupliquer la conception",
   "design.duplicateFailed": "Cette conception n’a pas pu être dupliquée.",
   "pdf.assembly": "Assemblage : {{cabinet}}",
-  "pdf.assemblyNote": "Les étiquettes sont les ID de la liste de découpe sans le préfixe {{prefix}}."
+  "pdf.assemblyNote": "Les étiquettes sont les ID de la liste de découpe sans le préfixe {{prefix}}.",
+  "files.share": "Partager",
+  "files.linkCopied": "Lien copié",
+  "files.shareFailed": "Impossible de copier le lien. Exportez plutôt la conception.",
+  "share.confirm": "Ouvrir la conception partagée « {{name}} » ? Elle sera ajoutée à vos conceptions.",
+  "share.invalid": "Ce lien de partage est endommagé ou ne contient pas de conception valide."
 }

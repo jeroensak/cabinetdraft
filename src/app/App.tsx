@@ -1,6 +1,8 @@
 import { SaveStatus } from './SaveStatus'
 import { RouteMetadata } from './RouteMetadata'
 import { ProjectFiles } from './ProjectFiles'
+import { SharedDesign } from './SharedDesign'
+
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Navigate, Outlet, Route, Routes } from 'react-router'
 import { DesignerPage } from '../editor/DesignerPage'
@@ -94,6 +96,7 @@ function Layout() {
           </section>
         )}
         <SaveStatus />
+        <SharedDesign />
         <main className="app-main">{!needsFirstDesign && <Outlet />}</main>
         {needsFirstDesign && (
           <NewDesignDialog required onClose={skipFirstDesign} />
