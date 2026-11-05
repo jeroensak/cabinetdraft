@@ -24,7 +24,9 @@ import {
   useProjectStore,
   type DrawerDesignerState,
 } from '../store/projectStore'
+import { DrawerDesignList } from './DrawerDesignList'
 import { DrawerPreview } from './DrawerPreview'
+import { uniqueDesignName } from './uniqueDesignName'
 
 type MeasurementField = Exclude<
   keyof DrawerDesignInput,
@@ -49,16 +51,27 @@ function designInput(design: DrawerDesign): DrawerDesignInput {
   return input as DrawerDesignInput
 }
 
-function uniqueName(project: Project, base: string) {
-  const names = new Set(project.drawerDesigns.map((design) => design.name))
-  if (!names.has(base)) return base
-  let index = 2
-  while (names.has(`${base} ${index}`)) index++
-  return `${base} ${index}`
+type DesignerScope = Pick<DrawerDesignerState, 'moduleId' | 'ranges'>
+
+/** The library has no target; a design is previewed in a drawer that uses it. */
+function libraryScope(
+  project: Project,
+  designId: string | null,
+): DesignerScope {
+  const design =
+    project.drawerDesigns.find((item) => item.id === designId) ??
+    project.drawerDesigns[0]
+  for (const module of design ? project.modules : []) {
+    const front = module.fronts.find(
+      (item) => item.type === 'drawer' && item.drawerDesignId === design?.id,
+    )
+    if (front) return { moduleId: module.id, ranges: [spaceRange(front)] }
+  }
+  return { moduleId: null, ranges: [] }
 }
 
 /** Targets are stable ranges; spaces/fronts are re-derived on every render. */
-function resolveTargets(project: Project, context: DrawerDesignerState) {
+function resolveTargets(project: Project, context: DesignerScope) {
   const module = project.modules.find((item) => item.id === context.moduleId)
   if (!module) return { module: undefined, targets: [] }
   const spaces = deriveSpaces(module, project.settings)
@@ -84,7 +97,11 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
   const selectDesign = useProjectStore((state) => state.selectDrawerDesign)
   const { error, run } = useCommandAction()
   const [showFront, setShowFront] = useState(false)
-  const { module, targets } = resolveTargets(project, context)
+  const library = context.moduleId === null
+  const { module, targets } = resolveTargets(
+    project,
+    library ? libraryScope(project, context.designId) : context,
+  )
   const linkedDesignId = targets
     .map(({ occupant }) =>
       occupant?.type === 'drawer' ? occupant.drawerDesignId : undefined,
@@ -165,40 +182,16 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
         </button>
         <p className="eyebrow">Drawer designer</p>
         <h2 id="drawer-designer-title">Drawer designs</h2>
-        <ul className="module-list">
-          {project.drawerDesigns.map((item) => {
-            const count = drawerDesignUsage(project, item.id)
-            return (
-              <li key={item.id}>
-                <button
-                  className="module-row"
-                  aria-pressed={item.id === design?.id}
-                  onClick={() => selectDesign(item.id)}
-                >
-                  <span className="module-label">
-                    <strong>{item.name}</strong>
-                    <small>
-                      {count === 0
-                        ? 'Not used yet'
-                        : `Used by ${count} ${count === 1 ? 'drawer' : 'drawers'}`}
-                    </small>
-                  </span>
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-        {project.drawerDesigns.length === 0 && (
-          <p className="muted sidebar-note">
-            No drawer designs yet. Create one to reuse it across spaces.
-          </p>
-        )}
+        <DrawerDesignList
+          selectedId={design?.id ?? ''}
+          onSelect={selectDesign}
+        />
         <button
           className="add-cabinet"
           onClick={() =>
             create({
               ...defaultDrawerDesign(),
-              name: uniqueName(project, 'Drawer design'),
+              name: uniqueDesignName(project, 'Drawer design'),
             })
           }
         >
@@ -215,7 +208,13 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
       <div className="editor-area">
         <div className="editor-toolbar">
           <span className="muted">
-            {module ? `${module.name} · ${targetLabel}` : 'Cabinet unavailable'}
+            {library
+              ? module
+                ? `Previewed in ${module.name}`
+                : 'Design library'
+              : module
+                ? `${module.name} · ${targetLabel}`
+                : 'Cabinet unavailable'}
             {preview &&
               ` · opening ${preview.openingWidth} × ${preview.openingHeight} mm`}
           </span>
@@ -232,9 +231,13 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
           <DrawerPreview geometry={preview} showFront={showFront} />
         ) : (
           <div className="drawer-preview-empty muted">
-            {targets.length === 0
-              ? 'The selected space is no longer available. Go back and select a space.'
-              : 'Create a drawer design to preview it in this space.'}
+            {library
+              ? design
+                ? 'Add this design to a space to preview it. Its width follows the space.'
+                : 'Create a drawer design to get started.'
+              : targets.length === 0
+                ? 'The selected space is no longer available. Go back and select a space.'
+                : 'Create a drawer design to preview it in this space.'}
           </div>
         )}
         <footer className="editor-status">
@@ -335,24 +338,26 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
               </p>
             ))}
             <div className="context-actions">
-              <button
-                className="pill primary"
-                disabled={
-                  !module ||
-                  !targets.length ||
-                  blockedByDoor ||
-                  fitIssues.length > 0
-                }
-                onClick={apply}
-              >
-                Apply to {targetLabel}
-              </button>
+              {!library && (
+                <button
+                  className="pill primary"
+                  disabled={
+                    !module ||
+                    !targets.length ||
+                    blockedByDoor ||
+                    fitIssues.length > 0
+                  }
+                  onClick={apply}
+                >
+                  Apply to {targetLabel}
+                </button>
+              )}
               <button
                 className="pill"
                 onClick={() =>
                   create({
                     ...designInput(design),
-                    name: uniqueName(project, `${design.name} copy`),
+                    name: uniqueDesignName(project, `${design.name} copy`),
                   })
                 }
               >

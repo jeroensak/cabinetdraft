@@ -29,7 +29,7 @@ bottom        = (boxWidth − 2 × wall) × (depth − 2 × wall) × bottomThick
 
 ## Editing
 
-The drawer designer is a separate workspace. Open it from one or more selected spaces (**Add drawer…**) or from a selected drawer front (**Open drawer designer**). It lists the design library, previews the selected design in the first target space, and applies the design to every target in one undoable action. Spaces covered by a door are never replaced. A drawer front's properties also let you switch its design or remove its box. Designer context is editor state and is never saved.
+The drawer designer is a separate workspace. Open it from one or more selected spaces (**Add drawer…**) or from a selected drawer front (**Open drawer designer**). It lists the design library, previews the selected design in the first target space, and applies the design to every target in one undoable action. Spaces covered by a door are never replaced. The **Drawers** section of the left menu opens the same workspace without target spaces: it lists every design for editing, previews a design in a drawer that uses it, and offers no apply action. A drawer front's properties also let you switch its design or remove its box. Designer context is editor state and is never saved.
 
 ## Persistence
 

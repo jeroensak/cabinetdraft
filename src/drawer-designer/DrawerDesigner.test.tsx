@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
-import { act, cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DesignerPage } from '../editor/DesignerPage'
@@ -114,5 +114,47 @@ describe('Drawer designer', () => {
 
     await user.click(screen.getByRole('button', { name: '← Back to cabinet' }))
     expect(useProjectStore.getState().editor.drawerDesigner).toBeNull()
+  })
+
+  it('lists designs in the left menu and opens them without target spaces', async () => {
+    const user = userEvent.setup()
+    render(<DesignerPage />)
+    const menu = screen.getByRole('complementary', {
+      name: 'Cabinets and drawers',
+    })
+    expect(
+      within(menu).getByRole('heading', { name: 'Drawers' }),
+    ).toBeInTheDocument()
+    expect(within(menu).getByText(/No drawer designs yet/)).toBeInTheDocument()
+
+    await user.click(
+      within(menu).getByRole('button', { name: '+ New drawer design' }),
+    )
+    const design = useProjectStore.getState().present.drawerDesigns[0]
+    expect(useProjectStore.getState().editor.drawerDesigner).toEqual({
+      moduleId: null,
+      ranges: [],
+      designId: design.id,
+    })
+    expect(screen.getByText(/Add this design to a space/)).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /^Apply to/ }),
+    ).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '← Back to cabinet' }))
+    await user.click(screen.getByRole('button', { name: 'Cabinet 1 space 1' }))
+    await user.click(screen.getByRole('button', { name: 'Add drawer…' }))
+    await user.click(
+      screen.getByRole('button', { name: 'Apply to 1 selected space' }),
+    )
+
+    await user.click(screen.getByRole('button', { name: /Used by 1 drawer/ }))
+    expect(screen.getByText('Previewed in Cabinet 1')).toBeInTheDocument()
+    expect(
+      screen.getByRole('img', { name: /^Drawer preview:/ }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /^Apply to/ }),
+    ).not.toBeInTheDocument()
   })
 })

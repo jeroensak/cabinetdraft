@@ -1,6 +1,9 @@
 import { useState, type DragEvent } from 'react'
 import { useProjectStore } from '../../store/projectStore'
-import { reorderModules } from '../../domain/commands'
+import { addDrawerDesign, reorderModules } from '../../domain/commands'
+import { defaultDrawerDesign } from '../../domain/drawers/types'
+import { DrawerDesignList } from '../../drawer-designer/DrawerDesignList'
+import { uniqueDesignName } from '../../drawer-designer/uniqueDesignName'
 import { useCommandAction } from '../useCommandAction'
 import { addCabinet } from './moduleActions'
 
@@ -11,6 +14,9 @@ export function ModuleList() {
   const setHover = useProjectStore((state) => state.setHover)
   const setSelection = useProjectStore((state) => state.setSelection)
   const execute = useProjectStore((state) => state.execute)
+  const openDrawerDesigner = useProjectStore(
+    (state) => state.openDrawerDesigner,
+  )
   const { error, run } = useCommandAction()
   const [draggedId, setDraggedId] = useState<string | null>(null)
   const [dropTarget, setDropTarget] = useState<{
@@ -21,11 +27,25 @@ export function ModuleList() {
     const rect = event.currentTarget.getBoundingClientRect()
     return event.clientY > rect.top + rect.height / 2
   }
+  const openDrawerDesign = (designId: string) =>
+    openDrawerDesigner({ moduleId: null, ranges: [], designId })
+  const newDrawerDesign = () => {
+    const created = run(() =>
+      execute((project) =>
+        addDrawerDesign(project, {
+          ...defaultDrawerDesign(),
+          name: uniqueDesignName(project, 'Drawer design'),
+        }),
+      ),
+    )
+    if (created)
+      openDrawerDesign(
+        useProjectStore.getState().present.drawerDesigns.at(-1)!.id,
+      )
+  }
   return (
-    <aside className="cabinet-sidebar" aria-labelledby="cabinet-list-title">
-      <h2 className="eyebrow" id="cabinet-list-title">
-        Cabinets
-      </h2>
+    <aside className="cabinet-sidebar" aria-label="Cabinets and drawers">
+      <h2 className="eyebrow">Cabinets</h2>
       <ul
         className="module-list"
         onDragLeave={(event) => {
@@ -110,6 +130,11 @@ export function ModuleList() {
       )}
       <button className="add-cabinet" onClick={() => run(addCabinet)}>
         + Add cabinet
+      </button>
+      <h2 className="eyebrow sidebar-section">Drawers</h2>
+      <DrawerDesignList onSelect={openDrawerDesign} />
+      <button className="add-cabinet" onClick={newDrawerDesign}>
+        + New drawer design
       </button>
       <div className="sidebar-tip">
         <p className="eyebrow">Tip</p>

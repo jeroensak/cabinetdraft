@@ -156,6 +156,9 @@ input:focus-visible {
 .cabinet-sidebar > h2 {
   margin: 0 6px 18px;
 }
+.cabinet-sidebar > h2.sidebar-section {
+  margin-top: 28px;
+}
 .module-list {
   list-style: none;
   padding: 0;

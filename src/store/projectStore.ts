@@ -73,8 +73,9 @@ export interface ViewportState {
 }
 /** Session-only context of the drawer designer workspace; never persisted. */
 export interface DrawerDesignerState {
-  /** Spaces the designer was opened from; a design is applied to all of them. */
-  moduleId: string
+  /** Spaces the designer was opened from; a design is applied to all of them.
+   * Null when opened from the design library, which has no target spaces. */
+  moduleId: string | null
   ranges: BoundaryRange[]
   designId: string | null
 }
