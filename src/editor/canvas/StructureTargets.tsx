@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Arrangement } from '../../domain/cabinet/deriveArrangement'
 import { deriveSpaces } from '../../domain/spaces/deriveSpaces'
-import { sameBoundary } from '../../domain/commands/core'
-import { spacesInRange } from '../../store/selection'
+import { sameSpace } from '../../domain/spaces/boundaries'
+import { spaceRange } from '../../domain/spaces/spaceRanges'
+import { spacesInRange, selectedSpaces } from '../../store/selection'
 import { selectSpace } from '../spaceSelection'
 import { moveShelf } from '../../domain/commands'
 import { useProjectStore } from '../../store/projectStore'
@@ -60,17 +61,17 @@ export function StructureTargets({
           frontsMode &&
           module.fronts.some((front) =>
             spacesInRange(project, module.id, front).some((covered) =>
-              sameBoundary(covered.bottomBoundary, space.bottomBoundary),
+              sameSpace(covered, space),
             ),
           )
         )
           return null
-        const p = screen(origin.x + project.settings.corpusThickness, space.top)
+        const p = screen(origin.x + space.left, space.top)
         const selected =
           selection?.type === 'space' &&
           selection.moduleId === module.id &&
-          spacesInRange(project, module.id, selection.range).some((item) =>
-            sameBoundary(item.bottomBoundary, space.bottomBoundary),
+          selectedSpaces(project, selection).some((item) =>
+            sameSpace(item, space),
           )
         const choose = (extend = false) =>
           setSelection(
@@ -78,11 +79,11 @@ export function StructureTargets({
           )
         return (
           <rect
-            key={JSON.stringify([space.bottomBoundary, space.topBoundary])}
+            key={JSON.stringify(spaceRange(space))}
             className="space-hit-area"
             x={p.x}
             y={p.y}
-            width={Math.max(0, geometry.internalWidth * zoom)}
+            width={Math.max(0, space.width * zoom)}
             height={Math.max(0, space.height * zoom)}
             role="button"
             tabIndex={0}
@@ -103,6 +104,46 @@ export function StructureTargets({
           />
         )
       })}
+      {!frontsMode &&
+        geometry.panels
+          .filter((panel) => panel.source.type === 'divider')
+          .map((panel) => {
+            if (panel.source.type !== 'divider') return null
+            const dividerId = panel.source.dividerId
+            const p = screen(
+              origin.x + panel.position.x,
+              panel.position.y + panel.length,
+            )
+            const selected =
+              selection?.type === 'divider' && selection.dividerId === dividerId
+            const choose = () =>
+              setSelection({ type: 'divider', moduleId: module.id, dividerId })
+            return (
+              <rect
+                key={dividerId}
+                className="divider-hit-area"
+                x={p.x}
+                y={p.y}
+                width={Math.max(8, panel.thickness * zoom)}
+                height={Math.max(0, panel.length * zoom)}
+                role="button"
+                tabIndex={0}
+                aria-label={`${module.name} divider at ${panel.position.x} mm`}
+                aria-pressed={selected}
+                onPointerEnter={() =>
+                  setHover({ type: 'divider', moduleId: module.id, dividerId })
+                }
+                onPointerLeave={() => setHover(null)}
+                onClick={choose}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    choose()
+                  }
+                }}
+              />
+            )
+          })}
       {!frontsMode &&
         geometry.panels
           .filter((panel) => panel.source.type === 'shelf')

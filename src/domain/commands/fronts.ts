@@ -1,3 +1,4 @@
+import { horizontalData } from '../spaces/boundaries'
 import type { IdGenerator } from '../project/id'
 import type { Project } from '../project/types'
 import {
@@ -23,6 +24,7 @@ export function addDoor(
     findModule(draft, moduleId).fronts.push({
       id: id(),
       type: 'door',
+      ...horizontalData(range),
       leaves: leafCount,
       bottomBoundary: { ...range.bottomBoundary },
       topBoundary: { ...range.topBoundary },
@@ -41,6 +43,7 @@ export function addDrawerFront(
     findModule(draft, moduleId).fronts.push({
       id: id(),
       type: 'drawer',
+      ...horizontalData(range),
       bottomBoundary: { ...range.bottomBoundary },
       topBoundary: { ...range.topBoundary },
     })

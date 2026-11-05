@@ -28,7 +28,7 @@ function memoryStorage(
 }
 function expectDefaultShape(project: ReturnType<typeof createDefaultProject>) {
   expect(project).toMatchObject({
-    schemaVersion: 1,
+    schemaVersion: 3,
     name: 'Untitled cabinet',
     settings: {
       corpusThickness: 18,
@@ -44,6 +44,7 @@ function expectDefaultShape(project: ReturnType<typeof createDefaultProject>) {
         height: 2200,
         depth: 600,
         shelves: [{ bottom: 1091 }],
+        dividers: [],
         fronts: [
           {
             type: 'door',
@@ -94,11 +95,32 @@ describe('project store and local persistence', () => {
     expect(storage.writes).toStrictEqual([])
   })
 
+  it('opens an existing V1 autosave as V3 without replacing its design', () => {
+    const project = createDefaultProject(ids())
+    const legacy = {
+      ...project,
+      schemaVersion: 1,
+      modules: project.modules.map((module) => ({
+        id: module.id,
+        name: module.name,
+        width: module.width,
+        height: module.height,
+        depth: module.depth,
+        shelves: module.shelves,
+        fronts: module.fronts,
+      })),
+    }
+    const storage = memoryStorage(JSON.stringify(legacy))
+    const store = createProjectStore({ storage })
+    expect(store.getState().present).toStrictEqual(project)
+    expect(storage.writes).toHaveLength(0)
+  })
+
   it.each([
     '{',
     'null',
     '[]',
-    JSON.stringify({ schemaVersion: 2 }),
+    JSON.stringify({ schemaVersion: 3 }),
     JSON.stringify({ schemaVersion: 1, id: 'p', modules: [] }),
   ])('falls back safely for unreadable persisted project %s', (raw) => {
     const store = createProjectStore({ storage: memoryStorage(raw) })

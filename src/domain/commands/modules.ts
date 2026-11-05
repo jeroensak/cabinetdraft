@@ -1,3 +1,8 @@
+import {
+  leftBoundary,
+  rightBoundary,
+  horizontalData,
+} from '../spaces/boundaries'
 import type { CabinetModule } from '../cabinet/types'
 import type { Boundary } from '../fronts/types'
 import type { IdGenerator } from '../project/id'
@@ -23,6 +28,7 @@ export function addModule(project: Project, generateId?: IdGenerator): Project {
       name: `Cabinet ${number}`,
       ...DEFAULT_MODULE_DIMENSIONS,
       shelves: [],
+      dividers: [],
       fronts: [],
     })
   })
@@ -62,6 +68,35 @@ export function duplicateModule(
       bottomBoundary: remap(front.bottomBoundary),
       topBoundary: remap(front.topBoundary),
     }))
+    const dividerIds = new Map<string, string>()
+    copy.dividers = source.dividers.map((divider) => {
+      const newId = id()
+      dividerIds.set(divider.id, newId)
+      return {
+        ...divider,
+        id: newId,
+        bottomBoundary: remap(divider.bottomBoundary),
+        topBoundary: remap(divider.topBoundary),
+      }
+    })
+    for (const item of [...copy.shelves, ...copy.fronts]) {
+      const remapHorizontal = (boundary: ReturnType<typeof leftBoundary>) => {
+        if (boundary.type !== 'divider') return boundary
+        const dividerId = dividerIds.get(boundary.dividerId)
+        if (!dividerId)
+          throw new CommandError('divider-not-found', {
+            dividerId: boundary.dividerId,
+          })
+        return { type: 'divider' as const, dividerId }
+      }
+      Object.assign(
+        item,
+        horizontalData({
+          leftBoundary: remapHorizontal(leftBoundary(item)),
+          rightBoundary: remapHorizontal(rightBoundary(item)),
+        }),
+      )
+    }
     draft.modules.splice(draft.modules.indexOf(source) + 1, 0, copy)
   })
 }

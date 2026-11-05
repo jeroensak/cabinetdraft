@@ -1,6 +1,7 @@
 import type { Project } from '../domain/project/types'
-import { deriveSpaces } from '../domain/spaces/deriveSpaces'
-import { sameBoundary, type BoundaryRange } from '../domain/commands/core'
+import { spacesForRange } from '../domain/spaces/spaceRanges'
+import { spaceRange } from '../domain/spaces/spaceRanges'
+import type { BoundaryRange } from '../domain/commands/core'
 import type { Selection } from './types'
 
 export function spacesInRange(
@@ -9,17 +10,15 @@ export function spacesInRange(
   range: BoundaryRange,
 ) {
   const module = project.modules.find((item) => item.id === moduleId)
-  if (!module) return []
-  const spaces = deriveSpaces(module, project.settings)
-  const start = spaces.findIndex((space) =>
-    sameBoundary(space.bottomBoundary, range.bottomBoundary),
-  )
-  const end = spaces.findIndex((space) =>
-    sameBoundary(space.topBoundary, range.topBoundary),
-  )
-  return start >= 0 && end >= start ? spaces.slice(start, end + 1) : []
+  return module ? spacesForRange(module, project.settings, range) : []
 }
-
+export function selectedSpaces(project: Project, selection: Selection) {
+  if (selection?.type !== 'space') return []
+  const ranges = selection.ranges ?? [selection.range]
+  return ranges.flatMap((range) =>
+    spacesInRange(project, selection.moduleId, range),
+  )
+}
 export function reconcileSelection(
   before: Project,
   after: Project,
@@ -34,15 +33,18 @@ export function reconcileSelection(
   )
     return null
   if (
+    selection.type === 'divider' &&
+    !module.dividers.some((item) => item.id === selection.dividerId)
+  )
+    return null
+  if (
     selection.type === 'front' &&
     !module.fronts.some((item) => item.id === selection.frontId)
   )
     return null
   if (selection.type === 'space') {
     const signature = (project: Project) =>
-      spacesInRange(project, module.id, selection.range).map(
-        ({ bottomBoundary, topBoundary }) => ({ bottomBoundary, topBoundary }),
-      )
+      selectedSpaces(project, selection).map(spaceRange)
     const next = signature(after)
     if (
       !next.length ||

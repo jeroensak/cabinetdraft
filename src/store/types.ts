@@ -8,6 +8,12 @@ export interface Point {
 export type Selection =
   | { type: 'module'; moduleId: string }
   | { type: 'shelf'; moduleId: string; shelfId: string }
-  | { type: 'space'; moduleId: string; range: BoundaryRange }
+  | { type: 'divider'; moduleId: string; dividerId: string }
+  | {
+      type: 'space'
+      moduleId: string
+      range: BoundaryRange
+      ranges?: BoundaryRange[]
+    }
   | { type: 'front'; moduleId: string; frontId: string }
   | null

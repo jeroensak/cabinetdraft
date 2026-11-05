@@ -83,6 +83,79 @@ test('invalid dimensions block usable cut-list output', async ({ page }) => {
   await expect(page.getByRole('table')).toHaveCount(0)
 })
 
+test('space dividers create selectable spaces and exact Cut List panels', async ({
+  page,
+}, testInfo) => {
+  await page
+    .getByRole('button', { name: 'Cabinet 1 space 1', exact: true })
+    .click()
+  await page.getByRole('button', { name: 'Add divider', exact: true }).click()
+  await expect(
+    page.getByRole('button', { name: 'Cabinet 1 space 1' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Cabinet 1 space 2' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Cabinet 1 divider at 391 mm' }),
+  ).toBeVisible()
+  await page.getByRole('button', { name: 'Cabinet 1 space 1' }).click()
+  await expect(
+    page.getByText('373 mm free width · 1073 mm free height'),
+  ).toBeVisible()
+  await page.getByRole('button', { name: 'Add divider', exact: true }).click()
+  await expect(
+    page.getByRole('button', { name: 'Cabinet 1 space 3' }),
+  ).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('dividers.png') })
+  await page
+    .getByRole('button', { name: 'Cabinet 1 divider at 196 mm' })
+    .click()
+  await dimension(page, 'Divider left', '200')
+  await page.getByRole('link', { name: 'Cut List', exact: true }).click()
+  await expect(
+    page.getByRole('row').filter({ hasText: 'C1-DIVIDER-1' }),
+  ).toContainText('1073')
+  await expect(
+    page.getByRole('row').filter({ hasText: 'C1-DIVIDER-2' }),
+  ).toContainText('597')
+  await page.reload()
+  await expect(
+    page.getByRole('row').filter({ hasText: 'C1-DIVIDER-2' }),
+  ).toBeVisible()
+  await page.getByRole('link', { name: 'Designer', exact: true }).click()
+  await page
+    .getByRole('button', { name: 'Cabinet 1 divider at 200 mm' })
+    .click()
+  await page.getByRole('button', { name: 'Delete', exact: true }).click()
+  await expect(
+    page.getByRole('button', { name: 'Cabinet 1 divider at 200 mm' }),
+  ).toHaveCount(0)
+  await page.getByRole('button', { name: 'Undo', exact: true }).click()
+  await expect(
+    page.getByRole('button', { name: 'Cabinet 1 divider at 200 mm' }),
+  ).toBeVisible()
+  await page
+    .getByRole('button', { name: 'Cabinet 1 divider at 200 mm' })
+    .click()
+  await dimension(page, 'Divider left', '17')
+  await page.getByRole('link', { name: 'Cut List', exact: true }).click()
+  await expect(
+    page.getByText('Cut list unavailable', { exact: true }),
+  ).toBeVisible()
+  await page.reload()
+  await page.getByRole('link', { name: 'Designer', exact: true }).click()
+  await page
+    .getByRole('button', { name: 'Cabinet 1, 800 mm', exact: true })
+    .click()
+  await page.getByRole('button', { name: 'Select divider 1 at 17 mm' }).click()
+  await dimension(page, 'Divider left', '200')
+  await page.getByRole('link', { name: 'Cut List', exact: true }).click()
+  await expect(
+    page.getByRole('row').filter({ hasText: 'C1-DIVIDER-1' }),
+  ).toBeVisible()
+})
+
 test('one committed edit is one undo and redo step', async ({ page }) => {
   await page
     .getByRole('button', { name: 'Cabinet 1, 800 mm', exact: true })
@@ -172,4 +245,92 @@ test('downloads single and multiple page cut-list PDFs', async ({
   const nextDownload = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Download PDF', exact: true }).click()
   await (await nextDownload).saveAs(testInfo.outputPath('multiple-pages.pdf'))
+})
+
+test('divider openings support partial shelves, spanning doors and batch drawers with undo and persistence', async ({
+  page,
+}, testInfo) => {
+  await page.getByRole('button', { name: '+ Add cabinet', exact: true }).click()
+  await page
+    .getByRole('button', { name: 'Cabinet 2 space 1', exact: true })
+    .click()
+  await page.getByRole('button', { name: 'Add divider', exact: true }).click()
+  await expect(
+    page.getByRole('button', { name: /Cabinet 2 space \d+$/ }),
+  ).toHaveCount(2)
+  await page
+    .getByRole('button', { name: 'Cabinet 2 space 1', exact: true })
+    .click()
+  await page.getByRole('button', { name: 'Add shelf', exact: true }).click()
+  await expect(
+    page.getByRole('button', { name: /Cabinet 2 space \d+$/ }),
+  ).toHaveCount(3)
+  await page.getByRole('button', { name: 'Undo', exact: true }).click()
+  await page
+    .getByRole('button', { name: 'Cabinet 2 space 1', exact: true })
+    .click()
+  await page
+    .getByRole('button', { name: 'Cabinet 2 space 2', exact: true })
+    .click({ modifiers: ['Shift'] })
+  await expect(page.getByText('2 selected spaces')).toBeVisible()
+  await page.getByRole('button', { name: 'Add shelf', exact: true }).click()
+  await expect(
+    page.getByRole('button', { name: /Cabinet 2 space \d+$/ }),
+  ).toHaveCount(4)
+  await expect(
+    page.getByRole('button', { name: 'Cabinet 2 shelf at 1091 mm' }),
+  ).toHaveCount(2)
+  await page.getByRole('button', { name: 'Undo', exact: true }).click()
+  await expect(
+    page.getByRole('button', { name: /Cabinet 2 space \d+$/ }),
+  ).toHaveCount(2)
+  await page.getByRole('button', { name: 'Redo', exact: true }).click()
+  await page.getByRole('button', { name: 'Fronts', exact: true }).click()
+  await page
+    .getByRole('button', { name: 'Cabinet 2 space 1', exact: true })
+    .click()
+  await page
+    .getByRole('button', { name: 'Cabinet 2 space 3', exact: true })
+    .click({ modifiers: ['Shift'] })
+  await page.getByRole('button', { name: 'Add door', exact: true }).click()
+  await expect(
+    page.getByRole('button', { name: 'Cabinet 2 single door 1' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Cabinet 2 space 1', exact: true }),
+  ).toHaveCount(0)
+  await page
+    .getByRole('button', { name: 'Cabinet 2 space 2', exact: true })
+    .click()
+  await page
+    .getByRole('button', { name: 'Cabinet 2 space 4', exact: true })
+    .click({ modifiers: ['Shift'] })
+  await page
+    .getByRole('button', { name: 'Add drawer front', exact: true })
+    .click()
+  await expect(
+    page.getByRole('button', { name: /Cabinet 2 drawer front/ }),
+  ).toHaveCount(2)
+  await page.getByRole('button', { name: 'Undo', exact: true }).click()
+  await expect(
+    page.getByRole('button', { name: /Cabinet 2 drawer front/ }),
+  ).toHaveCount(0)
+  await page.getByRole('button', { name: 'Redo', exact: true }).click()
+  await page.screenshot({ path: testInfo.outputPath('scoped-fronts.png') })
+  await page.getByRole('link', { name: 'Cut List', exact: true }).click()
+  const shelf = page.getByRole('row').filter({ hasText: 'C2-SHELF-1' })
+  await expect(shelf).toContainText('373')
+  const door = page.getByRole('row').filter({ hasText: 'C2-DOOR-1' })
+  await expect(door).toContainText('397')
+  await expect(door).toContainText('2196')
+  const drawer = page.getByRole('row').filter({ hasText: 'C2-DRAWER-1' })
+  await expect(drawer).toContainText('397')
+  await expect(drawer).toContainText('1097')
+  await page.reload()
+  await expect(drawer).toBeVisible()
+  await page.getByRole('link', { name: 'Designer', exact: true }).click()
+  await expect(
+    page.getByRole('button', { name: /Cabinet 2 space \d+$/ }),
+  ).toHaveCount(4)
+  await page.screenshot({ path: testInfo.outputPath('scoped-shelves.png') })
 })

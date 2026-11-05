@@ -15,6 +15,11 @@ describe('deriveSpaces', () => {
     module.shelves = []
     expect(deriveSpaces(module, settings)).toStrictEqual([
       {
+        left: 18,
+        right: 782,
+        width: 764,
+        leftBoundary: { type: 'module-left' },
+        rightBoundary: { type: 'module-right' },
         bottomBoundary: { type: 'module-bottom' },
         topBoundary: { type: 'module-top' },
         bottom: 18,
@@ -28,6 +33,11 @@ describe('deriveSpaces', () => {
     const { module, settings } = fixture()
     expect(deriveSpaces(module, settings)).toStrictEqual([
       {
+        left: 18,
+        right: 782,
+        width: 764,
+        leftBoundary: { type: 'module-left' },
+        rightBoundary: { type: 'module-right' },
         bottomBoundary: { type: 'module-bottom' },
         topBoundary: { type: 'shelf', shelfId: 'id-3' },
         bottom: 18,
@@ -35,6 +45,11 @@ describe('deriveSpaces', () => {
         height: 1073,
       },
       {
+        left: 18,
+        right: 782,
+        width: 764,
+        leftBoundary: { type: 'module-left' },
+        rightBoundary: { type: 'module-right' },
         bottomBoundary: { type: 'shelf', shelfId: 'id-3' },
         topBoundary: { type: 'module-top' },
         bottom: 1109,
@@ -56,6 +71,11 @@ describe('deriveSpaces', () => {
       const before = structuredClone({ module, settings })
       expect(deriveSpaces(module, settings)).toStrictEqual([
         {
+          left: 18,
+          right: 782,
+          width: 764,
+          leftBoundary: { type: 'module-left' },
+          rightBoundary: { type: 'module-right' },
           bottomBoundary: { type: 'module-bottom' },
           topBoundary: { type: 'shelf', shelfId: 'low' },
           bottom: 18,
@@ -63,6 +83,11 @@ describe('deriveSpaces', () => {
           height: 482,
         },
         {
+          left: 18,
+          right: 782,
+          width: 764,
+          leftBoundary: { type: 'module-left' },
+          rightBoundary: { type: 'module-right' },
           bottomBoundary: { type: 'shelf', shelfId: 'low' },
           topBoundary: { type: 'shelf', shelfId: 'high' },
           bottom: 518,
@@ -70,6 +95,11 @@ describe('deriveSpaces', () => {
           height: 982,
         },
         {
+          left: 18,
+          right: 782,
+          width: 764,
+          leftBoundary: { type: 'module-left' },
+          rightBoundary: { type: 'module-right' },
           bottomBoundary: { type: 'shelf', shelfId: 'high' },
           topBoundary: { type: 'module-top' },
           bottom: 1518,

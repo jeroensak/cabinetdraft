@@ -2,7 +2,7 @@
 
 A desktop cabinet editor built with Vite, React, TypeScript, Tailwind CSS, React Router, and Zustand. The Designer supports module management, shelves, semantic fronts, and undo/redo. The independent Cut List derives manufacturing panels from the same pure domain geometry and blocks output for invalid projects.
 
-Project settings and names are editable. Only Project JSON is autosaved; editor state and drag previews remain transient. Export creates readable V1 JSON. Import validates schema and structural invariants before confirmation, accepts invalid geometry without repair, and replaces the design as one undoable action.
+Project settings and names are editable. Only Project JSON is autosaved; editor state and drag previews remain transient. Export creates readable project JSON. Import validates schema and structural invariants before confirmation, accepts invalid geometry without repair, and replaces the design as one undoable action.
 
 Read the [implementation contract](docs/IMPLEMENTATION_CONTRACT.md) and [frozen specification index](docs/SPECIFICATION_INDEX.md) before making changes. The specification must not be edited without explicit instruction.
 
@@ -76,3 +76,9 @@ Install the test browser once with `pnpm exec playwright install chromium`, then
 Failed tests retain screenshots and traces in ignored `test-results/`; `pnpm exec playwright show-report` opens the HTML report. Unit tests remain the primary domain-calculation checks.
 
 The Cut List includes a **Download PDF** button for valid, nonempty projects. It exports a landscape A4 table with repeated headings and page numbers. PDF libraries and the bundled Noto Sans font load on demand; the font license is in `src/assets/fonts/OFL.txt`.
+
+## Space-level dividers
+
+Select a space and choose **Add divider** to create two independently selectable spaces. Add shelves, doors, or drawer fronts inside either opening, and repeat to build nested compartments. Shift-click neighbouring spaces to add a shelf or drawer front to each, or one door across a rectangular selection. Each action supports undo/redo, and all physical panels appear in the Cut List and PDF.
+
+This is an approved post-V1 extension. See [construction and migration rules](docs/VERTICAL_DIVIDERS.md). Project JSON uses schema version 3; existing V1 and V2 local saves and imports migrate without changing their design.

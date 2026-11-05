@@ -24,6 +24,7 @@ export function createDefaultProject(
         ...DEFAULT_MODULE_DIMENSIONS,
         // Frozen specification §5: this position gives equal free heights.
         shelves: [{ id: generateId(), bottom: 1091 }],
+        dividers: [],
         fronts: [
           {
             id: generateId(),

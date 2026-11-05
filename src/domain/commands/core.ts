@@ -1,5 +1,6 @@
+import { copyHorizontalRange } from '../spaces/boundaries'
 import type { CabinetModule } from '../cabinet/types'
-import type { Boundary, Front } from '../fronts/types'
+import type { SpaceRange } from '../fronts/types'
 import { createId, type IdGenerator } from '../project/id'
 import type { Project } from '../project/types'
 import {
@@ -11,11 +12,16 @@ export type CommandErrorCode =
   | 'module-not-found'
   | 'shelf-not-found'
   | 'front-not-found'
+  | 'divider-not-found'
   | 'not-a-door'
   | 'invalid-integer'
   | 'invalid-leaves'
   | 'invalid-module-order'
   | 'invalid-space'
+  | 'invalid-slot'
+  | 'slot-too-narrow'
+  | 'shelf-has-dividers'
+  | 'divider-in-use'
   | 'non-integer-shelf-position'
   | 'id-conflict'
   | 'structural-conflict'
@@ -32,21 +38,25 @@ export class CommandError extends Error {
   }
 }
 
-export type BoundaryRange = Pick<Front, 'bottomBoundary' | 'topBoundary'>
+export type BoundaryRange = SpaceRange
 
-export function sameBoundary(a: Boundary, b: Boundary): boolean {
-  return (
-    a.type === b.type &&
-    (a.type !== 'shelf' || (b.type === 'shelf' && a.shelfId === b.shelfId))
-  )
-}
+export { sameBoundary } from '../spaces/boundaries'
 
 export function cloneModule(module: CabinetModule): CabinetModule {
   return {
     ...module,
-    shelves: module.shelves.map((shelf) => ({ ...shelf })),
+    shelves: module.shelves.map((shelf) => ({
+      ...shelf,
+      ...copyHorizontalRange(shelf),
+    })),
+    dividers: module.dividers.map((divider) => ({
+      ...divider,
+      bottomBoundary: { ...divider.bottomBoundary },
+      topBoundary: { ...divider.topBoundary },
+    })),
     fronts: module.fronts.map((front) => ({
       ...front,
+      ...copyHorizontalRange(front),
       bottomBoundary: { ...front.bottomBoundary },
       topBoundary: { ...front.topBoundary },
     })),
@@ -59,6 +69,10 @@ const structuralCodes = new Set<ValidationCode>([
   'invalid-front-range',
   'drawer-must-cover-one-space',
   'overlapping-fronts',
+  'invalid-divider-range',
+  'invalid-shelf-range',
+  'missing-front-divider',
+  'cyclic-panel-reference',
 ])
 
 /** Mutate a private copy and publish it only if structural invariants hold.
@@ -107,6 +121,7 @@ export function allocateIds(
     ...project.modules.flatMap((module) => [
       module.id,
       ...module.shelves.map((shelf) => shelf.id),
+      ...module.dividers.map((divider) => divider.id),
       ...module.fronts.map((front) => front.id),
     ]),
   ])

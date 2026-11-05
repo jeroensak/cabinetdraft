@@ -11,6 +11,18 @@ function boundary(value: unknown): boolean {
       (value.type === 'shelf' && typeof value.shelfId === 'string'))
   )
 }
+function horizontalRange(value: Record<string, unknown>): boolean {
+  return ['leftBoundary', 'rightBoundary'].every((edge) => {
+    const b = value[edge]
+    return (
+      b === undefined ||
+      (record(b) &&
+        (b.type ===
+          (edge === 'leftBoundary' ? 'module-left' : 'module-right') ||
+          (b.type === 'divider' && typeof b.dividerId === 'string')))
+    )
+  })
+}
 export function isProject(value: unknown): value is Project {
   if (
     !record(value) ||
@@ -39,6 +51,7 @@ export function isProject(value: unknown): value is Project {
       !Number.isSafeInteger(module.height) ||
       !Number.isSafeInteger(module.depth) ||
       !Array.isArray(module.shelves) ||
+      !Array.isArray(module.dividers) ||
       !Array.isArray(module.fronts)
     )
       return false
@@ -47,7 +60,19 @@ export function isProject(value: unknown): value is Project {
         (shelf) =>
           record(shelf) &&
           typeof shelf.id === 'string' &&
-          Number.isSafeInteger(shelf.bottom),
+          Number.isSafeInteger(shelf.bottom) &&
+          horizontalRange(shelf),
+      )
+    )
+      return false
+    if (
+      !module.dividers.every(
+        (divider) =>
+          record(divider) &&
+          typeof divider.id === 'string' &&
+          Number.isSafeInteger(divider.left) &&
+          boundary(divider.bottomBoundary) &&
+          boundary(divider.topBoundary),
       )
     )
       return false
@@ -55,6 +80,7 @@ export function isProject(value: unknown): value is Project {
       if (
         !record(front) ||
         typeof front.id !== 'string' ||
+        !horizontalRange(front) ||
         !boundary(front.bottomBoundary) ||
         !boundary(front.topBoundary)
       )
@@ -64,4 +90,29 @@ export function isProject(value: unknown): value is Project {
         : front.type === 'drawer'
     })
   })
+}
+
+/** V1 projects remain importable; the migration only adds the new empty collection. */
+export function migrateV1(value: unknown): Project | null {
+  if (
+    !record(value) ||
+    value.schemaVersion !== 1 ||
+    !Array.isArray(value.modules)
+  )
+    return null
+  const migrated = {
+    ...value,
+    schemaVersion: PROJECT_SCHEMA_VERSION,
+    modules: value.modules.map((module) =>
+      record(module) ? { ...module, dividers: [] } : module,
+    ),
+  }
+  return isProject(migrated) ? migrated : null
+}
+
+/** V2 already has dividers; omitted horizontal bounds retain full-width semantics. */
+export function migrateV2(value: unknown): Project | null {
+  if (!record(value) || value.schemaVersion !== 2) return null
+  const migrated = { ...value, schemaVersion: PROJECT_SCHEMA_VERSION }
+  return isProject(migrated) ? migrated : null
 }

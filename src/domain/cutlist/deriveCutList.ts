@@ -32,6 +32,12 @@ export function deriveCutList(project: Project): CutListResult {
     const shelves = [...module.shelves].sort((a, b) => a.bottom - b.bottom)
     const doors = module.fronts.filter((front) => front.type === 'door')
     const drawers = module.fronts.filter((front) => front.type === 'drawer')
+    const carcassPanels = deriveCabinetGeometry(module, project.settings).panels
+    const dividerPanels = carcassPanels
+      .filter((panel) => panel.source.type === 'divider')
+      .sort(
+        (a, b) => a.position.y - b.position.y || a.position.x - b.position.x,
+      )
     const suffix = (source: PanelSource): string => {
       switch (source.type) {
         case 'side-left':
@@ -46,6 +52,8 @@ export function deriveCutList(project: Project): CutListResult {
           return 'BACK'
         case 'shelf':
           return `SHELF-${shelves.findIndex((shelf) => shelf.id === source.shelfId) + 1}`
+        case 'divider':
+          return `DIVIDER-${dividerPanels.findIndex((panel) => panel.source.type === 'divider' && panel.source.dividerId === source.dividerId) + 1}`
         case 'door':
           return `DOOR-${doors.findIndex((front) => front.id === source.frontId) + 1}${source.leaf === 'single' ? '' : source.leaf === 'left' ? '-L' : '-R'}`
         case 'drawer':
@@ -53,7 +61,7 @@ export function deriveCutList(project: Project): CutListResult {
       }
     }
     const panels = [
-      ...deriveCabinetGeometry(module, project.settings).panels,
+      ...carcassPanels,
       ...module.fronts.flatMap(
         (front) => deriveFrontGeometry(module, project.settings, front).panels,
       ),

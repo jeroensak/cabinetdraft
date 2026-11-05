@@ -609,6 +609,18 @@ input:focus-visible {
   fill: #256d6744;
   stroke: #256d67;
 }
+.divider-hit-area {
+  fill: transparent;
+  stroke: none;
+  cursor: pointer;
+  outline: none;
+}
+.divider-hit-area:hover,
+.divider-hit-area[aria-pressed='true'],
+.divider-hit-area:focus-visible {
+  fill: #256d6744;
+  stroke: #256d67;
+}
 .shelf-position {
   fill: #256d67;
   font-size: 11px;

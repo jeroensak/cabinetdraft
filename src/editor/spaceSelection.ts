@@ -1,11 +1,15 @@
 import type { Project } from '../domain/project/types'
 import type { Space } from '../domain/spaces/deriveSpaces'
-import { deriveSpaces } from '../domain/spaces/deriveSpaces'
-import { sameBoundary } from '../domain/commands/core'
+import { sameSpace } from '../domain/spaces/boundaries'
+import {
+  enclosingRange,
+  rangeBounds,
+  spaceRange,
+} from '../domain/spaces/spaceRanges'
 import type { Selection } from '../store/types'
-import { spacesInRange } from '../store/selection'
+import { selectedSpaces } from '../store/selection'
 
-/** Shift selection extends by one adjacent space; it never skips a gap. */
+/** Shift adds an edge-adjacent opening; L-shaped groups support per-space actions. */
 export function selectSpace(
   project: Project,
   moduleId: string,
@@ -16,31 +20,33 @@ export function selectSpace(
   const single: Selection = {
     type: 'space',
     moduleId,
-    range: {
-      bottomBoundary: space.bottomBoundary,
-      topBoundary: space.topBoundary,
-    },
+    range: spaceRange(space),
   }
   if (!extend || selection?.type !== 'space' || selection.moduleId !== moduleId)
     return single
   const module = project.modules.find((item) => item.id === moduleId)!
-  const all = deriveSpaces(module, project.settings)
-  const selected = spacesInRange(project, moduleId, selection.range)
+  const selected = selectedSpaces(project, selection)
   if (!selected.length) return single
-  const index = (item: Space) =>
-    all.findIndex((candidate) =>
-      sameBoundary(candidate.bottomBoundary, item.bottomBoundary),
+  if (selected.some((s) => sameSpace(s, space))) return selection
+  const b = rangeBounds(module, project.settings, space)
+  const adjacent = selected.some((s) => {
+    const a = rangeBounds(module, project.settings, s)
+    return (
+      ((a.left === b.right || a.right === b.left) &&
+        a.bottom < b.top &&
+        a.top > b.bottom) ||
+      ((a.top === b.bottom || a.bottom === b.top) &&
+        a.left < b.right &&
+        a.right > b.left)
     )
-  const start = index(selected[0]),
-    end = index(selected.at(-1)!),
-    clicked = index(space)
-  if (clicked < start - 1 || clicked > end + 1) return selection
+  })
+  if (!adjacent) return selection
+  const combined = [...selected, space]
+  const range = enclosingRange(module, project.settings, combined)
   return {
     type: 'space',
     moduleId,
-    range: {
-      bottomBoundary: all[Math.min(start, clicked)].bottomBoundary,
-      topBoundary: all[Math.max(end, clicked)].topBoundary,
-    },
+    range: range ?? selection.range,
+    ...(range ? {} : { ranges: combined.map(spaceRange) }),
   }
 }

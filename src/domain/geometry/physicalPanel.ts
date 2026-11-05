@@ -10,6 +10,7 @@ export interface PhysicalPosition {
 export type PanelSource =
   | { type: 'side-left' | 'side-right' | 'top' | 'bottom' | 'back' }
   | { type: 'shelf'; shelfId: string }
+  | { type: 'divider'; dividerId: string }
   | { type: 'door'; frontId: string; leaf: 'single' | 'left' | 'right' }
   | { type: 'drawer'; frontId: string }
 

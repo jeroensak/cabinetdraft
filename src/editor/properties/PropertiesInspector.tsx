@@ -2,7 +2,6 @@ import { duplicateCabinet } from '../module-list/moduleActions'
 import { FrontProperties } from './FrontProperties'
 import { frontName } from '../frontName'
 import { useProjectStore } from '../../store/projectStore'
-import { spacesInRange } from '../../store/selection'
 import {
   renameModule,
   setModuleDimensions,
@@ -10,7 +9,11 @@ import {
   addShelfToSpace,
   addDoor,
   addDrawerFront,
+  addDividerToSpace,
+  moveDivider,
 } from '../../domain/commands'
+import { enclosingRange, spaceRange } from '../../domain/spaces/spaceRanges'
+import { selectedSpaces } from '../../store/selection'
 import { DraftField } from '../../components/DraftField'
 import { deleteSelection } from '../deleteSelection'
 import { useCommandAction } from '../useCommandAction'
@@ -30,10 +33,26 @@ export function PropertiesInspector() {
     selection?.type === 'shelf'
       ? module?.shelves.find((item) => item.id === selection.shelfId)
       : undefined
-  const spaces =
-    selection?.type === 'space'
-      ? spacesInRange(project, selection.moduleId, selection.range)
-      : []
+  const divider =
+    selection?.type === 'divider'
+      ? module?.dividers.find((item) => item.id === selection.dividerId)
+      : undefined
+  const spaces = selectedSpaces(project, selection)
+  const doorRange = module
+    ? enclosingRange(module, project.settings, spaces)
+    : null
+  const addDivider = () => {
+    if (
+      module &&
+      spaces.length === 1 &&
+      run(() =>
+        execute((project) =>
+          addDividerToSpace(project, module.id, spaceRange(spaces[0])),
+        ),
+      )
+    )
+      setSelection(null)
+  }
   return (
     <aside className="properties-inspector" aria-label="Properties">
       {selection?.type === 'space' && module && (
@@ -53,11 +72,13 @@ export function PropertiesInspector() {
               ? module.name
               : selection.type === 'shelf'
                 ? 'Shelf'
-                : selection.type === 'space'
-                  ? 'Selected space'
-                  : front
-                    ? frontName(front)
-                    : 'Front'}
+                : selection.type === 'divider'
+                  ? 'Divider'
+                  : selection.type === 'space'
+                    ? 'Selected space'
+                    : front
+                      ? frontName(front)
+                      : 'Front'}
           </h2>
           <p className="muted">
             {selection.type === 'module' ? 'Selected module' : module.name}
@@ -98,6 +119,32 @@ export function PropertiesInspector() {
                 Outside dimensions. Global construction settings are available
                 under Settings.
               </p>
+              {module.dividers.length > 0 && (
+                <>
+                  <h3 className="eyebrow dimension-heading">Dividers</h3>
+                  <div className="context-actions">
+                    {[...module.dividers]
+                      .sort(
+                        (a, b) => a.left - b.left || a.id.localeCompare(b.id),
+                      )
+                      .map((item, index) => (
+                        <button
+                          key={item.id}
+                          className="pill"
+                          onClick={() =>
+                            setSelection({
+                              type: 'divider',
+                              moduleId: module.id,
+                              dividerId: item.id,
+                            })
+                          }
+                        >
+                          Select divider {index + 1} at {item.left} mm
+                        </button>
+                      ))}
+                  </div>
+                </>
+              )}
             </>
           )}
           {front && (
@@ -128,21 +175,56 @@ export function PropertiesInspector() {
               </p>
             </>
           )}
+          {divider && (
+            <>
+              <DraftField
+                key={`${divider.id}-${divider.left}`}
+                label="Divider left"
+                numeric
+                value={divider.left}
+                onCommit={(value) =>
+                  run(() =>
+                    execute((project) =>
+                      moveDivider(
+                        project,
+                        module.id,
+                        divider.id,
+                        Number(value),
+                      ),
+                    ),
+                  )
+                }
+              />
+              <p className="inspector-note muted">
+                Position of the divider’s left face from the cabinet’s outside
+                left, in millimetres.
+              </p>
+            </>
+          )}
           {selection.type === 'space' && (
             <>
               <p className="inspector-note muted">
                 {spaces.length === 1
-                  ? `${spaces[0].height} mm free height`
-                  : `${spaces.length} contiguous spaces`}
+                  ? `${spaces[0].width} mm free width · ${spaces[0].height} mm free height`
+                  : `${spaces.length} selected spaces`}
+              </p>
+              <p className="inspector-note muted">
+                Shift-click neighbouring spaces to select more. Shelves and
+                drawer fronts are added to each selected space. A door covers
+                the selected rectangle.
               </p>
               <div className="context-actions">
                 <button
                   className="pill primary"
-                  disabled={spaces.length !== 1}
+                  disabled={!spaces.length}
                   onClick={() =>
                     run(() =>
                       execute((project) =>
-                        addShelfToSpace(project, module.id, selection.range),
+                        spaces.reduce(
+                          (next, space) =>
+                            addShelfToSpace(next, module.id, spaceRange(space)),
+                          project,
+                        ),
                       ),
                     )
                   }
@@ -151,23 +233,39 @@ export function PropertiesInspector() {
                 </button>
                 <button
                   className="pill"
-                  onClick={() =>
-                    run(() =>
-                      execute((project) =>
-                        addDoor(project, module.id, selection.range),
-                      ),
-                    )
+                  disabled={
+                    spaces.length !== 1 ||
+                    spaces[0].width <= project.settings.corpusThickness + 1
                   }
+                  onClick={addDivider}
+                >
+                  Add divider
+                </button>
+                <button
+                  className="pill"
+                  disabled={!doorRange}
+                  onClick={() => {
+                    if (doorRange)
+                      run(() =>
+                        execute((project) =>
+                          addDoor(project, module.id, doorRange),
+                        ),
+                      )
+                  }}
                 >
                   Add door
                 </button>
                 <button
                   className="pill"
-                  disabled={spaces.length !== 1}
+                  disabled={!spaces.length}
                   onClick={() =>
                     run(() =>
                       execute((project) =>
-                        addDrawerFront(project, module.id, selection.range),
+                        spaces.reduce(
+                          (next, space) =>
+                            addDrawerFront(next, module.id, spaceRange(space)),
+                          project,
+                        ),
                       ),
                     )
                   }
@@ -175,6 +273,11 @@ export function PropertiesInspector() {
                   Add drawer front
                 </button>
               </div>
+              {!doorRange && spaces.length > 1 && (
+                <p className="inspector-note muted">
+                  Select a rectangle of spaces to add one spanning door.
+                </p>
+              )}
             </>
           )}
           {selection.type !== 'space' && (

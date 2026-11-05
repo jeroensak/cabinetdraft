@@ -4,8 +4,24 @@ export type Boundary =
   | { type: 'shelf'; shelfId: string }
   | { type: 'module-top' }
 
+export type HorizontalBoundary =
+  | { type: 'module-left' }
+  | { type: 'divider'; dividerId: string }
+  | { type: 'module-right' }
+
+/** Omitted horizontal references mean the outside module sides (legacy projects). */
+export interface HorizontalRange {
+  leftBoundary?: HorizontalBoundary
+  rightBoundary?: HorizontalBoundary
+}
+
+export interface SpaceRange extends HorizontalRange {
+  bottomBoundary: Boundary
+  topBoundary: Boundary
+}
+
 /** One semantic door spanning one or more contiguous spaces. */
-export interface DoorFront {
+export interface DoorFront extends HorizontalRange {
   id: string
   type: 'door'
   bottomBoundary: Boundary
@@ -14,7 +30,7 @@ export interface DoorFront {
 }
 
 /** A visible drawer front covering exactly one space; no drawer box. */
-export interface DrawerFront {
+export interface DrawerFront extends HorizontalRange {
   id: string
   type: 'drawer'
   bottomBoundary: Boundary

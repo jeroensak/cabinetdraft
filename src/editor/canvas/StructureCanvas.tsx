@@ -98,7 +98,8 @@ export function StructureCanvas() {
                 if (
                   selection &&
                   ((view === 'structure' && selection.type === 'front') ||
-                    (view === 'fronts' && selection.type === 'shelf'))
+                    (view === 'fronts' &&
+                      ['shelf', 'divider'].includes(selection.type)))
                 )
                   setSelection({ type: 'module', moduleId: selection.moduleId })
               }}

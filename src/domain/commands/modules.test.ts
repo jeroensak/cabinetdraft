@@ -24,6 +24,7 @@ describe('module and project commands', () => {
       height: 2200,
       depth: 600,
       shelves: [],
+      dividers: [],
       fronts: [],
     })
     expect(project).toStrictEqual(before)
@@ -56,6 +57,7 @@ describe('module and project commands', () => {
       height: 100,
       depth: 100,
       shelves: [],
+      dividers: [],
       fronts: [],
     })
     const next = duplicateModule(freeze(project), source.id, ids())

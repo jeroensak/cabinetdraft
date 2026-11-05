@@ -86,10 +86,10 @@ describe('Fronts mode', () => {
     await user.keyboard('{Shift>}')
     await user.click(screen.getByRole('button', { name: 'Cabinet 1 space 2' }))
     await user.keyboard('{/Shift}')
-    expect(screen.getByText('2 contiguous spaces')).toBeInTheDocument()
+    expect(screen.getByText('2 selected spaces')).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Add drawer front' }),
-    ).toBeDisabled()
+    ).toBeEnabled()
     await user.click(screen.getByRole('button', { name: 'Add door' }))
     const front = useProjectStore.getState().present.modules[0].fronts[0]
     expect(front.bottomBoundary.type).toBe('module-bottom')

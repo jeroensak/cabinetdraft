@@ -52,3 +52,7 @@ The user approved rounding newly centred shelf positions to the nearest integer 
 ## Cut List PDF export
 
 The user requested a downloadable PDF from the Cut List. Export uses validated canonical cut-list rows, includes millimetre units, and is unavailable for invalid or empty projects. PDF generation is presentation code and never persists derived data.
+
+## Approved post-V1 extension: vertical dividers
+
+The user explicitly requested space-level vertical dividers after V1. This supersedes the V1 vertical-divider non-goal only for this extension; the frozen specification remains unchanged. [Divider construction and editing rules](VERTICAL_DIVIDERS.md) govern the new behavior. The same Project JSON → pure domain → independent SVG/Cut List pipeline applies.

@@ -1,4 +1,9 @@
-import { deleteModule, removeShelf, removeFront } from '../domain/commands'
+import {
+  deleteModule,
+  removeShelf,
+  removeFront,
+  removeDivider,
+} from '../domain/commands'
 import type { Project } from '../domain/project/types'
 import type { Selection } from '../store/types'
 
@@ -11,6 +16,8 @@ export function deleteSelection(
     return deleteModule(project, selection.moduleId)
   if (selection.type === 'shelf')
     return removeShelf(project, selection.moduleId, selection.shelfId)
+  if (selection.type === 'divider')
+    return removeDivider(project, selection.moduleId, selection.dividerId)
   return removeFront(project, selection.moduleId, selection.frontId)
 }
 

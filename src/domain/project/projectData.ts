@@ -1,3 +1,4 @@
+import { horizontalData } from '../spaces/boundaries'
 import type { Boundary } from '../fronts/types'
 import type { Project } from './types'
 
@@ -29,9 +30,17 @@ export function projectData(project: Project): Project {
       shelves: module.shelves.map((shelf) => ({
         id: shelf.id,
         bottom: shelf.bottom,
+        ...horizontalData(shelf),
+      })),
+      dividers: module.dividers.map((divider) => ({
+        id: divider.id,
+        left: divider.left,
+        bottomBoundary: boundaryData(divider.bottomBoundary),
+        topBoundary: boundaryData(divider.topBoundary),
       })),
       fronts: module.fronts.map((front) => {
         const common = {
+          ...horizontalData(front),
           bottomBoundary: boundaryData(front.bottomBoundary),
           topBoundary: boundaryData(front.topBoundary),
         }

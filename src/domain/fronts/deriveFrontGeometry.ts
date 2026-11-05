@@ -1,3 +1,8 @@
+import {
+  horizontalBounds,
+  leftBoundary,
+  rightBoundary,
+} from '../spaces/boundaries'
 import type { CabinetModule } from '../cabinet/types'
 import type { PhysicalPanel } from '../geometry/physicalPanel'
 import type { ProjectSettings } from '../project/types'
@@ -11,6 +16,7 @@ export type FrontGeometryIssue = {
   frontId: string
 } & (
   | { code: 'missing-front-boundary'; edge: 'bottom' | 'top'; shelfId: string }
+  | { code: 'missing-front-divider'; dividerId: string }
   | {
       code: 'fractional-front-dimension' | 'invalid-front-dimension'
       dimension: Dimension
@@ -60,10 +66,30 @@ export function deriveFrontGeometry(
   if (bottom === undefined || top === undefined) return { panels: [], issues }
 
   const gap = settings.frontGap
+  const h = horizontalBounds(module, settings, front)
+  for (const boundary of [leftBoundary(front), rightBoundary(front)]) {
+    if (
+      boundary.type === 'divider' &&
+      !module.dividers.some((d) => d.id === boundary.dividerId)
+    )
+      issues.push({
+        ...context,
+        code: 'missing-front-divider',
+        dividerId: boundary.dividerId,
+      })
+  }
+  if (!Number.isFinite(h.left) || !Number.isFinite(h.right))
+    return { panels: [], issues }
+  const left =
+    leftBoundary(front).type === 'module-left'
+      ? gap
+      : h.left - settings.corpusThickness / 2 + gap / 2
+  const right =
+    rightBoundary(front).type === 'module-right'
+      ? module.width - gap
+      : h.right + settings.corpusThickness / 2 - gap / 2
   const doubleDoor = front.type === 'door' && front.leaves === 2
-  const width = doubleDoor
-    ? (module.width - 3 * gap) / 2
-    : module.width - 2 * gap
+  const width = doubleDoor ? (right - left - gap) / 2 : right - left
   const dimensions = {
     length: top - bottom,
     width,
@@ -102,10 +128,10 @@ export function deriveFrontGeometry(
 
   const panels = doubleDoor
     ? [
-        panel({ type: 'door', frontId: front.id, leaf: 'left' }, gap),
+        panel({ type: 'door', frontId: front.id, leaf: 'left' }, left),
         panel(
           { type: 'door', frontId: front.id, leaf: 'right' },
-          gap + width + gap,
+          left + width + gap,
         ),
       ]
     : [
@@ -113,7 +139,7 @@ export function deriveFrontGeometry(
           front.type === 'door'
             ? { type: 'door', frontId: front.id, leaf: 'single' }
             : { type: 'drawer', frontId: front.id },
-          gap,
+          left,
         ),
       ]
 
