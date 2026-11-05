@@ -119,23 +119,35 @@ export function DrawerPreview({
       ...panel,
       position: { ...panel.position, z: panel.position.z - pull },
     })
-    const drawer = [...walls, ...(showFront ? geometry.frontPanels : [])].map(
-      pulledOut,
+    // Closed, an overlay front is drawn straight-on against the cabinet face:
+    // the angled view would shift it off the wall centres it really stops at.
+    const flush = (panel: PhysicalPanel) =>
+      !open && panel.source.type === 'drawer' && panel.position.z < 0
+    const drawer = [
+      ...walls,
+      ...(showFront ? geometry.standaloneFrontPanels : []),
+    ].map((panel) =>
+      flush(panel)
+        ? { ...panel, position: { ...panel.position, z: 0 } }
+        : pulledOut(panel),
     )
     return orderFaces(
       [...cabinetSection(geometry, settings), ...drawer]
         .flatMap((panel, index) => {
           const isDrawer = panel.source.type.startsWith('drawer')
-          return panelFaces(panel, ORIGIN).map((face) => ({
-            ...face,
-            key: `${index}-${face.side}`,
-            source: isDrawer ? panel.source.type : 'cabinet',
-            layer: panel.source.type === 'drawer' ? 2 : isDrawer ? 1 : 0,
-          }))
+          const isFront = panel.source.type === 'drawer'
+          return panelFaces(panel, ORIGIN)
+            .filter((face) => face.side === 'front' || !isFront || open)
+            .map((face) => ({
+              ...face,
+              key: `${index}-${face.side}`,
+              source: isDrawer ? panel.source.type : 'cabinet',
+              layer: isFront ? 2 : isDrawer ? 1 : 0,
+            }))
         })
         .sort((a, b) => a.layer - b.layer || a.distance - b.distance),
     )
-  }, [walls, geometry, settings, showFront, pull])
+  }, [walls, geometry, settings, showFront, open, pull])
   // Drawn last and unsorted: the plate shows through the walls that hide it.
   const bottomFaces = bottom
     ? panelFaces(

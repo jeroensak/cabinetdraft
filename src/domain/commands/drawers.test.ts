@@ -248,6 +248,34 @@ describe('drawer geometry and cut list', () => {
     expect(geometry.frontPanels).toHaveLength(1)
   })
 
+  it('derives the preview front as if the opening had no neighbours', () => {
+    const project = withDesign()
+    const front = { id: 'drawer', type: 'drawer' as const, ...lower(project) }
+    const geometry = deriveDrawerGeometry(
+      project.modules[0]!,
+      project.settings,
+      front,
+      project.drawerDesigns[0]!,
+    )
+    const { corpusThickness, frontGap } = project.settings
+    const { opening } = geometry
+    const [real] = geometry.frontPanels
+    const [standalone] = geometry.standaloneFrontPanels
+    expect(standalone?.position).toStrictEqual({
+      x: opening.left - corpusThickness + frontGap,
+      y: opening.bottom - corpusThickness + frontGap,
+      z: -project.settings.frontThickness,
+    })
+    expect(standalone?.width).toBe(
+      opening.right - opening.left + 2 * (corpusThickness - frontGap),
+    )
+    expect(standalone?.length).toBe(
+      opening.top - opening.bottom + 2 * (corpusThickness - frontGap),
+    )
+    // The shelf above: the real front stops at its middle, so it is shorter.
+    expect(real?.length).toBeLessThan(standalone!.length)
+  })
+
   it('grooves all four walls half their thickness to hold the bottom', () => {
     const project = withDesign()
     const front = { id: 'drawer', type: 'drawer' as const, ...lower(project) }

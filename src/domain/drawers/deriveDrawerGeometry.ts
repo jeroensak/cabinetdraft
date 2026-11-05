@@ -166,7 +166,49 @@ export interface DrawerGeometry {
   /** Five box panels; the overlay front is derived by the front pipeline. */
   boxPanels: PhysicalPanel[]
   frontPanels: PhysicalPanel[]
+  /** The same front if this opening were a cabinet of its own, without
+   * neighbours. For the designer preview only: it is never cut. */
+  standaloneFrontPanels: PhysicalPanel[]
   issues: DrawerIssue[]
+}
+
+/** Every edge an outer wall, so an overlay front covers all of them. */
+function deriveStandaloneFront(
+  module: CabinetModule,
+  settings: ProjectSettings,
+  front: DrawerFront,
+  design: DrawerDesign,
+  opening: { left: number; bottom: number; width: number; height: number },
+): PhysicalPanel[] {
+  const thickness = settings.corpusThickness
+  const standalone: CabinetModule = {
+    ...module,
+    width: opening.width + 2 * thickness,
+    height: opening.height + 2 * thickness,
+    shelves: [],
+    dividers: [],
+    fronts: [],
+  }
+  const { panels } = deriveFrontGeometry(
+    standalone,
+    settings,
+    {
+      ...front,
+      leftBoundary: { type: 'module-left' },
+      rightBoundary: { type: 'module-right' },
+      bottomBoundary: { type: 'module-bottom' },
+      topBoundary: { type: 'module-top' },
+    },
+    design,
+  )
+  return panels.map((panel) => ({
+    ...panel,
+    position: {
+      ...panel.position,
+      x: panel.position.x + opening.left - thickness,
+      y: panel.position.y + opening.bottom - thickness,
+    },
+  }))
 }
 
 /** Canonical drawer box geometry in module-local mm.
@@ -314,6 +356,18 @@ export function deriveDrawerGeometry(
     },
     boxPanels,
     frontPanels: deriveFrontGeometry(module, settings, front, design).panels,
+    standaloneFrontPanels: deriveStandaloneFront(
+      module,
+      settings,
+      front,
+      design,
+      {
+        left: horizontal.left,
+        bottom: vertical.bottom,
+        width: openingWidth,
+        height: openingHeight,
+      },
+    ),
     issues,
   }
 }
