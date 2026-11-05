@@ -1122,8 +1122,31 @@ input:focus-visible {
 .drawer-preview .panel-face {
   cursor: default;
 }
+.drawer-preview .panel-face[data-source='cabinet'] {
+  stroke: #d8d3c8;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.drawer-preview .panel-face[data-source='cabinet'].face-front {
+  fill: #f8f6f1;
+}
+.drawer-preview .panel-face[data-source='cabinet'].face-top {
+  fill: #fbfaf6;
+}
+.drawer-preview .panel-face[data-source='cabinet'].face-right {
+  fill: #f3f1ea;
+}
 .drawer-preview .panel-face[data-source='drawer'] {
-  fill-opacity: 0.85;
+  fill-opacity: 0.72;
+}
+.drawer-preview .panel-face[data-source='drawer'].face-front {
+  fill: #e3d5ba;
+}
+.drawer-preview .panel-face[data-source='drawer'].face-top {
+  fill: #f3ead9;
+}
+.drawer-preview .panel-face[data-source='drawer'].face-right {
+  fill: #d3c2a3;
 }
 .drawer-bottom-plate polygon {
   fill: #256d67;
@@ -1140,18 +1163,18 @@ input:focus-visible {
   stroke: #fffdf8;
   stroke-width: 3px;
 }
-.drawer-opening {
-  fill: #fffdf8;
-  stroke: #9a968c;
-  stroke-dasharray: 4 3;
-  stroke-width: 1;
-}
 .drawer-preview-empty {
   flex: 1;
   display: grid;
   place-items: center;
   padding: 24px;
   text-align: center;
+}
+.drawer-preview-toggles {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
 }
 .drawer-front-toggle {
   display: flex;

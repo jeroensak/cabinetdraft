@@ -348,5 +348,7 @@
   "validation.panelSize": "Een paneel of ruimte heeft geen plek meer. Verplaats of verwijder een plank of tussenschot.",
   "validation.panelPosition": "Een plank of tussenschot zit buiten de kast of overlapt een ander paneel.",
   "validation.measurement": "Een maat is ongeldig. Voer een hele maat boven nul in.",
-  "validation.fronts": "Twee fronten overlappen, of een lade bedekt meer dan één ruimte."
+  "validation.fronts": "Twee fronten overlappen, of een lade bedekt meer dan één ruimte.",
+  "drawer.gapsLabel": "Spelingen: {{side}} per kant, {{bottom}} onder, minstens {{top}} boven, minstens {{rear}} achter",
+  "drawer.openToggle": "Lade openen"
 }

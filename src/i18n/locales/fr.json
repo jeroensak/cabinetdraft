@@ -348,5 +348,7 @@
   "validation.panelSize": "Un panneau ou un espace n’a plus de place. Déplacez ou retirez une étagère ou une séparation.",
   "validation.panelPosition": "Une étagère ou une séparation est hors du meuble ou chevauche un autre panneau.",
   "validation.measurement": "Une dimension n’est pas valide. Saisissez une dimension entière supérieure à zéro.",
-  "validation.fronts": "Deux façades se chevauchent, ou un tiroir couvre plus d’un espace."
+  "validation.fronts": "Deux façades se chevauchent, ou un tiroir couvre plus d’un espace.",
+  "drawer.gapsLabel": "Jeux : {{side}} par côté, {{bottom}} dessous, au moins {{top}} dessus, au moins {{rear}} derrière",
+  "drawer.openToggle": "Ouvrir le tiroir"
 }

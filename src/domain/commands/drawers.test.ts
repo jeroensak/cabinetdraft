@@ -224,6 +224,8 @@ describe('drawer geometry and cut list', () => {
       width: 754,
       height: 537,
       depth: 450,
+      carcassDepth: 597,
+      gaps: { side: 5, bottom: 14, top: 7, rear: 3 },
       issues: [],
     })
     expect(

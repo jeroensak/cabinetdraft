@@ -348,5 +348,7 @@
   "validation.panelSize": "Eine Platte oder ein Raum hat keinen Platz mehr. Verschiebe oder entferne einen Fachboden oder eine Trennwand.",
   "validation.panelPosition": "Ein Fachboden oder eine Trennwand liegt außerhalb des Schranks oder überschneidet eine andere Platte.",
   "validation.measurement": "Ein Maß ist ungültig. Gib ein ganzes Maß über null ein.",
-  "validation.fronts": "Zwei Fronten überlappen sich, oder eine Schublade bedeckt mehr als einen Raum."
+  "validation.fronts": "Zwei Fronten überlappen sich, oder eine Schublade bedeckt mehr als einen Raum.",
+  "drawer.gapsLabel": "Abstände: {{side}} je Seite, {{bottom}} unten, mindestens {{top}} oben, mindestens {{rear}} hinten",
+  "drawer.openToggle": "Schublade öffnen"
 }

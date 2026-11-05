@@ -157,6 +157,10 @@ export interface DrawerGeometry {
   depth: number
   openingWidth: number
   openingHeight: number
+  /** Full depth available behind the opening, from the carcass front. */
+  carcassDepth: number
+  /** The gaps set on the design; above and behind are minimums. */
+  gaps: { side: number; bottom: number; top: number; rear: number }
   /** Opening rectangle (module-local mm) the box is fitted into. */
   opening: { left: number; right: number; bottom: number; top: number }
   /** Five box panels; the overlay front is derived by the front pipeline. */
@@ -295,6 +299,13 @@ export function deriveDrawerGeometry(
     depth,
     openingWidth,
     openingHeight,
+    carcassDepth,
+    gaps: {
+      side: design.sideClearance,
+      bottom: design.bottomClearance,
+      top: design.topClearance,
+      rear: design.rearClearance,
+    },
     opening: {
       left: horizontal.left,
       right: horizontal.right,
