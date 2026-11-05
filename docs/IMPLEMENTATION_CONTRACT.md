@@ -68,3 +68,7 @@ The user explicitly requested a choice of drawer fronts: full or wave top, overl
 ## Cut List parts lists
 
 The user requested a shorter-reading Cut List. The Cut List page and PDF present the canonical rows in up to four lists, in this order: cabinet bases (sides, top, bottom, back), shelves and dividers, doors, and drawers (each drawer's front and box together). Empty lists are left out. Grouping is presentation only: `deriveCutList` output, identifiers, one row per physical panel and the columns of specification section 32 are unchanged.
+
+## Approved post-V1 extension: grooved drawer bottoms
+
+The user requested a groove, half the wall thickness deep, in all four drawer walls to hold the bottom. This supersedes the "no grooves" rule of the drawer box extension. The groove depth is the one manufacturing measurement that may be a half millimetre, because it follows the wall thickness exactly; panel cut sizes remain whole millimetres. [Drawer box rules](DRAWER_BOXES.md) govern the construction.

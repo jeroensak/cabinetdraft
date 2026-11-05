@@ -30,6 +30,12 @@ export type PanelSource =
  */
 export type PanelOrientation = 'side' | 'horizontal' | 'face'
 
+export interface PanelGroove {
+  depth: number
+  width: number
+  fromEdge: number
+}
+
 /** Derived only. Each entry represents one physical panel, never a grouped part. */
 export interface PhysicalPanel {
   moduleId: string
@@ -40,6 +46,8 @@ export interface PhysicalPanel {
   orientation: PanelOrientation
   /** Minimum corner; extents follow orientation and manufacturing dimensions. */
   position: PhysicalPosition
+  /** Groove holding the drawer bottom, measured from the panel's lower edge. */
+  groove?: PanelGroove
   /** Wave top: how far the edge dips at mid-width. Length is the uncut blank. */
   waveDip?: number
 }

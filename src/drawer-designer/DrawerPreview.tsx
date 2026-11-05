@@ -19,10 +19,21 @@ export function DrawerPreview({
   showFront: boolean
 }) {
   const { opening } = geometry
+  const walls = useMemo(
+    () =>
+      geometry.boxPanels.filter(
+        (panel) => panel.source.type !== 'drawer-bottom',
+      ),
+    [geometry],
+  )
+  const bottom = geometry.boxPanels.find(
+    (panel) => panel.source.type === 'drawer-bottom',
+  )
+  const groove = walls[0]?.groove
   const faces = useMemo(
     () =>
       orderFaces(
-        [...geometry.boxPanels, ...(showFront ? geometry.frontPanels : [])]
+        [...walls, ...(showFront ? geometry.frontPanels : [])]
           .flatMap((panel, index) =>
             panelFaces(panel, ORIGIN).map((face) => ({
               ...face,
@@ -33,8 +44,10 @@ export function DrawerPreview({
           )
           .sort((a, b) => a.layer - b.layer || a.distance - b.distance),
       ),
-    [geometry, showFront],
+    [walls, geometry.frontPanels, showFront],
   )
+  // Drawn last and unsorted: the plate shows through the walls that hide it.
+  const bottomFaces = bottom ? panelFaces(bottom, ORIGIN) : []
   const openingCorners = [
     { x: opening.left, y: opening.bottom, z: 0 },
     { x: opening.right, y: opening.bottom, z: 0 },
@@ -69,6 +82,13 @@ export function DrawerPreview({
     return { x: p.x * scale + offset.x, y: p.y * scale + offset.y }
   }
   const box = geometry.boxPanels[0]?.position
+  const bottomLabel =
+    bottom &&
+    screen(
+      bottom.position.x + bottom.length / 2,
+      bottom.position.y + bottom.thickness,
+      bottom.position.z + bottom.width,
+    )
   return (
     <svg
       className="drawer-preview"
@@ -93,9 +113,34 @@ export function DrawerPreview({
                 points={face.outline.map((p) => `${p.x},${p.y}`).join(' ')}
               />
             ))}
+            <g className="drawer-bottom-plate">
+              {bottomFaces.map((face) => (
+                <polygon
+                  key={face.side}
+                  data-face={face.side}
+                  points={face.outline.map((p) => `${p.x},${p.y}`).join(' ')}
+                />
+              ))}
+            </g>
           </g>
           {box && (
             <g className="dimension-layer">
+              {bottom && groove && bottomLabel && (
+                <g className="dimension drawer-bottom-label">
+                  <text
+                    x={bottomLabel.x}
+                    y={bottomLabel.y - 26}
+                    textAnchor="middle"
+                  >
+                    <tspan x={bottomLabel.x}>
+                      {`Bottom ${bottom.thickness} mm thick, ${groove.fromEdge} mm up`}
+                    </tspan>
+                    <tspan x={bottomLabel.x} dy={16}>
+                      {`In ${groove.depth} mm deep grooves`}
+                    </tspan>
+                  </text>
+                </g>
+              )}
               <Dimension
                 from={screen(box.x, opening.bottom)}
                 to={screen(box.x + geometry.width, opening.bottom)}

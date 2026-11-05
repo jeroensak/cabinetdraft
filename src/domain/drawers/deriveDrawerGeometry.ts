@@ -134,9 +134,10 @@ export interface DrawerGeometry {
 }
 
 /** Canonical drawer box geometry in module-local mm.
- * Four equal-height walls: full-depth sides, box front/back between the sides,
- * and a bottom between all four walls raised by `bottomRecess` for undermount
- * slides. No hardware, grooves, notches or drilling are generated.
+ * Four equal-height walls: full-depth sides and box front/back between the sides.
+ * The bottom slots into a groove in all four walls, half a wall thickness deep and
+ * raised by `bottomRecess` for undermount slides, so it reaches half a wall past
+ * each inner face. No hardware, notches or drilling are generated.
  */
 export function deriveDrawerGeometry(
   module: CabinetModule,
@@ -196,29 +197,41 @@ export function deriveDrawerGeometry(
     position,
   })
   const inner = width - 2 * t
+  const groove = {
+    depth: t / 2,
+    width: design.bottomThickness,
+    fromEdge: design.bottomRecess,
+  }
+  const walled = (wall: PhysicalPanel) => ({ ...wall, groove })
   const boxPanels: PhysicalPanel[] = [
-    panel('drawer-side-left', height, depth, t, 'side', { x, y, z }),
-    panel('drawer-side-right', height, depth, t, 'side', {
-      x: x + width - t,
-      y,
-      z,
-    }),
-    panel('drawer-box-front', height, inner, t, 'face', { x: x + t, y, z }),
-    panel('drawer-box-back', height, inner, t, 'face', {
-      x: x + t,
-      y,
-      z: z + depth - t,
-    }),
+    walled(panel('drawer-side-left', height, depth, t, 'side', { x, y, z })),
+    walled(
+      panel('drawer-side-right', height, depth, t, 'side', {
+        x: x + width - t,
+        y,
+        z,
+      }),
+    ),
+    walled(
+      panel('drawer-box-front', height, inner, t, 'face', { x: x + t, y, z }),
+    ),
+    walled(
+      panel('drawer-box-back', height, inner, t, 'face', {
+        x: x + t,
+        y,
+        z: z + depth - t,
+      }),
+    ),
     panel(
       'drawer-bottom',
-      inner,
-      depth - 2 * t,
+      inner + t,
+      depth - t,
       design.bottomThickness,
       'horizontal',
       {
-        x: x + t,
+        x: x + t / 2,
         y: y + design.bottomRecess,
-        z: z + t,
+        z: z + t / 2,
       },
     ),
   ]

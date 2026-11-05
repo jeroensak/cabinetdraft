@@ -2,7 +2,7 @@ import { deriveModuleDrawerPanels } from '../drawers/deriveModuleDrawerPanels'
 import { frontDesign } from '../drawers/types'
 import { deriveCabinetGeometry } from '../cabinet/deriveCabinetGeometry'
 import { deriveFrontGeometry } from '../fronts/deriveFrontGeometry'
-import type { PanelSource } from '../geometry/physicalPanel'
+import type { PanelGroove, PanelSource } from '../geometry/physicalPanel'
 import type { Project } from '../project/types'
 import {
   validateProject,
@@ -20,6 +20,8 @@ export interface CutListItem {
   thickness: number
   /** Wave top fronts are cut from this blank, then dip this far at mid-width. */
   waveDip?: number
+  /** Drawer walls: the groove that holds the bottom. */
+  groove?: PanelGroove
 }
 
 export type CutListResult =
@@ -94,6 +96,7 @@ export function deriveCutList(project: Project): CutListResult {
         width: panel.width,
         thickness: panel.thickness,
         ...(panel.waveDip !== undefined ? { waveDip: panel.waveDip } : {}),
+        ...(panel.groove ? { groove: panel.groove } : {}),
       })
     }
   })

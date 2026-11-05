@@ -115,6 +115,24 @@ describe('Drawer designer', () => {
     expect(useProjectStore.getState().editor.drawerDesigner).toBeNull()
   })
 
+  it('draws the bottom plate over the walls and labels its height and thickness', async () => {
+    const user = userEvent.setup()
+    const { container } = render(<DesignerPage />)
+    await user.click(screen.getByRole('button', { name: 'Cabinet 1 space 1' }))
+    await user.click(screen.getByRole('button', { name: 'Add drawer…' }))
+    await user.click(
+      screen.getByRole('button', { name: '+ New drawer design' }),
+    )
+    expect(
+      container.querySelectorAll('.drawer-bottom-plate polygon'),
+    ).toHaveLength(3)
+    expect(screen.getByText('Bottom 6 mm thick, 13 mm up')).toBeInTheDocument()
+    expect(screen.getByText('In 8 mm deep grooves')).toBeInTheDocument()
+    expect(
+      container.querySelector('.panel-face[data-source="drawer-bottom"]'),
+    ).toBeNull()
+  })
+
   it('sets the drawer front style, position and height on the design', async () => {
     const user = userEvent.setup()
     render(<DesignerPage />)

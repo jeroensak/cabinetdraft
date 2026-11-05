@@ -247,9 +247,30 @@ describe('drawer geometry and cut list', () => {
       ['drawer-side-right', 537, 450, 16, { x: 761, y: 32, z: 0 }],
       ['drawer-box-front', 537, 722, 16, { x: 39, y: 32, z: 0 }],
       ['drawer-box-back', 537, 722, 16, { x: 39, y: 32, z: 434 }],
-      ['drawer-bottom', 722, 418, 6, { x: 39, y: 45, z: 16 }],
+      ['drawer-bottom', 738, 434, 6, { x: 31, y: 45, z: 8 }],
     ])
     expect(geometry.frontPanels).toHaveLength(1)
+  })
+
+  it('grooves all four walls half their thickness to hold the bottom', () => {
+    const project = withDesign()
+    const front = { id: 'drawer', type: 'drawer' as const, ...lower(project) }
+    const geometry = deriveDrawerGeometry(
+      project.modules[0]!,
+      project.settings,
+      front,
+      { ...project.drawerDesigns[0]!, wallThickness: 15 },
+    )
+    const bottom = geometry.boxPanels.at(-1)!
+    expect(geometry.boxPanels.slice(0, 4).map((p) => p.groove)).toStrictEqual(
+      Array(4).fill({ depth: 7.5, width: 6, fromEdge: 13 }),
+    )
+    expect(bottom).not.toHaveProperty('groove')
+    expect([bottom.length, bottom.width]).toStrictEqual([739, 435])
+    // Each edge of the plate reaches exactly the bottom of the groove.
+    const left = geometry.boxPanels[0]!
+    expect(bottom.position.x).toBe(left.position.x + 15 / 2)
+    expect(geometry.issues).toStrictEqual([])
   })
 
   it('rounds a percentage of the space height to whole millimetres', () => {
@@ -275,7 +296,7 @@ describe('drawer geometry and cut list', () => {
       frontMount: 'inset',
     })
     expect(inset.boxPanels.map((panel) => panel.position.z)).toStrictEqual([
-      18, 18, 18, 452, 34,
+      18, 18, 18, 452, 26,
     ])
     expect(inset.issues).toStrictEqual([])
     const tooDeep = deriveDrawerGeometry(module, project.settings, front, {
@@ -298,6 +319,13 @@ describe('drawer geometry and cut list', () => {
     if (!result.available) return
     const fronts = result.items.filter((item) => item.part === 'drawer')
     expect(fronts.length).toBeGreaterThan(0)
+    const walls = result.items.filter((item) => item.groove)
+    expect(walls.map((item) => item.part)).toStrictEqual([
+      'drawer-side-left',
+      'drawer-side-right',
+      'drawer-box-front',
+      'drawer-box-back',
+    ])
     for (const item of fronts)
       expect(item.waveDip).toBe(Math.round(item.length * 0.15))
   })
@@ -349,7 +377,7 @@ describe('drawer geometry and cut list', () => {
       ['C1-DRAWER-1-SIDE-R', 537, 450, 16],
       ['C1-DRAWER-1-BOX-FRONT', 537, 722, 16],
       ['C1-DRAWER-1-BOX-BACK', 537, 722, 16],
-      ['C1-DRAWER-1-BOTTOM', 722, 418, 6],
+      ['C1-DRAWER-1-BOTTOM', 738, 434, 6],
       ['C1-DRAWER-1', 1097, 796, 18],
     ])
   })

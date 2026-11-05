@@ -355,11 +355,11 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
             <p className="inspector-note muted">
               Box width = opening width − 2 × side gap (at least{' '}
               {MIN_DRAWER_SIDE_CLEARANCE} mm per side). Box height is a
-              percentage of the space’s inner height, shared by all four walls;
-              the bottom sits between them, raised by the recess to clear the
-              slides. Front height is a percentage of the front’s full height,
-              keeping its bottom edge. An inset front moves the box back by its
-              thickness.
+              percentage of the space’s inner height, shared by all four walls.
+              The bottom slots into a groove half a wall deep in each wall,
+              raised by the recess to clear the slides. Front height is a
+              percentage of the front’s full height, keeping its bottom edge. An
+              inset front moves the box back by its thickness.
             </p>
             {blockedByDoor && (
               <p className="field-error">

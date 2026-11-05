@@ -18,7 +18,12 @@ const partNames: Record<CutListItem['part'], string> = {
 }
 
 export function partName(item: CutListItem): string {
+  const name = partNames[item.part]
+  if (item.groove) {
+    const { width, depth, fromEdge } = item.groove
+    return `${name}, groove ${width} wide × ${depth} deep, ${fromEdge} mm from lower edge`
+  }
   return item.waveDip === undefined
-    ? partNames[item.part]
-    : `${partNames[item.part]} (wave top, ${item.waveDip} mm dip)`
+    ? name
+    : `${name} (wave top, ${item.waveDip} mm dip)`
 }

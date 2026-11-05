@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { CutListItem } from '../domain/cutlist/deriveCutList'
 import { groupCutList } from './partGroups'
+import { partName } from './partNames'
 
 const item = (
   id: string,
@@ -15,6 +16,19 @@ const item = (
   length: 100,
   width: 50,
   thickness: 18,
+})
+
+describe('partName', () => {
+  it('spells out the groove on drawer walls', () => {
+    expect(
+      partName({
+        ...item('C1-DRAWER-1-SIDE-L', 'drawer-side-left'),
+        groove: { depth: 7.5, width: 6, fromEdge: 13 },
+      }),
+    ).toBe(
+      'Drawer side (left), groove 6 wide × 7.5 deep, 13 mm from lower edge',
+    )
+  })
 })
 
 describe('groupCutList', () => {

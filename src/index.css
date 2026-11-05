@@ -943,6 +943,21 @@ input:focus-visible {
 .drawer-preview .panel-face[data-source='drawer'] {
   fill-opacity: 0.85;
 }
+.drawer-bottom-plate polygon {
+  fill: #256d67;
+  fill-opacity: 0.16;
+  stroke: #256d67;
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+  vector-effect: non-scaling-stroke;
+}
+.drawer-bottom-label text {
+  fill: #256d67;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: #fffdf8;
+  stroke-width: 3px;
+}
 .drawer-opening {
   fill: #fffdf8;
   stroke: #9a968c;
