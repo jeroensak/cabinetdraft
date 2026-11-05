@@ -310,5 +310,7 @@
   "templateText.Wave front drawer": "Lade met golffront",
   "templateText.Large drawer": "Grote lade",
   "templateText.Cabinet 1": "Kast 1",
-  "templateText.Drawer design": "Ladeontwerp"
+  "templateText.Drawer design": "Ladeontwerp",
+  "frontInfo.position": "Positie",
+  "frontInfo.insetNote": "Planken en tussenschotten achter deze deur staan {{value}} mm naar achteren zodat de deur kan sluiten."
 }

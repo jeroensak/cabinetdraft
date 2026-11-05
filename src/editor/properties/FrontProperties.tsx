@@ -1,8 +1,12 @@
 import type { CabinetModule } from '../../domain/cabinet/types'
-import type { Boundary, Front } from '../../domain/fronts/types'
+import type { Boundary, Front, FrontMount } from '../../domain/fronts/types'
 import type { ProjectSettings } from '../../domain/project/types'
 import { deriveFrontGeometry } from '../../domain/fronts/deriveFrontGeometry'
-import { applyDrawerDesign, setDoorLeaves } from '../../domain/commands'
+import {
+  applyDrawerDesign,
+  setDoorLeaves,
+  setDoorMount,
+} from '../../domain/commands'
 import { deriveDrawerGeometry } from '../../domain/drawers/deriveDrawerGeometry'
 import { spaceRange } from '../../domain/spaces/spaceRanges'
 import { useTranslation } from '../../i18n'
@@ -49,28 +53,59 @@ export function FrontProperties({
     <>
       <h3 className="eyebrow dimension-heading">{t('frontInfo.type')}</h3>
       {front.type === 'door' ? (
-        <label className="property-field">
-          <span className="sr-only">{t('frontInfo.doorLeaves')}</span>
-          <select
-            aria-label={t('frontInfo.doorLeaves')}
-            value={front.leaves}
-            onChange={(event) =>
-              run(() =>
-                execute((project) =>
-                  setDoorLeaves(
-                    project,
-                    module.id,
-                    front.id,
-                    Number(event.target.value) as 1 | 2,
+        <>
+          <label className="property-field">
+            <span className="sr-only">{t('frontInfo.doorLeaves')}</span>
+            <select
+              aria-label={t('frontInfo.doorLeaves')}
+              value={front.leaves}
+              onChange={(event) =>
+                run(() =>
+                  execute((project) =>
+                    setDoorLeaves(
+                      project,
+                      module.id,
+                      front.id,
+                      Number(event.target.value) as 1 | 2,
+                    ),
                   ),
-                ),
-              )
-            }
-          >
-            <option value={1}>{t('front.single')}</option>
-            <option value={2}>{t('front.double')}</option>
-          </select>
-        </label>
+                )
+              }
+            >
+              <option value={1}>{t('front.single')}</option>
+              <option value={2}>{t('front.double')}</option>
+            </select>
+          </label>
+          <label className="property-field">
+            <span>{t('frontInfo.position')}</span>
+            <select
+              aria-label={t('frontInfo.position')}
+              value={front.mount ?? 'overlay'}
+              onChange={(event) =>
+                run(() =>
+                  execute((project) =>
+                    setDoorMount(
+                      project,
+                      module.id,
+                      front.id,
+                      event.target.value as FrontMount,
+                    ),
+                  ),
+                )
+              }
+            >
+              <option value="overlay">{t('drawer.positionOverlay')}</option>
+              <option value="inset">{t('drawer.positionInset')}</option>
+            </select>
+          </label>
+          {front.mount === 'inset' && (
+            <p className="inspector-note muted">
+              {t('frontInfo.insetNote', {
+                value: settings.frontThickness + settings.frontGap,
+              })}
+            </p>
+          )}
+        </>
       ) : (
         <p className="semantic-value">{t('front.drawer')}</p>
       )}

@@ -39,7 +39,8 @@ export interface FrontGeometry {
 /** Canonical physical panels for one semantic door or drawer front.
  * Overlay fronts sit in front of the carcass (negative z), with their rear at z=0.
  * Inset fronts sit inside the opening with the gap all round, their face at z=0.
- * A drawer design may lower the top edge; the bottom edge never moves.
+ * A door sets this itself; a drawer's design does, and may lower its top edge
+ * while the bottom edge never moves.
  * This is geometry derivation, not authorization of a front's structural range.
  */
 export function deriveFrontGeometry(
@@ -89,7 +90,10 @@ export function deriveFrontGeometry(
   if (!Number.isFinite(h.left) || !Number.isFinite(h.right))
     return { panels: [], issues }
   const options = front.type === 'drawer' ? drawerOptions : undefined
-  const inset = options?.frontMount === 'inset'
+  const inset =
+    front.type === 'door'
+      ? front.mount === 'inset'
+      : options?.frontMount === 'inset'
   const opening = verticalBounds(module, settings, front)
   const left = inset
     ? h.left + gap

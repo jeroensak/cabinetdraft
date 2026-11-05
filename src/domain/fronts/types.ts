@@ -20,6 +20,8 @@ export interface SpaceRange extends HorizontalRange {
   topBoundary: Boundary
 }
 
+export type FrontMount = 'overlay' | 'inset'
+
 /** One semantic door spanning one or more contiguous spaces. */
 export interface DoorFront extends HorizontalRange {
   id: string
@@ -27,6 +29,8 @@ export interface DoorFront extends HorizontalRange {
   bottomBoundary: Boundary
   topBoundary: Boundary
   leaves: 1 | 2
+  /** Omitted means overlay. */
+  mount?: FrontMount
 }
 
 /** A front covering one space, optionally linked to a reusable drawer box design. */

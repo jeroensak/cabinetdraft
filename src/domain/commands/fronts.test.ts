@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { addDoor, setDoorLeaves, removeFront } from './fronts'
+import { deriveCabinetGeometry } from '../cabinet/deriveCabinetGeometry'
+import { deriveCutList } from '../cutlist/deriveCutList'
+import { exportProject, parseProject } from '../import-export/projectJson'
+import type { Project } from '../project/types'
+import { deriveSpaces } from '../spaces/deriveSpaces'
+import { CommandError } from './core'
+import { addDividerToSpace } from './dividers'
+import { duplicateModule } from './modules'
+import { addDoor, setDoorLeaves, setDoorMount, removeFront } from './fronts'
 import { addBoxlessFront } from './testHelpers'
 import {
   fixture,
@@ -135,5 +143,113 @@ describe('front commands', () => {
       () => addDoor(project, 'original-2', fullRange, 3 as 1, ids()),
       'invalid-leaves',
     )
+  })
+
+  describe('door mount', () => {
+    const inset = () => {
+      const project = fixture()
+      const module = project.modules[0]!
+      return {
+        project: setDoorMount(
+          freeze(project),
+          module.id,
+          module.fronts[0]!.id,
+          'inset',
+        ),
+        moduleId: module.id,
+        doorId: module.fronts[0]!.id,
+      }
+    }
+    const shelfPanel = (project: Project) =>
+      deriveCabinetGeometry(project.modules[0]!, project.settings).panels.find(
+        (panel) => panel.source.type === 'shelf',
+      )!
+
+    it('sets a shelf behind an inset door back by the door and the gap', () => {
+      const { project } = inset()
+      expect(shelfPanel(project)).toMatchObject({
+        width: 577,
+        position: { z: 20 },
+      })
+      expect(validateProject(project)).toStrictEqual([])
+    })
+
+    it('restores the shelf and stores nothing when going back to overlay', () => {
+      const { project, moduleId, doorId } = inset()
+      const overlay = setDoorMount(project, moduleId, doorId, 'overlay')
+      expect(overlay.modules[0]!.fronts[0]).not.toHaveProperty('mount')
+      expect(shelfPanel(overlay)).toMatchObject({
+        width: 597,
+        position: { z: 0 },
+      })
+    })
+
+    it('leaves a shelf bounding the door where it is', () => {
+      const project = fixture()
+      const module = project.modules[0]!
+      const shelfId = module.shelves[0]!.id
+      module.fronts = []
+      const bounded = addDoor(
+        project,
+        module.id,
+        {
+          bottomBoundary: { type: 'shelf', shelfId },
+          topBoundary: { type: 'module-top' },
+        },
+        1,
+        ids(),
+      )
+      const door = bounded.modules[0]!.fronts[0]!
+      const next = setDoorMount(bounded, module.id, door.id, 'inset')
+      expect(shelfPanel(next)).toMatchObject({ width: 597 })
+    })
+
+    it('sets back a divider inside the door opening', () => {
+      const { project, moduleId } = inset()
+      const module = project.modules[0]!
+      const space = deriveSpaces(module, project.settings)[0]!
+      const divided = addDividerToSpace(project, moduleId, space, ids())
+      const panel = deriveCabinetGeometry(
+        divided.modules[0]!,
+        divided.settings,
+      ).panels.find((item) => item.source.type === 'divider')!
+      expect(panel).toMatchObject({ width: 577, position: { z: 20 } })
+    })
+
+    it('stays inset when its cabinet is duplicated', () => {
+      const { project, moduleId } = inset()
+      const copy = duplicateModule(project, moduleId, ids()).modules[1]!
+      expect(copy.fronts[0]).toMatchObject({ mount: 'inset' })
+    })
+
+    it('feeds the cut list and survives export and import', () => {
+      const { project } = inset()
+      const result = deriveCutList(project)
+      if (!result.available) throw new Error('expected a cut list')
+      expect(result.items.find((item) => item.part === 'shelf')).toMatchObject({
+        width: 577,
+      })
+      expect(
+        result.items
+          .filter((item) => item.part === 'door')
+          .map((item) => [item.length, item.width]),
+      ).toStrictEqual([
+        [2160, 379],
+        [2160, 379],
+      ])
+      expect(parseProject(exportProject(project))).toStrictEqual(project)
+    })
+
+    it('rejects an unknown mount on import and a door that does not exist', () => {
+      const { project, moduleId } = inset()
+      const raw = JSON.parse(exportProject(project))
+      raw.modules[0].fronts[0].mount = 'floating'
+      expect(() => parseProject(JSON.stringify(raw))).toThrow(
+        'invalid-structure',
+      )
+      expect(() => setDoorMount(project, moduleId, 'missing', 'inset')).toThrow(
+        CommandError,
+      )
+    })
   })
 })

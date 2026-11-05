@@ -84,3 +84,9 @@ Templates are project exports in `src/design-templates/`, named `template-1.json
 V1 is complete, and the user explicitly requested English, Dutch, German and French, and approved a localization framework. This supersedes specification section 76 and the i18n non-goal above; the frozen specification remains unchanged. The app uses i18next with react-i18next. Locale files are `src/i18n/locales/{en,nl,de,fr}.json`, English is the source and the fallback, and a test fails if any language has different keys or placeholders.
 
 The language is an editor preference stored under `cabinet-designer:language`, never in Project JSON. A saved choice wins, then the browser's language, then English. Domain code stays free of i18n: drawer issues expose a `reason` and `values` for the UI to word, and default names are passed in. Names already in a project are user data and are not translated. The static build metadata and `public/404.html` stay English; client-side metadata follows the language.
+
+## Approved post-V1 extension: inset doors
+
+The user requested doors that are either overlay or inset. This supersedes specification sections 10 and 20–23 only for inset doors; the frozen specification remains unchanged. A door may store `mount: 'inset'`; omitted means overlay, so existing projects need no migration and overlay is never written out.
+
+An inset door sits inside its opening with `frontGap` on all four sides, its face flush with the carcass front. A double door's leaves divide the width as they do for overlay, so a non-integer leaf remains a validation problem. Any shelf or divider inside the opening of an inset door would block it, so it is set back by `frontThickness + frontGap` and its depth shrinks by the same amount. `insetDoorSetback` is the one canonical rule. The setback is derived, never stored, and panels that only bound the opening do not move.

@@ -310,5 +310,7 @@
   "templateText.Wave front drawer": "Tiroir à façade ondulée",
   "templateText.Large drawer": "Grand tiroir",
   "templateText.Cabinet 1": "Meuble 1",
-  "templateText.Drawer design": "Modèle de tiroir"
+  "templateText.Drawer design": "Modèle de tiroir",
+  "frontInfo.position": "Position",
+  "frontInfo.insetNote": "Les étagères et séparations derrière cette porte sont reculées de {{value}} mm pour qu’elle puisse fermer."
 }

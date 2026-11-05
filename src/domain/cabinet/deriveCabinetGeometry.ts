@@ -2,6 +2,7 @@ import type { CabinetModule } from './types'
 import type { ProjectSettings } from '../project/types'
 import type { PhysicalPanel } from '../geometry/physicalPanel'
 import { horizontalBounds, verticalBounds } from '../spaces/boundaries'
+import { insetDoorSetback } from '../fronts/insetDoorSetback'
 import { deriveCarcassDimensions } from './deriveCarcassDimensions'
 
 export interface CabinetGeometry {
@@ -60,24 +61,36 @@ export function deriveCabinetGeometry(
           { type: 'shelf', shelfId: shelf.id },
           shelf.bottom,
         )
+        const setback = insetDoorSetback(module, settings, {
+          ...bounds,
+          bottom: shelf.bottom,
+          top: shelf.bottom + thickness,
+        })
         return {
           ...panel,
           length: bounds.right - bounds.left,
-          position: { ...panel.position, x: bounds.left },
+          width: carcassDepth - setback,
+          position: { ...panel.position, x: bounds.left, z: setback },
         }
       }),
     ...module.dividers
       .flatMap((divider): PhysicalPanel[] => {
         const space = verticalBounds(module, settings, divider)
+        const setback = insetDoorSetback(module, settings, {
+          left: divider.left,
+          right: divider.left + thickness,
+          bottom: space.bottom,
+          top: space.top,
+        })
         return [
           {
             moduleId: module.id,
             source: { type: 'divider', dividerId: divider.id },
             length: space.top - space.bottom,
-            width: carcassDepth,
+            width: carcassDepth - setback,
             thickness,
             orientation: 'side',
-            position: { x: divider.left, y: space.bottom, z: 0 },
+            position: { x: divider.left, y: space.bottom, z: setback },
           },
         ]
       })

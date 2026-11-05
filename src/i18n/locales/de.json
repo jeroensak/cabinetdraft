@@ -310,5 +310,7 @@
   "templateText.Wave front drawer": "Schublade mit Wellenfront",
   "templateText.Large drawer": "Große Schublade",
   "templateText.Cabinet 1": "Schrank 1",
-  "templateText.Drawer design": "Schubladenentwurf"
+  "templateText.Drawer design": "Schubladenentwurf",
+  "frontInfo.position": "Position",
+  "frontInfo.insetNote": "Fachböden und Trennwände hinter dieser Tür sitzen {{value}} mm weiter hinten, damit sie schließen kann."
 }

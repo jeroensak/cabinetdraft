@@ -100,6 +100,28 @@ describe('Fronts mode', () => {
       screen.getByRole('button', { name: 'Cabinet 1 single door 1' }),
     ).toBeInTheDocument()
   })
+  it('switches a door between overlay and inset and explains the setback', async () => {
+    const user = userEvent.setup()
+    render(<DesignerPage />)
+    await user.click(screen.getByRole('button', { name: 'Fronts' }))
+    await user.click(
+      screen.getByRole('button', { name: /Cabinet 1 double door/ }),
+    )
+    const position = screen.getByRole('combobox', { name: 'Position' })
+    expect(position).toHaveValue('overlay')
+    await user.selectOptions(position, 'inset')
+    const door = useProjectStore.getState().present.modules[0].fronts[0]
+    expect(door).toMatchObject({ mount: 'inset' })
+    expect(
+      screen.getByText(/behind this door sit 20 mm back/),
+    ).toBeInTheDocument()
+    expect(useProjectStore.getState().past).toHaveLength(1)
+    act(() => useProjectStore.getState().undo())
+    expect(
+      useProjectStore.getState().present.modules[0].fronts[0],
+    ).not.toHaveProperty('mount')
+  })
+
   it('does not permit a disjoint multi-space selection', async () => {
     clearFronts()
     const project = useProjectStore.getState().present

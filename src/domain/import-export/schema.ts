@@ -112,7 +112,10 @@ export function isProject(value: unknown): value is Project {
       )
         return false
       return front.type === 'door'
-        ? front.leaves === 1 || front.leaves === 2
+        ? (front.leaves === 1 || front.leaves === 2) &&
+            (front.mount === undefined ||
+              front.mount === 'overlay' ||
+              front.mount === 'inset')
         : front.type === 'drawer' &&
             (front.drawerDesignId === undefined ||
               typeof front.drawerDesignId === 'string')

@@ -1,4 +1,5 @@
 import { horizontalData } from '../spaces/boundaries'
+import type { FrontMount } from '../fronts/types'
 import type { IdGenerator } from '../project/id'
 import type { Project } from '../project/types'
 import {
@@ -46,6 +47,23 @@ export function setDoorLeaves(
     if (!front) throw new CommandError('front-not-found', { frontId })
     if (front.type !== 'door') throw new CommandError('not-a-door', { frontId })
     front.leaves = leafCount
+  })
+}
+
+export function setDoorMount(
+  project: Project,
+  moduleId: string,
+  frontId: string,
+  mount: FrontMount,
+): Project {
+  return editProject(project, (draft) => {
+    const front = findModule(draft, moduleId).fronts.find(
+      (item) => item.id === frontId,
+    )
+    if (!front) throw new CommandError('front-not-found', { frontId })
+    if (front.type !== 'door') throw new CommandError('not-a-door', { frontId })
+    if (mount === 'inset') front.mount = mount
+    else delete front.mount
   })
 }
 

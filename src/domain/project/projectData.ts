@@ -47,7 +47,13 @@ export function projectData(project: Project): Project {
           topBoundary: boundaryData(front.topBoundary),
         }
         return front.type === 'door'
-          ? { id: front.id, type: 'door', ...common, leaves: front.leaves }
+          ? {
+              id: front.id,
+              type: 'door',
+              ...common,
+              leaves: front.leaves,
+              ...(front.mount === 'inset' ? { mount: front.mount } : {}),
+            }
           : {
               id: front.id,
               type: 'drawer',

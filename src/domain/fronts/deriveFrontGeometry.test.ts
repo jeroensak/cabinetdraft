@@ -376,4 +376,43 @@ describe('deriveFrontGeometry', () => {
       ).toStrictEqual(deriveFrontGeometry(module, settings, door).panels)
     })
   })
+
+  describe('inset doors', () => {
+    const settings = createDefaultProject().settings
+    const module = {
+      ...createDefaultProject().modules[0]!,
+      shelves: [],
+      fronts: [],
+    }
+    const door = {
+      id: 'door',
+      type: 'door' as const,
+      leaves: 2 as const,
+      bottomBoundary: { type: 'module-bottom' as const },
+      topBoundary: { type: 'module-top' as const },
+      mount: 'inset' as const,
+    }
+
+    it('fits inside the opening with the gap all round, flush with the carcass', () => {
+      const { panels, issues } = deriveFrontGeometry(module, settings, door)
+      expect(issues).toStrictEqual([])
+      expect(panels.map((panel) => panel.position)).toStrictEqual([
+        { x: 20, y: 20, z: 0 },
+        { x: 401, y: 20, z: 0 },
+      ])
+      expect(panels[0]).toMatchObject({ length: 2160, width: 379 })
+    })
+
+    it('keeps the overlay size when the door is not inset', () => {
+      const overlay = deriveFrontGeometry(module, settings, {
+        ...door,
+        mount: 'overlay',
+      })
+      expect(overlay.panels[0]).toMatchObject({
+        length: 2196,
+        width: 397,
+        position: { x: 2, y: 2, z: -18 },
+      })
+    })
+  })
 })

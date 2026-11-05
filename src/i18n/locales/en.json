@@ -310,5 +310,7 @@
   "templateText.Wave front drawer": "Wave front drawer",
   "templateText.Large drawer": "Large drawer",
   "templateText.Cabinet 1": "Cabinet 1",
-  "templateText.Drawer design": "Drawer design"
+  "templateText.Drawer design": "Drawer design",
+  "frontInfo.position": "Position",
+  "frontInfo.insetNote": "Shelves and dividers behind this door sit {{value}} mm back so it can close."
 }
