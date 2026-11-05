@@ -4,10 +4,10 @@ This post-V1 extension was requested by the user. It supersedes the V1 drawer-bo
 
 ## Reusable designs
 
-- A project owns a library of drawer designs (`Project.drawerDesigns`). A design is a construction recipe, not a placed object: it stores a stable ID, a name, the slide type, and integer-mm measurements. Width and automatic height are never stored.
+- A project owns a library of drawer designs (`Project.drawerDesigns`). A design is a construction recipe, not a placed object: it stores a stable ID, a name, the slide type, and integer-mm measurements. Width and the resulting height in millimetres are never stored; height is stored as a whole percentage of the space's inner height (1–100, default 50).
 - A drawer front may reference one design through `drawerDesignId`. The same design can be applied to any number of spaces; editing it updates every drawer that uses it. A drawer front without a design remains a front only.
 - Only undermount slides are supported (`slideType: 'undermount'`). No hardware, grooves, notches or drilling are generated.
-- Designs in use cannot be deleted; remove the box from those drawers first. Commands reject internally inconsistent designs (blank name, non-integer measurements, side gap below 3 mm, a box too shallow for its walls, or a bottom that does not fit below a fixed side height).
+- Designs in use cannot be deleted; remove the box from those drawers first. Commands reject internally inconsistent designs (blank name, non-integer measurements, side gap below 3 mm, a box too shallow for its walls, or a height outside 1–100%).
 
 ## Construction
 
@@ -16,15 +16,15 @@ A drawer consists of five box panels plus the existing overlay drawer front:
 ```text
 openingWidth  = space internal width (between supporting sides/dividers)
 boxWidth      = openingWidth − 2 × sideClearance        (sideClearance ≥ 3 mm)
-boxHeight     = fixed height, or round(spaceHeight / 2)  (all four walls equal)
+boxHeight     = round(spaceHeight × heightPercent / 100)  (all four walls equal)
 sides         = boxHeight × depth × wallThickness        (full depth, outside)
 box front/back= boxHeight × (boxWidth − 2 × wall) × wallThickness (between sides)
 bottom        = (boxWidth − 2 × wall) × (depth − 2 × wall) × bottomThickness
 ```
 
 - The box sits `sideClearance` from each side of the opening, `bottomClearance` above the opening bottom, and starts at the carcass front (z = 0). The bottom sits between all four walls, raised by `bottomRecess` above their lower edge to clear the undermount slides.
-- Automatic height is a placement choice and rounds to the nearest whole millimetre, like centred shelves. All other manufacturing dimensions remain exact and are never rounded.
-- A drawer fits when `height + bottomClearance + topClearance ≤ spaceHeight` and `depth + rearClearance ≤ carcassDepth`, and every panel is a positive integer size. Applying a design that does not fit every target is rejected atomically. Later edits (moving shelves, resizing cabinets, changing the design) may leave a non-fitting drawer persisted for repair; validation reports it and the Cut List is unavailable until it is fixed.
+- Percentage height is a placement choice and rounds to the nearest whole millimetre, like centred shelves. All other manufacturing dimensions remain exact and are never rounded.
+- A drawer fits when `height + bottomClearance + topClearance ≤ spaceHeight`, the recessed bottom sits below the top of the walls, and `depth + rearClearance ≤ carcassDepth`, and every panel is a positive integer size. Applying a design that does not fit every target is rejected atomically. Later edits (moving shelves, resizing cabinets, changing the design) may leave a non-fitting drawer persisted for repair; validation reports it and the Cut List is unavailable until it is fixed.
 - Splitting a space that holds a drawer creates two drawer fronts that keep the same design; each box is re-derived for its own space.
 
 ## Editing
@@ -33,4 +33,4 @@ The drawer designer is a separate workspace. Open it from one or more selected s
 
 ## Persistence
 
-Schema version 4 adds `drawerDesigns` and the optional `drawerDesignId` on drawer fronts. Version 1–3 saves and imports migrate with an empty library and unchanged designs. Box panels, widths, automatic heights and fit results are derived, never saved.
+Schema version 4 adds `drawerDesigns` and the optional `drawerDesignId` on drawer fronts. Version 1–3 saves and imports migrate with an empty library and unchanged designs. Schema version 5 replaces the stored `height` with `heightPercent`: an automatic height becomes 50%, and a fixed height becomes the closest whole percentage of the first drawer using that design (50% if none does), so a fixed box may change by a few millimetres and shared designs may change more. Box panels, widths, heights in millimetres and fit results are derived, never saved.

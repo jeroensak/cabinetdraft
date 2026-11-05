@@ -5,11 +5,13 @@ export function DraftField({
   label,
   value,
   numeric = false,
+  unit = 'mm',
   onCommit,
 }: {
   label: string
   value: string | number
   numeric?: boolean
+  unit?: 'mm' | '%'
   onCommit: (value: string) => boolean | void
 }) {
   const [draft, setDraft] = useState(String(value))
@@ -19,7 +21,7 @@ export function DraftField({
       <span className="capitalize">{label}</span>
       <span className={numeric ? 'dimension-input' : undefined}>
         <input
-          aria-label={numeric ? `${label} (mm)` : label}
+          aria-label={numeric ? `${label} (${unit})` : label}
           inputMode={numeric ? 'numeric' : undefined}
           value={draft}
           aria-invalid={error}
@@ -52,11 +54,13 @@ export function DraftField({
             }
           }}
         />
-        {numeric && <span aria-hidden="true">mm</span>}
+        {numeric && <span aria-hidden="true">{unit}</span>}
       </span>
       {error && (
         <span className="field-error" role="alert">
-          Enter a whole number in millimetres.
+          {unit === 'mm'
+            ? 'Enter a whole number in millimetres.'
+            : 'Enter a whole number.'}
         </span>
       )}
     </label>

@@ -22,7 +22,7 @@ describe('project JSON boundary', () => {
     })
     const migrated = parseProject(raw)
     expect(migrated).toStrictEqual(v2)
-    expect(JSON.parse(exportProject(migrated)).schemaVersion).toBe(4)
+    expect(JSON.parse(exportProject(migrated)).schemaVersion).toBe(5)
   })
 
   it('migrates V3 projects with an empty drawer library and keeps drawer designs on roundtrip', () => {
@@ -43,6 +43,42 @@ describe('project JSON boundary', () => {
         }),
       ),
     ).toThrow('invalid-structure')
+  })
+
+  it('migrates V4 drawer heights to percentages of the opening', () => {
+    const project = createDefaultProject()
+    const module = project.modules[0]!
+    const { heightPercent: _omitted, ...v4Design } = defaultDrawerDesign()
+    expect(_omitted).toBe(50)
+    const v4 = {
+      ...project,
+      schemaVersion: 4,
+      drawerDesigns: [
+        { ...v4Design, id: 'automatic', height: null },
+        { ...v4Design, id: 'fixed', height: 216 },
+        { ...v4Design, id: 'unused', height: 216 },
+      ],
+      modules: [
+        {
+          ...module,
+          fronts: [
+            {
+              id: 'drawer',
+              type: 'drawer',
+              bottomBoundary: { type: 'module-bottom' },
+              topBoundary: { type: 'shelf', shelfId: module.shelves[0]!.id },
+              drawerDesignId: 'fixed',
+            },
+          ],
+        },
+      ],
+    }
+    const migrated = parseProject(JSON.stringify(v4))
+    expect(migrated.schemaVersion).toBe(5)
+    expect(
+      migrated.drawerDesigns.map((design) => design.heightPercent),
+    ).toStrictEqual([50, 20, 50])
+    expect(migrated.drawerDesigns[1]).not.toHaveProperty('height')
   })
 
   it('rejects broken divider references and duplicate divider IDs', () => {
@@ -71,7 +107,7 @@ describe('project JSON boundary', () => {
       ...project,
       selection: 'ignored',
     } as typeof project)
-    expect(raw).toContain('\n  "schemaVersion": 4,')
+    expect(raw).toContain('\n  "schemaVersion": 5,')
     expect(raw).not.toContain('selection')
     expect(parseProject(raw)).toEqual(project)
   })

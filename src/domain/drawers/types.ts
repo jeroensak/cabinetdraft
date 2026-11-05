@@ -1,7 +1,7 @@
 /** Minimum gap between each drawer side and the opening side, for undermount slides. */
 export const MIN_DRAWER_SIDE_CLEARANCE = 3
 
-/** A reusable construction recipe. Width and automatic height are never stored. */
+/** A reusable construction recipe. Derived width and height are never stored. */
 export interface DrawerDesign {
   id: string
   name: string
@@ -9,8 +9,8 @@ export interface DrawerDesign {
   wallThickness: number
   bottomThickness: number
   depth: number
-  /** null follows half the opening height, rounded to integer millimetres. */
-  height: number | null
+  /** Box height as a whole percentage of the opening height; the result rounds to whole mm. */
+  heightPercent: number
   /** Gap on each side between the box's outside and the opening. */
   sideClearance: number
   bottomClearance: number
@@ -29,7 +29,7 @@ export function defaultDrawerDesign(): DrawerDesignInput {
     wallThickness: 16,
     bottomThickness: 6,
     depth: 450,
-    height: null,
+    heightPercent: 50,
     sideClearance: 5,
     bottomClearance: 14,
     topClearance: 7,
@@ -47,7 +47,7 @@ export function drawerDesignData(design: DrawerDesign): DrawerDesign {
     wallThickness: design.wallThickness,
     bottomThickness: design.bottomThickness,
     depth: design.depth,
-    height: design.height,
+    heightPercent: design.heightPercent,
     sideClearance: design.sideClearance,
     bottomClearance: design.bottomClearance,
     topClearance: design.topClearance,

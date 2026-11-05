@@ -78,28 +78,20 @@ export function validateDrawerDesign(design: DrawerDesignInput): DrawerIssue[] {
       })
   }
   if (
-    design.height !== null &&
-    (!Number.isSafeInteger(design.height) || design.height < 1)
+    !Number.isSafeInteger(design.heightPercent) ||
+    design.heightPercent < 1 ||
+    design.heightPercent > 100
   )
     issues.push({
       code: 'invalid-drawer-design',
-      field: 'height',
-      message: 'Side height must be a positive whole number of millimetres.',
+      field: 'heightPercent',
+      message: 'Box height must be a whole percentage from 1 to 100.',
     })
   if (design.depth <= 2 * design.wallThickness)
     issues.push({
       code: 'invalid-drawer-design',
       field: 'depth',
       message: 'Box depth must leave room between the box front and back.',
-    })
-  if (
-    design.height !== null &&
-    design.bottomRecess + design.bottomThickness >= design.height
-  )
-    issues.push({
-      code: 'invalid-drawer-design',
-      field: 'height',
-      message: 'The recessed bottom must fit below the top of the sides.',
     })
   return issues
 }
@@ -135,8 +127,8 @@ export function deriveDrawerGeometry(
   const openingWidth = horizontal.right - horizontal.left
   const openingHeight = vertical.top - vertical.bottom
   const width = openingWidth - 2 * design.sideClearance
-  // Automatic height is a placement choice, like centred shelves: whole mm.
-  const height = design.height ?? Math.round(openingHeight / 2)
+  // Percentage height is a placement choice, like centred shelves: whole mm.
+  const height = Math.round((openingHeight * design.heightPercent) / 100)
   const depth = design.depth
   const t = design.wallThickness
   const x = horizontal.left + design.sideClearance
@@ -155,10 +147,7 @@ export function deriveDrawerGeometry(
       field: 'depth',
       message: `The box depth plus rear clearance (${depth + design.rearClearance} mm) exceeds the ${carcassDepth} mm cabinet depth.`,
     })
-  if (
-    design.height === null &&
-    design.bottomRecess + design.bottomThickness >= height
-  )
+  if (design.bottomRecess + design.bottomThickness >= height)
     issues.push({
       code: 'drawer-does-not-fit',
       field: 'height',

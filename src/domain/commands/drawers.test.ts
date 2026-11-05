@@ -53,12 +53,13 @@ describe('drawer design commands', () => {
     expect(validateProject(next)).toStrictEqual([])
   })
 
-  it('rejects designs with less than 3 mm side clearance, blank names or a bottom taller than the sides', () => {
+  it('rejects designs with less than 3 mm side clearance, blank names or a height outside 1–100%', () => {
     const project = fixture()
     for (const patch of [
       { sideClearance: 2 },
       { name: '  ' },
-      { height: 18 },
+      { heightPercent: 0 },
+      { heightPercent: 101 },
       { depth: 30 },
     ])
       rejects(
@@ -249,20 +250,42 @@ describe('drawer geometry and cut list', () => {
     expect(geometry.frontPanels).toHaveLength(1)
   })
 
-  it('uses a fixed side height and reports vertical overflow', () => {
+  it('rounds a percentage of the space height to whole millimetres', () => {
     const project = withDesign()
     const front = { id: 'drawer', type: 'drawer' as const, ...lower(project) }
-    const design = { ...project.drawerDesigns[0]!, height: 1060 }
+    const geometry = deriveDrawerGeometry(
+      project.modules[0]!,
+      project.settings,
+      front,
+      { ...project.drawerDesigns[0]!, heightPercent: 25 },
+    )
+    expect(geometry.height).toBe(268)
+    expect(geometry.issues).toStrictEqual([])
+  })
+
+  it('reports vertical overflow and a bottom taller than the walls', () => {
+    const project = withDesign()
+    const front = { id: 'drawer', type: 'drawer' as const, ...lower(project) }
+    const design = { ...project.drawerDesigns[0]!, heightPercent: 100 }
     const geometry = deriveDrawerGeometry(
       project.modules[0]!,
       project.settings,
       front,
       design,
     )
-    expect(geometry.height).toBe(1060)
+    expect(geometry.height).toBe(1073)
     expect(geometry.issues.map((issue) => issue.code)).toStrictEqual([
       'drawer-does-not-fit',
     ])
+    const short = deriveDrawerGeometry(
+      project.modules[0]!,
+      project.settings,
+      front,
+      { ...project.drawerDesigns[0]!, heightPercent: 1 },
+    )
+    expect(short.issues.map((issue) => issue.message)).toContain(
+      'The recessed bottom leaves no usable height in this drawer.',
+    )
   })
 
   it('lists five box panels plus the front for each linked drawer', () => {

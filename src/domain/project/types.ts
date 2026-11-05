@@ -10,7 +10,7 @@ export interface ProjectSettings {
   frontGap: number
 }
 
-export const PROJECT_SCHEMA_VERSION = 4
+export const PROJECT_SCHEMA_VERSION = 5
 
 /** Persisted source of truth; deliberately contains no derived or editor state. */
 export interface Project {

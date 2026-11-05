@@ -1,4 +1,5 @@
 import { PROJECT_SCHEMA_VERSION, type Project } from '../project/types'
+import { verticalBounds } from '../spaces/boundaries'
 
 function record(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -31,19 +32,17 @@ function drawerDesign(value: unknown): boolean {
     value.slideType !== 'undermount'
   )
     return false
-  return (
-    [
-      'wallThickness',
-      'bottomThickness',
-      'depth',
-      'sideClearance',
-      'bottomClearance',
-      'topClearance',
-      'rearClearance',
-      'bottomRecess',
-    ].every((field) => Number.isSafeInteger(value[field])) &&
-    (value.height === null || Number.isSafeInteger(value.height))
-  )
+  return [
+    'wallThickness',
+    'bottomThickness',
+    'depth',
+    'heightPercent',
+    'sideClearance',
+    'bottomClearance',
+    'topClearance',
+    'rearClearance',
+    'bottomRecess',
+  ].every((field) => Number.isSafeInteger(value[field]))
 }
 export function isProject(value: unknown): value is Project {
   if (
@@ -157,4 +156,54 @@ export function migrateV3(value: unknown): Project | null {
     drawerDesigns: [],
   }
   return isProject(migrated) ? migrated : null
+}
+
+/** The whole percentage closest to a V4 fixed height in the first drawer using
+ * the design. Out-of-range results stay as they are for validation to report. */
+function percentForFixedHeight(
+  project: Project,
+  designId: string,
+  height: number,
+): number {
+  for (const module of project.modules)
+    for (const front of module.fronts) {
+      if (front.type !== 'drawer' || front.drawerDesignId !== designId) continue
+      const { top, bottom } = verticalBounds(module, project.settings, front)
+      return top > bottom ? Math.round((height / (top - bottom)) * 100) : 50
+    }
+  return 50
+}
+
+/** V4 designs stored a fixed height in mm, or null for half the opening. */
+export function migrateV4(value: unknown): Project | null {
+  if (
+    !record(value) ||
+    value.schemaVersion !== 4 ||
+    !Array.isArray(value.drawerDesigns) ||
+    !value.drawerDesigns.every(
+      (design) =>
+        record(design) &&
+        (design.height === null || Number.isSafeInteger(design.height)),
+    )
+  )
+    return null
+  const designs = value.drawerDesigns as Record<string, unknown>[]
+  const migrated = {
+    ...value,
+    schemaVersion: PROJECT_SCHEMA_VERSION,
+    drawerDesigns: designs.map((design) => ({ ...design, heightPercent: 50 })),
+  }
+  if (!isProject(migrated)) return null
+  return {
+    ...migrated,
+    drawerDesigns: migrated.drawerDesigns.map((design, index) => {
+      const height = designs[index]!.height
+      return typeof height === 'number'
+        ? {
+            ...design,
+            heightPercent: percentForFixedHeight(migrated, design.id, height),
+          }
+        : design
+    }),
+  }
 }

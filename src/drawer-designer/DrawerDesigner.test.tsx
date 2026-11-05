@@ -98,17 +98,16 @@ describe('Drawer designer', () => {
       useProjectStore.getState().present.drawerDesigns[0].sideClearance,
     ).toBe(5)
 
-    await user.selectOptions(
-      screen.getByRole('combobox', { name: 'Side height' }),
-      'fixed',
-    )
-    const height = screen.getByRole('textbox', { name: 'Fixed height (mm)' })
+    const height = screen.getByRole('textbox', { name: 'Box height (%)' })
+    expect(height).toHaveValue('50')
     await user.clear(height)
-    await user.type(height, '200{Enter}')
-    expect(useProjectStore.getState().present.drawerDesigns[0].height).toBe(200)
+    await user.type(height, '25{Enter}')
+    expect(
+      useProjectStore.getState().present.drawerDesigns[0].heightPercent,
+    ).toBe(25)
     expect(
       screen.getByRole('img', {
-        name: 'Drawer preview: 754 × 200 × 450 mm box',
+        name: 'Drawer preview: 754 × 268 × 450 mm box',
       }),
     ).toBeInTheDocument()
 
@@ -149,7 +148,7 @@ describe('Drawer designer', () => {
     )
 
     await user.click(screen.getByRole('button', { name: /Used by 1 drawer/ }))
-    expect(screen.getByText('Previewed in Cabinet 1')).toBeInTheDocument()
+    expect(screen.getByText(/^Previewed in Cabinet 1/)).toBeInTheDocument()
     expect(
       screen.getByRole('img', { name: /^Drawer preview:/ }),
     ).toBeInTheDocument()

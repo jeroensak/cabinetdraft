@@ -2,6 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { addModule, moveShelf, setModuleDimensions } from '../domain/commands'
 import { createDefaultProject } from '../domain/project/createDefaultProject'
+import { PROJECT_SCHEMA_VERSION } from '../domain/project/types'
 import {
   PROJECT_STORAGE_KEY,
   createProjectStore,
@@ -28,7 +29,7 @@ function memoryStorage(
 }
 function expectDefaultShape(project: ReturnType<typeof createDefaultProject>) {
   expect(project).toMatchObject({
-    schemaVersion: 3,
+    schemaVersion: PROJECT_SCHEMA_VERSION,
     name: 'Untitled cabinet',
     settings: {
       corpusThickness: 18,

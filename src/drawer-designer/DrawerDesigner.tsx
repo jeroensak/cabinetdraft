@@ -30,7 +30,7 @@ import { uniqueDesignName } from './uniqueDesignName'
 
 type MeasurementField = Exclude<
   keyof DrawerDesignInput,
-  'name' | 'slideType' | 'height'
+  'name' | 'slideType' | 'heightPercent'
 >
 const boxFields: [MeasurementField, string][] = [
   ['wallThickness', 'Wall thickness'],
@@ -201,7 +201,7 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
           <p className="eyebrow">Tip</p>
           <p>
             A design is shared: editing it updates every drawer that uses it.
-            Width always follows each space.
+            Width and height always follow each space.
           </p>
         </div>
       </aside>
@@ -233,7 +233,7 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
           <div className="drawer-preview-empty muted">
             {library
               ? design
-                ? 'Add this design to a space to preview it. Its width follows the space.'
+                ? 'Add this design to a space to preview it. Its size follows the space.'
                 : 'Create a drawer design to get started.'
               : targets.length === 0
                 ? 'The selected space is no longer available. Go back and select a space.'
@@ -273,33 +273,14 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
             <h3 className="eyebrow dimension-heading">Slides</h3>
             <p className="semantic-value">Undermount</p>
             <h3 className="eyebrow dimension-heading">Box</h3>
-            <label className="property-field">
-              <span>Side height</span>
-              <select
-                aria-label="Side height"
-                value={design.height === null ? 'auto' : 'fixed'}
-                onChange={(event) =>
-                  update({
-                    height:
-                      event.target.value === 'auto'
-                        ? null
-                        : (preview?.height ?? 150),
-                  })
-                }
-              >
-                <option value="auto">Half of the space height</option>
-                <option value="fixed">Fixed height</option>
-              </select>
-            </label>
-            {design.height !== null && (
-              <DraftField
-                key={`${design.id}-height-${design.height}`}
-                label="Fixed height"
-                numeric
-                value={design.height}
-                onCommit={(value) => update({ height: Number(value) })}
-              />
-            )}
+            <DraftField
+              key={`${design.id}-heightPercent-${design.heightPercent}`}
+              label="Box height"
+              numeric
+              unit="%"
+              value={design.heightPercent}
+              onCommit={(value) => update({ heightPercent: Number(value) })}
+            />
             {boxFields.map(([field, label]) => (
               <DraftField
                 key={`${design.id}-${field}-${design[field]}`}
@@ -321,9 +302,10 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
             ))}
             <p className="inspector-note muted">
               Box width = opening width − 2 × side gap (at least{' '}
-              {MIN_DRAWER_SIDE_CLEARANCE} mm per side). All four walls share one
-              height; the bottom sits between them, raised by the recess to
-              clear the slides.
+              {MIN_DRAWER_SIDE_CLEARANCE} mm per side). Box height is a
+              percentage of the space’s inner height, shared by all four walls;
+              the bottom sits between them, raised by the recess to clear the
+              slides.
             </p>
             {blockedByDoor && (
               <p className="field-error">
