@@ -9,7 +9,7 @@ import { useTranslation } from '../i18n'
 import { useProjectStore } from '../store/projectStore'
 import { trackEvent } from './analytics'
 
-export function ProjectFiles() {
+export function ProjectFiles({ firstVisit = false }: { firstVisit?: boolean }) {
   const { t } = useTranslation()
 
   const input = useRef<HTMLInputElement>(null)
@@ -21,7 +21,8 @@ export function ProjectFiles() {
     try {
       const raw = await file.text()
       parseProject(raw)
-      if (window.confirm(t('files.confirmImport'))) {
+      // With no design yet there is nothing to replace, so nothing to confirm.
+      if (firstVisit || window.confirm(t('files.confirmImport'))) {
         useProjectStore.getState().replaceProject(raw)
         trackEvent('project_imported')
       }
@@ -74,10 +75,12 @@ export function ProjectFiles() {
       >
         {reading ? t('files.reading') : t('files.import')}
       </button>
-      <button className="pill" onClick={download}>
-        {' '}
-        {t('files.export')}{' '}
-      </button>
+      {!firstVisit && (
+        <button className="pill" onClick={download}>
+          {' '}
+          {t('files.export')}{' '}
+        </button>
+      )}
       {error && (
         <div className="file-error" role="alert">
           {error}

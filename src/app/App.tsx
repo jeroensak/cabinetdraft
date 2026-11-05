@@ -43,35 +43,41 @@ function Layout() {
             <NavLink to="/cut-list">{t('nav.cutList')}</NavLink>
           </nav>
           <div className="header-actions">
-            <button
-              className="history-button"
-              aria-label={t('header.undo')}
-              title={t('header.undoHint')}
-              disabled={!canUndo}
-              onClick={undo}
-            >
-              ↶
-            </button>
-            <button
-              className="history-button"
-              aria-label={t('header.redo')}
-              title={t('header.redoHint')}
-              disabled={!canRedo}
-              onClick={redo}
-            >
-              ↷
-            </button>
+            {!needsFirstDesign && (
+              <>
+                <button
+                  className="history-button"
+                  aria-label={t('header.undo')}
+                  title={t('header.undoHint')}
+                  disabled={!canUndo}
+                  onClick={undo}
+                >
+                  ↶
+                </button>
+                <button
+                  className="history-button"
+                  aria-label={t('header.redo')}
+                  title={t('header.redoHint')}
+                  disabled={!canRedo}
+                  onClick={redo}
+                >
+                  ↷
+                </button>
+              </>
+            )}
             <LanguagePicker />
-            <ProjectFiles />
-            <button
-              className="pill primary"
-              aria-expanded={settingsOpen}
-              aria-controls="project-settings"
-              onClick={() => setSettingsOpen(!settingsOpen)}
-            >
-              {' '}
-              {t('header.settings')}{' '}
-            </button>
+            <ProjectFiles firstVisit={needsFirstDesign} />
+            {!needsFirstDesign && (
+              <button
+                className="pill primary"
+                aria-expanded={settingsOpen}
+                aria-controls="project-settings"
+                onClick={() => setSettingsOpen(!settingsOpen)}
+              >
+                {' '}
+                {t('header.settings')}{' '}
+              </button>
+            )}
           </div>
         </header>
         {settingsOpen && (

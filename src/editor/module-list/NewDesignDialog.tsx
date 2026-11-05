@@ -35,7 +35,7 @@ export function NewDesignDialog({
     else setFailed(true)
   }
   return (
-    <div className="dialog-backdrop">
+    <div className="dialog-backdrop" data-below-header={required}>
       <form
         className="new-design-dialog"
         role="dialog"

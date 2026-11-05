@@ -206,6 +206,9 @@ input:focus-visible {
   place-items: center;
   background: rgb(31 41 51 / 0.32);
 }
+.dialog-backdrop[data-below-header='true'] {
+  top: 64px;
+}
 .new-design-dialog {
   width: min(420px, calc(100vw - 32px));
   display: grid;
