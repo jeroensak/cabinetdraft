@@ -325,5 +325,7 @@
   "cutList.mergeIdentical": "Regrouper les pièces identiques",
   "part.drawer-side": "Côté de tiroir",
   "cutList.noteMerged": "Toutes les dimensions sont en {{unit}}. Les pièces identiques partagent une ligne.",
-  "pdf.noteMerged": "Toutes les dimensions en {{unit}}. Les pièces identiques partagent une ligne."
+  "pdf.noteMerged": "Toutes les dimensions en {{unit}}. Les pièces identiques partagent une ligne.",
+  "design.duplicate": "Dupliquer la conception",
+  "design.duplicateFailed": "Cette conception n’a pas pu être dupliquée."
 }

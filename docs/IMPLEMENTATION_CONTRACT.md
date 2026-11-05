@@ -79,6 +79,8 @@ The user requested a groove, half the wall thickness deep, in all four drawer wa
 
 The user requested several named designs in one browser, chosen from a dropdown above the cabinets, and three starting templates for new designs. This is still local only: there is no backend, sign-in or real account. The open design stays under the existing project storage key, so its autosave and error handling follow specification section 59. The other designs live under `cabinet-designer:designs:v1`, which is never written while either key is unreadable. Switching, creating or deleting a design clears undo history. Deleting asks for confirmation, removes the open design permanently and opens a neighbouring one; the last design can't be deleted. Import still replaces the open design as specification section 62 requires, and takes a new ID only if its ID belongs to another saved design.
 
+Duplicating copies the open design under a new ID, keeping its unit, and opens the copy.
+
 A first visit with nothing saved opens the New design dialog instead of the example cabinet of specification section 5, which this supersedes. The dialog must be completed, the workspace stays empty behind it and nothing is stored until a design is created. Cancel appears only if saving fails. The default project remains as the fallback for browsers that can't store anything, and it never enters the design library.
 
 Templates are project exports in `src/design-templates/`, named `template-1.json`, `template-2.json` and `template-3.json`. They appear in file name order under the project name inside each file, and are bundled at build time. A design made from a template gets its own new ID.

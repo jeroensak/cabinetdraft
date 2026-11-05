@@ -325,5 +325,7 @@
   "cutList.mergeIdentical": "Group identical parts",
   "part.drawer-side": "Drawer side",
   "cutList.noteMerged": "All dimensions are in {{unit}}. Identical parts share a row.",
-  "pdf.noteMerged": "All dimensions in {{unit}}. Identical parts share a row."
+  "pdf.noteMerged": "All dimensions in {{unit}}. Identical parts share a row.",
+  "design.duplicate": "Duplicate design",
+  "design.duplicateFailed": "This design could not be duplicated."
 }

@@ -188,6 +188,14 @@ input:focus-visible {
 .design-picker .add-cabinet {
   margin-top: 12px;
 }
+.design-duplicate {
+  display: block;
+  width: calc(100% - 8px);
+  margin: 8px 4px 0;
+  padding: 4px;
+  font-size: 11px;
+  color: var(--accent);
+}
 .design-delete {
   display: block;
   width: calc(100% - 8px);

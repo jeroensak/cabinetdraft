@@ -127,6 +127,8 @@ export interface ProjectStoreState {
   /** Both return false, leaving the open design as it was, when nothing changed. */
   switchDesign(id: string): boolean
   createDesign(raw: string, name: string, unit?: MeasurementUnit): boolean
+  /** Copies the open design under a new ID and opens the copy. */
+  duplicateDesign(name: string): boolean
   /** Removes the open design and opens its neighbour; never the last design. */
   deleteDesign(): boolean
   replaceProject(raw: string): void
@@ -255,6 +257,14 @@ export function createProjectStore(options: CreateProjectStoreOptions = {}) {
           id: createId(),
           name: name.trim() || template.name,
         })
+        return openDesign(project, withDesign(library, project))
+      },
+      duplicateDesign: (name) => {
+        const state = get()
+        const open = state.previewBase ?? state.present
+        const library = currentLibrary()
+        if (!library) return false
+        const project = projectData({ ...open, id: createId(), name })
         return openDesign(project, withDesign(library, project))
       },
       deleteDesign: () => {

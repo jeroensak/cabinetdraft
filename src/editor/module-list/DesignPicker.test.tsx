@@ -139,6 +139,16 @@ it('sets inches when creating a design, entered and shown as fractions', async (
   ).toHaveValue('5/8')
 })
 
+it('duplicates the open design from the menu', async () => {
+  const user = userEvent.setup()
+  render(<DesignPicker />)
+  await user.click(screen.getByRole('button', { name: 'Duplicate design' }))
+  expect(useProjectStore.getState().present.name).toBe('Kitchen copy')
+  expect(
+    screen.getAllByRole('option').map((option) => option.textContent),
+  ).toEqual(['Kitchen', 'Kitchen copy'])
+})
+
 it('cannot be dismissed on a first visit unless saving fails', async () => {
   const user = userEvent.setup()
   const onClose = vi.fn()

@@ -15,6 +15,8 @@ export function DesignPicker() {
   const execute = useProjectStore((state) => state.execute)
   const switchDesign = useProjectStore((state) => state.switchDesign)
   const deleteDesign = useProjectStore((state) => state.deleteDesign)
+  const duplicateDesign = useProjectStore((state) => state.duplicateDesign)
+
   const { error, run } = useCommandAction()
   const [creating, setCreating] = useState(false)
   const [failure, setFailure] = useState<string | null>(null)
@@ -65,6 +67,19 @@ export function DesignPicker() {
         onClick={() => setCreating(true)}
       >
         {t('design.new')}
+      </button>
+      <button
+        className="design-duplicate"
+        disabled={unavailable}
+        onClick={() =>
+          setFailure(
+            duplicateDesign(t('drawer.copyName', { name: project.name }))
+              ? null
+              : t('design.duplicateFailed'),
+          )
+        }
+      >
+        {t('design.duplicate')}
       </button>
       <button
         className="delete-button design-delete"

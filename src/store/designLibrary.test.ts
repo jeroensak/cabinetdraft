@@ -70,6 +70,28 @@ describe('local designs', () => {
     expect(store.getState().designs).toHaveLength(3)
   })
 
+  it('duplicates the open design with a new ID, keeping both and the unit', () => {
+    const disk = memory()
+    const store = createProjectStore({ storage: disk })
+    store.getState().createDesign(template(), 'Shop', 'inch')
+    const original = store.getState().present
+    expect(store.getState().duplicateDesign('Shop copy')).toBe(true)
+    const copy = store.getState().present
+    expect(copy.id).not.toBe(original.id)
+    expect(copy).toMatchObject({
+      name: 'Shop copy',
+      settings: { unit: 'inch' },
+      modules: original.modules,
+    })
+    expect(store.getState().designs?.map((d) => d.name)).toStrictEqual([
+      'Shop',
+      'Shop copy',
+    ])
+    expect(store.getState().past).toHaveLength(0)
+    expect(store.getState().switchDesign(original.id)).toBe(true)
+    expect(store.getState().present.name).toBe('Shop')
+  })
+
   it('deletes the open design for good, opens a neighbour and keeps the last one', () => {
     const disk = memory()
     const store = createProjectStore({ storage: disk })
