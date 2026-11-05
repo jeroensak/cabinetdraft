@@ -36,7 +36,7 @@ export function defaultDrawerDesign(): DrawerDesignInput {
   return {
     name: 'Simple undermount drawer',
     slideType: 'undermount',
-    wallThickness: 16,
+    wallThickness: 18,
     bottomThickness: 6,
     depth: 450,
     heightPercent: 50,

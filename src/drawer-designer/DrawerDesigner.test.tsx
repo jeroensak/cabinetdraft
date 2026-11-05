@@ -127,7 +127,7 @@ describe('Drawer designer', () => {
       container.querySelectorAll('.drawer-bottom-plate polygon'),
     ).toHaveLength(3)
     expect(screen.getByText('Bottom 6 mm thick, 13 mm up')).toBeInTheDocument()
-    expect(screen.getByText('In 8 mm deep grooves')).toBeInTheDocument()
+    expect(screen.getByText('In 9 mm deep grooves')).toBeInTheDocument()
     expect(
       container.querySelector('.panel-face[data-source="drawer-bottom"]'),
     ).toBeNull()

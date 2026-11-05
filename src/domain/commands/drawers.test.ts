@@ -237,11 +237,11 @@ describe('drawer geometry and cut list', () => {
         ],
       ),
     ).toStrictEqual([
-      ['drawer-side-left', 537, 450, 16, { x: 23, y: 32, z: 0 }],
-      ['drawer-side-right', 537, 450, 16, { x: 761, y: 32, z: 0 }],
-      ['drawer-box-front', 537, 722, 16, { x: 39, y: 32, z: 0 }],
-      ['drawer-box-back', 537, 722, 16, { x: 39, y: 32, z: 434 }],
-      ['drawer-bottom', 738, 434, 6, { x: 31, y: 45, z: 8 }],
+      ['drawer-side-left', 537, 450, 18, { x: 23, y: 32, z: 0 }],
+      ['drawer-side-right', 537, 450, 18, { x: 759, y: 32, z: 0 }],
+      ['drawer-box-front', 537, 718, 18, { x: 41, y: 32, z: 0 }],
+      ['drawer-box-back', 537, 718, 18, { x: 41, y: 32, z: 432 }],
+      ['drawer-bottom', 736, 432, 6, { x: 32, y: 45, z: 9 }],
     ])
     expect(geometry.frontPanels).toHaveLength(1)
   })
@@ -290,7 +290,7 @@ describe('drawer geometry and cut list', () => {
       frontMount: 'inset',
     })
     expect(inset.boxPanels.map((panel) => panel.position.z)).toStrictEqual([
-      18, 18, 18, 452, 26,
+      18, 18, 18, 450, 27,
     ])
     expect(inset.issues).toStrictEqual([])
     const tooDeep = deriveDrawerGeometry(module, project.settings, front, {
@@ -367,11 +367,11 @@ describe('drawer geometry and cut list', () => {
           thickness,
         ]),
     ).toStrictEqual([
-      ['C1-DRAWER-1-SIDE-L', 537, 450, 16],
-      ['C1-DRAWER-1-SIDE-R', 537, 450, 16],
-      ['C1-DRAWER-1-BOX-FRONT', 537, 722, 16],
-      ['C1-DRAWER-1-BOX-BACK', 537, 722, 16],
-      ['C1-DRAWER-1-BOTTOM', 738, 434, 6],
+      ['C1-DRAWER-1-SIDE-L', 537, 450, 18],
+      ['C1-DRAWER-1-SIDE-R', 537, 450, 18],
+      ['C1-DRAWER-1-BOX-FRONT', 537, 718, 18],
+      ['C1-DRAWER-1-BOX-BACK', 537, 718, 18],
+      ['C1-DRAWER-1-BOTTOM', 736, 432, 6],
       ['C1-DRAWER-1', 1097, 796, 18],
     ])
   })

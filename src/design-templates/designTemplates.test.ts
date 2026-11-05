@@ -1,4 +1,5 @@
 import { expect, it } from 'vitest'
+import { defaultDrawerDesign } from '../domain/drawers/types'
 import { parseProject } from '../domain/import-export/projectJson'
 import { validateProject } from '../domain/validation/validateProject'
 import { setLanguage } from '../i18n'
@@ -17,6 +18,16 @@ it('ships exactly three valid starting templates', () => {
     'Wave drawer sideboard',
     'Drawers and door',
   ])
+})
+
+it('uses the default 18 mm drawer walls in every template', () => {
+  const walls = designTemplates.flatMap((template) =>
+    parseProject(template.raw).drawerDesigns.map(
+      (design) => design.wallThickness,
+    ),
+  )
+  expect(walls).toStrictEqual([18, 18, 18])
+  expect(defaultDrawerDesign().wallThickness).toBe(18)
 })
 
 it('translates the names inside a template without changing its design', () => {
