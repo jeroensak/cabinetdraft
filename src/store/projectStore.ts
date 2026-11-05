@@ -4,6 +4,15 @@ import { reconcileSelection } from './selection'
 import { updateProjectSettings, type BoundaryRange } from '../domain/commands'
 import { projectData } from '../domain/project/projectData'
 import { createDefaultProject } from '../domain/project/createDefaultProject'
+import { createId } from '../domain/project/id'
+import {
+  DESIGN_LIBRARY_KEY,
+  readLibrary,
+  summaries,
+  withDesign,
+  type DesignSummary,
+  type StoredDesign,
+} from './designLibrary'
 import { type Project, type ProjectSettings } from '../domain/project/types'
 import type { Point, Selection } from './types'
 export type { Point, Selection } from './types'
@@ -97,6 +106,13 @@ export interface ProjectStoreState {
   editor: EditorState
   previewBase: Project | null
   persistence: PersistenceState
+  /** Null when the saved library is unreadable and must be left alone. */
+  designs: DesignSummary[] | null
+  /** Both return false, leaving the open design as it was, when nothing changed. */
+  switchDesign(id: string): boolean
+  createDesign(raw: string, name: string): boolean
+  /** Removes the open design and opens its neighbour; never the last design. */
+  deleteDesign(): boolean
   replaceProject(raw: string): void
   retrySave(): void
   execute(command: (project: Project) => Project): void
@@ -153,7 +169,86 @@ export function createProjectStore(options: CreateProjectStoreOptions = {}) {
         })
       }
     }
+    /** Library first: if the second write fails, no design has been lost. */
+    const openDesign = (project: Project, library: StoredDesign[]) => {
+      const state = get()
+      if (!storage || state.persistence.loadError) return false
+      try {
+        storage.setItem(DESIGN_LIBRARY_KEY, JSON.stringify(library))
+        storage.setItem(
+          PROJECT_STORAGE_KEY,
+          JSON.stringify(projectData(project)),
+        )
+      } catch {
+        return false
+      }
+      set({
+        present: project,
+        past: [],
+        future: [],
+        previewBase: null,
+        designs: summaries(library),
+        editor: {
+          selection: null,
+          hover: null,
+          viewport: { zoom: 1, pan: { x: 0, y: 0 } },
+        },
+        persistence: {
+          loadError: null,
+          saveError: null,
+          recoveryData: null,
+          unsaved: false,
+        },
+      })
+      return true
+    }
+    /** The library with the open design's latest state, or null if unreadable. */
+    const currentLibrary = () => {
+      const library = storage ? readLibrary(storage) : null
+      const state = get()
+      return library && withDesign(library, state.previewBase ?? state.present)
+    }
     return {
+      designs: storage ? summaries(readLibrary(storage)) : null,
+      switchDesign: (id) => {
+        const library = currentLibrary()
+        const target = library?.find((design) => design.id === id)
+        if (!library || !target) return false
+        if (id === get().present.id) return true
+        try {
+          const project = parseProject(JSON.stringify(target.project))
+          return openDesign(project, library)
+        } catch {
+          return false
+        }
+      },
+      createDesign: (raw, name) => {
+        const library = currentLibrary()
+        if (!library) return false
+        const template = parseProject(raw)
+        const project = projectData({
+          ...template,
+          // Templates can be reused, so a design can't keep the file's ID.
+          id: createId(),
+          name: name.trim() || template.name,
+        })
+        return openDesign(project, withDesign(library, project))
+      },
+      deleteDesign: () => {
+        const library = currentLibrary()
+        if (!library) return false
+        const open = get().present.id
+        const index = library.findIndex((design) => design.id === open)
+        const remaining = library.filter((design) => design.id !== open)
+        const next = remaining[Math.min(index, remaining.length - 1)]
+        if (!next) return false
+        try {
+          const project = parseProject(JSON.stringify(next.project))
+          return openDesign(project, remaining)
+        } catch {
+          return false
+        }
+      },
       present: options.initialProject
         ? projectData(options.initialProject)
         : loaded.project,
@@ -162,8 +257,16 @@ export function createProjectStore(options: CreateProjectStoreOptions = {}) {
         unsaved: options.initialProject ? true : loaded.persistence.unsaved,
       },
       replaceProject: (raw) => {
-        const project = parseProject(raw)
+        const parsed = parseProject(raw)
         const state = get()
+        const replacedId = (state.previewBase ?? state.present).id
+        const library = storage ? readLibrary(storage) : null
+        // An import must not take over a different saved design's identity.
+        const project = library?.some(
+          (design) => design.id === parsed.id && design.id !== replacedId,
+        )
+          ? { ...parsed, id: createId() }
+          : parsed
         set({
           present: project,
           past: [...state.past, state.previewBase ?? state.present],
@@ -182,6 +285,19 @@ export function createProjectStore(options: CreateProjectStoreOptions = {}) {
           },
         })
         save(project)
+        // Import replaces the open design, so its library copy goes as well.
+        if (
+          library &&
+          project.id !== replacedId &&
+          !get().persistence.saveError
+        )
+          try {
+            const remaining = library.filter((item) => item.id !== replacedId)
+            storage?.setItem(DESIGN_LIBRARY_KEY, JSON.stringify(remaining))
+            set({ designs: summaries(remaining) })
+          } catch {
+            /* The stale entry stays selectable; nothing is lost. */
+          }
       },
       retrySave: () => save(get().previewBase ?? get().present),
       past: [],

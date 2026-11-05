@@ -162,7 +162,7 @@ describe('Drawer designer', () => {
     const user = userEvent.setup()
     render(<DesignerPage />)
     const menu = screen.getByRole('complementary', {
-      name: 'Cabinets and drawers',
+      name: 'Designs, cabinets and drawers',
     })
     expect(
       within(menu).getByRole('heading', { name: 'Drawers' }),

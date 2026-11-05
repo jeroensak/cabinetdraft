@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 6,
+  "id": "e8c597db-5aaa-479c-bf5c-8de1e9cd6696",
+  "name": "Empty cabinet",
+  "settings": {
+    "corpusThickness": 18,
+    "backPanelEnabled": true,
+    "backPanelThickness": 3,
+    "frontThickness": 18,
+    "frontGap": 2
+  },
+  "drawerDesigns": [],
+  "modules": [
+    {
+      "id": "ea40c5ff-d749-4fc6-b86e-608beeb02e17",
+      "name": "Cabinet 1",
+      "width": 600,
+      "height": 1200,
+      "depth": 600,
+      "shelves": [],
+      "dividers": [],
+      "fronts": []
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 6,
+  "id": "e8c597db-5aaa-479c-bf5c-8de1e9cd6696",
+  "name": "Drawers and door",
+  "settings": {
+    "corpusThickness": 18,
+    "backPanelEnabled": true,
+    "backPanelThickness": 3,
+    "frontThickness": 18,
+    "frontGap": 2
+  },
+  "drawerDesigns": [
+    {
+      "id": "0c7ac10d-0791-4922-a7cd-42c1aab6b84e",
+      "name": "Drawer design",
+      "slideType": "undermount",
+      "wallThickness": 16,
+      "bottomThickness": 6,
+      "depth": 450,
+      "heightPercent": 50,
+      "sideClearance": 5,
+      "bottomClearance": 14,
+      "topClearance": 7,
+      "rearClearance": 3,
+      "bottomRecess": 13,
+      "frontStyle": "full",
+      "frontMount": "overlay",
+      "frontHeightPercent": 100
+    }
+  ],
+  "modules": [
+    {
+      "id": "ea40c5ff-d749-4fc6-b86e-608beeb02e17",
+      "name": "Cabinet 1",
+      "width": 600,
+      "height": 2000,
+      "depth": 600,
+      "shelves": [
+        {
+          "id": "4f46a0b1-3e4e-476f-b967-d2d1881af19a",
+          "bottom": 710
+        },
+        {
+          "id": "8099b0d2-96e9-4dab-98f7-d5e2b5fd0fa6",
+          "bottom": 355
+        }
+      ],
+      "dividers": [],
+      "fronts": [
+        {
+          "id": "ef821720-aa8b-4d83-9ee5-e0d99aa88975",
+          "type": "drawer",
+          "bottomBoundary": {
+            "type": "module-bottom"
+          },
+          "topBoundary": {
+            "type": "shelf",
+            "shelfId": "8099b0d2-96e9-4dab-98f7-d5e2b5fd0fa6"
+          },
+          "drawerDesignId": "0c7ac10d-0791-4922-a7cd-42c1aab6b84e"
+        },
+        {
+          "id": "744e2ebf-34cb-4e78-93fc-1ef5e5bf0938",
+          "type": "drawer",
+          "bottomBoundary": {
+            "type": "shelf",
+            "shelfId": "8099b0d2-96e9-4dab-98f7-d5e2b5fd0fa6"
+          },
+          "topBoundary": {
+            "type": "shelf",
+            "shelfId": "4f46a0b1-3e4e-476f-b967-d2d1881af19a"
+          },
+          "drawerDesignId": "0c7ac10d-0791-4922-a7cd-42c1aab6b84e"
+        },
+        {
+          "id": "987b72ea-5b74-48ed-b3e6-5f660a389a4f",
+          "type": "door",
+          "bottomBoundary": {
+            "type": "shelf",
+            "shelfId": "4f46a0b1-3e4e-476f-b967-d2d1881af19a"
+          },
+          "topBoundary": {
+            "type": "module-top"
+          },
+          "leaves": 2
+        }
+      ]
+    }
+  ]
+}

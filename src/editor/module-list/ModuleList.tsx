@@ -6,6 +6,7 @@ import { DrawerDesignList } from '../../drawer-designer/DrawerDesignList'
 import { uniqueDesignName } from '../../drawer-designer/uniqueDesignName'
 import { useCommandAction } from '../useCommandAction'
 import { addCabinet } from './moduleActions'
+import { DesignPicker } from './DesignPicker'
 
 export function ModuleList() {
   const modules = useProjectStore((state) => state.present.modules)
@@ -44,8 +45,12 @@ export function ModuleList() {
       )
   }
   return (
-    <aside className="cabinet-sidebar" aria-label="Cabinets and drawers">
-      <h2 className="eyebrow">Cabinets</h2>
+    <aside
+      className="cabinet-sidebar"
+      aria-label="Designs, cabinets and drawers"
+    >
+      <DesignPicker />
+      <h2 className="eyebrow sidebar-section">Cabinets</h2>
       <ul
         className="module-list"
         onDragLeave={(event) => {

@@ -97,13 +97,13 @@ describe('application shell', () => {
       .getState()
       .execute((project) => renameProject(project, 'Kitchen'))
     renderDesigner()
-    expect(screen.getByText('Kitchen')).toBeVisible()
+    expect(screen.getByTitle('Kitchen')).toBeVisible()
     expect(screen.getByRole('button', { name: 'Redo' })).toBeDisabled()
     await user.click(screen.getByRole('button', { name: 'Undo' }))
-    expect(screen.getByText('Untitled cabinet')).toBeVisible()
+    expect(screen.getByTitle('Untitled cabinet')).toBeVisible()
     expect(screen.getByRole('button', { name: 'Undo' })).toBeDisabled()
     await user.click(screen.getByRole('button', { name: 'Redo' }))
-    expect(screen.getByText('Kitchen')).toBeVisible()
+    expect(screen.getByTitle('Kitchen')).toBeVisible()
   })
 
   it('commits project settings as single undoable edits and updates the cut list', async () => {

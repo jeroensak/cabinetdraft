@@ -72,3 +72,9 @@ The user requested a shorter-reading Cut List. The Cut List page and PDF present
 ## Approved post-V1 extension: grooved drawer bottoms
 
 The user requested a groove, half the wall thickness deep, in all four drawer walls to hold the bottom. This supersedes the "no grooves" rule of the drawer box extension. The groove depth is the one manufacturing measurement that may be a half millimetre, because it follows the wall thickness exactly; panel cut sizes remain whole millimetres. [Drawer box rules](DRAWER_BOXES.md) govern the construction.
+
+## Approved post-V1 extension: local designs
+
+The user requested several named designs in one browser, chosen from a dropdown above the cabinets, and three starting templates for new designs. This is still local only: there is no backend, sign-in or real account. The open design stays under the existing project storage key, so its autosave and error handling follow specification section 59. The other designs live under `cabinet-designer:designs:v1`, which is never written while either key is unreadable. Switching, creating or deleting a design clears undo history. Deleting asks for confirmation, removes the open design permanently and opens a neighbouring one; the last design can't be deleted. Import still replaces the open design as specification section 62 requires, and takes a new ID only if its ID belongs to another saved design.
+
+Templates are project exports in `src/design-templates/`, named `template-1.json`, `template-2.json` and `template-3.json`. They appear in file name order under the project name inside each file, and are bundled at build time. A design made from a template gets its own new ID.

@@ -335,3 +335,35 @@ test('divider openings support partial shelves, spanning doors and batch drawers
   ).toHaveCount(4)
   await page.screenshot({ path: testInfo.outputPath('scoped-shelves.png') })
 })
+
+test('new designs start from a template, keep their name and survive a reload', async ({
+  page,
+}) => {
+  const picker = page.getByRole('combobox', { name: 'Current design' })
+  await page.getByLabel('Design name').fill('Kitchen')
+  await page.getByLabel('Design name').press('Enter')
+  await page.getByRole('button', { name: '+ New design' }).click()
+  await page.getByRole('radio').nth(2).check()
+  await page.getByLabel('Name', { exact: true }).fill('Hall')
+  await page.getByRole('button', { name: 'Create design' }).click()
+  await expect(picker).toHaveValue(/.+/)
+  await expect(page.getByLabel('Design name')).toHaveValue('Hall')
+  await page.reload()
+  await expect(page.getByLabel('Design name')).toHaveValue('Hall')
+  await page
+    .getByRole('combobox', { name: 'Current design' })
+    .selectOption({ label: 'Kitchen' })
+  await expect(page.getByLabel('Design name')).toHaveValue('Kitchen')
+
+  page.once('dialog', (dialog) => dialog.dismiss())
+  await page.getByRole('button', { name: 'Delete design' }).click()
+  await expect(page.getByLabel('Design name')).toHaveValue('Kitchen')
+  page.once('dialog', (dialog) => dialog.accept())
+  await page.getByRole('button', { name: 'Delete design' }).click()
+  await expect(page.getByLabel('Design name')).toHaveValue('Hall')
+  await expect(
+    page.getByRole('button', { name: 'Delete design' }),
+  ).toBeDisabled()
+  await page.reload()
+  await expect(page.getByLabel('Design name')).toHaveValue('Hall')
+})
