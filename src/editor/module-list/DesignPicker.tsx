@@ -32,8 +32,7 @@ export function DesignPicker() {
   return (
     <section className="design-picker" aria-labelledby="design-picker-title">
       <h2 className="eyebrow" id="design-picker-title">
-        {' '}
-        {t('design.heading')}{' '}
+        {t('design.heading')}
       </h2>
       <select
         aria-label={t('design.current')}
@@ -76,7 +75,7 @@ export function DesignPicker() {
             setFailure(deleteDesign() ? null : t('design.deleteFailed'))
         }}
       >
-        {t('design.delete')}{' '}
+        {t('design.delete')}
       </button>
       {(error || failure) && (
         <p role="alert" className="field-error">

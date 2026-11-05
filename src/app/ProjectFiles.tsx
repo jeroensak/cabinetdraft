@@ -77,16 +77,14 @@ export function ProjectFiles({ firstVisit = false }: { firstVisit?: boolean }) {
       </button>
       {!firstVisit && (
         <button className="pill" onClick={download}>
-          {' '}
-          {t('files.export')}{' '}
+          {t('files.export')}
         </button>
       )}
       {error && (
         <div className="file-error" role="alert">
           {error}
           <button className="pill" onClick={() => setError(null)}>
-            {' '}
-            {t('files.dismiss')}{' '}
+            {t('files.dismiss')}
           </button>
         </div>
       )}

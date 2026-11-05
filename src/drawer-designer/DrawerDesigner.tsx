@@ -401,7 +401,7 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
                   })
                 }
               >
-                {t('drawer.duplicate')}{' '}
+                {t('drawer.duplicate')}
               </button>
             </div>
             <div className="inspector-actions">
@@ -420,7 +420,7 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
                     selectDesign(null)
                 }}
               >
-                {t('drawer.deleteDesign')}{' '}
+                {t('drawer.deleteDesign')}
               </button>
             </div>
             {usage > 0 && (

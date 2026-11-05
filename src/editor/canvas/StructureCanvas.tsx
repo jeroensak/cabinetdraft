@@ -147,8 +147,7 @@ export function StructureCanvas() {
         </div>
       </div>
       <h1 id="designer-title" className="sr-only">
-        {' '}
-        {t('canvas.designerTitle')}{' '}
+        {t('canvas.designerTitle')}
       </h1>
       <svg
         ref={svgRef}

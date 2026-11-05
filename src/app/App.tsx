@@ -74,8 +74,7 @@ function Layout() {
                 aria-controls="project-settings"
                 onClick={() => setSettingsOpen(!settingsOpen)}
               >
-                {' '}
-                {t('header.settings')}{' '}
+                {t('header.settings')}
               </button>
             )}
           </div>
@@ -89,8 +88,7 @@ function Layout() {
             <div className="section-heading">
               <h2>{t('settings.title')}</h2>
               <button className="pill" onClick={() => setSettingsOpen(false)}>
-                {' '}
-                {t('settings.close')}{' '}
+                {t('settings.close')}
               </button>
             </div>
             <ProjectSettings />

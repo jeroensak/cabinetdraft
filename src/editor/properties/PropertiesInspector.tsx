@@ -296,7 +296,7 @@ export function PropertiesInspector() {
                   className="pill"
                   onClick={() => run(() => duplicateCabinet(module.id))}
                 >
-                  {t('inspector.duplicate')}{' '}
+                  {t('inspector.duplicate')}
                 </button>
               )}
               <button
@@ -307,7 +307,7 @@ export function PropertiesInspector() {
                   )
                 }
               >
-                {t('inspector.delete')}{' '}
+                {t('inspector.delete')}
               </button>
             </div>
           )}
