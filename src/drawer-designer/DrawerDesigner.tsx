@@ -109,6 +109,7 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
   const selectDesign = useProjectStore((state) => state.selectDrawerDesign)
   const { error, run } = useCommandAction()
   const [showFront, setShowFront] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(true)
   const library = context.moduleId === null
   const { module, targets } = resolveTargets(
     project,
@@ -238,17 +239,31 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
                 size: size(preview.openingWidth, preview.openingHeight),
               })}
           </span>
-          <label className="drawer-front-toggle">
-            <input
-              type="checkbox"
-              checked={showFront}
-              onChange={(event) => setShowFront(event.target.checked)}
-            />
-            {t('drawer.showFront')}
-          </label>
+          <div className="drawer-preview-toggles">
+            <label className="drawer-front-toggle">
+              <input
+                type="checkbox"
+                checked={showFront}
+                onChange={(event) => setShowFront(event.target.checked)}
+              />
+              {t('drawer.showFront')}
+            </label>
+            <label className="drawer-front-toggle">
+              <input
+                type="checkbox"
+                checked={drawerOpen}
+                onChange={(event) => setDrawerOpen(event.target.checked)}
+              />
+              {t('drawer.openToggle')}
+            </label>
+          </div>
         </div>
         {preview ? (
-          <DrawerPreview geometry={preview} showFront={showFront} />
+          <DrawerPreview
+            geometry={preview}
+            showFront={showFront}
+            open={drawerOpen}
+          />
         ) : (
           <div className="drawer-preview-empty muted">
             {library

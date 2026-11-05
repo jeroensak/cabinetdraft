@@ -348,5 +348,7 @@
   "validation.panelSize": "A panel or space has no room left. Move or remove a shelf or divider.",
   "validation.panelPosition": "A shelf or divider is outside the cabinet or overlaps another panel.",
   "validation.measurement": "A size isn’t valid. Enter a whole size above zero.",
-  "validation.fronts": "Two fronts overlap, or a drawer covers more than one space."
+  "validation.fronts": "Two fronts overlap, or a drawer covers more than one space.",
+  "drawer.gapsLabel": "Gaps: {{side}} each side, {{bottom}} below, at least {{top}} above, at least {{rear}} behind",
+  "drawer.openToggle": "Open drawer"
 }
