@@ -321,5 +321,9 @@
   "newDesign.unitsNote": "Units can’t be changed after the design is created.",
   "settings.units": "Units",
   "field.inches": "Enter inches to the nearest 1/32, such as 31 1/2 or 3/4.",
-  "canvas.fromBottom": "{{value}} from bottom"
+  "canvas.fromBottom": "{{value}} from bottom",
+  "cutList.mergeIdentical": "Group identical parts",
+  "part.drawer-side": "Drawer side",
+  "cutList.noteMerged": "All dimensions are in {{unit}}. Identical parts share a row.",
+  "pdf.noteMerged": "All dimensions in {{unit}}. Identical parts share a row."
 }

@@ -321,5 +321,9 @@
   "newDesign.unitsNote": "De eenheden kun je niet meer wijzigen nadat het ontwerp is gemaakt.",
   "settings.units": "Eenheden",
   "field.inches": "Voer inches in tot op 1/32, bijvoorbeeld 31 1/2 of 3/4.",
-  "canvas.fromBottom": "{{value}} vanaf de onderkant"
+  "canvas.fromBottom": "{{value}} vanaf de onderkant",
+  "cutList.mergeIdentical": "Identieke onderdelen groeperen",
+  "part.drawer-side": "Ladezijkant",
+  "cutList.noteMerged": "Alle maten zijn in {{unit}}. Identieke onderdelen delen een rij.",
+  "pdf.noteMerged": "Alle maten in {{unit}}. Identieke onderdelen delen een rij."
 }

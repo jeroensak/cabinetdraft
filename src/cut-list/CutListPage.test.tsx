@@ -78,8 +78,22 @@ describe('Cut List page', () => {
     await waitFor(() => expect(trackEvent).toHaveBeenCalledTimes(3))
     expect(trackEvent).toHaveBeenLastCalledWith('cut_list_pdf_downloaded')
   })
-  it('renders each physical panel with units and per-leaf rows, without mounting SVG', () => {
+  it('merges identical parts by default, with a quantity and every ID', () => {
+    renderCutList()
+    const doors = screen.getByRole('row', { name: /C1-DOOR-1-L, C1-DOOR-1-R/ })
+    expect(
+      within(doors)
+        .getAllByRole('cell')
+        .map((cell) => cell.textContent),
+    ).toEqual(['Cabinet 1', 'Door', '2', '2196', '397', '18'])
+    expect(screen.getByText(/Identical parts share a row/)).toBeInTheDocument()
+  })
+  it('renders each physical panel with units and per-leaf rows, without mounting SVG', async () => {
+    const user = userEvent.setup()
     const { container } = renderCutList()
+    await user.click(
+      screen.getByRole('checkbox', { name: 'Group identical parts' }),
+    )
     expect(screen.getByText('✓ Configuration valid')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Download PDF' })).toBeEnabled()
     expect(screen.getAllByRole('row')).toHaveLength(11)
@@ -103,11 +117,15 @@ describe('Cut List page', () => {
     expect(within(bases).getByRole('row', { name: /C1-BACK/ })).toBeVisible()
     expect(within(bases).queryByRole('row', { name: /C1-DOOR/ })).toBeNull()
   })
-  it('keeps identical modules separate and reflects edits and array order', () => {
+  it('keeps identical modules separate and reflects edits and array order', async () => {
+    const user = userEvent.setup()
     const original = useProjectStore.getState().present
     const project = duplicateModule(original, original.modules[0].id)
     useProjectStore.setState({ present: project })
     renderCutList()
+    await user.click(
+      screen.getByRole('checkbox', { name: 'Group identical parts' }),
+    )
     expect(screen.getAllByRole('row')).toHaveLength(19)
     act(() =>
       useProjectStore

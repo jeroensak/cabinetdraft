@@ -67,7 +67,9 @@ The user explicitly requested a choice of drawer fronts: full or wave top, overl
 
 ## Cut List parts lists
 
-The user requested a shorter-reading Cut List. The Cut List page and PDF present the canonical rows in up to four lists, in this order: cabinet bases (sides, top, bottom, back), shelves and dividers, doors, and drawers (each drawer's front and box together). Empty lists are left out. Grouping is presentation only: `deriveCutList` output, identifiers, one row per physical panel and the columns of specification section 32 are unchanged.
+The user requested a shorter-reading Cut List. The Cut List page and PDF present the canonical rows in up to four lists, in this order: cabinet bases (sides, top, bottom, back), shelves and dividers, doors, and drawers (each drawer's front and box together). Empty lists are left out. Grouping is presentation only: `deriveCutList` output, identifiers and the columns of specification section 32 are unchanged.
+
+The user also requested merging identical parts into one row with a quantity, the future use specification section 32 anticipates. This supersedes the one-row-per-panel rule of section 30 for display only. It is on by default, parts match on name and size across cabinets, and a merged row lists every part's ID. A checkbox restores one row per panel, on the page and in the PDF.
 
 ## Approved post-V1 extension: grooved drawer bottoms
 

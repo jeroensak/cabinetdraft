@@ -831,6 +831,15 @@ input:focus-visible {
   padding: 6px 8px 24px;
   font-size: 12px;
 }
+.cut-list-merge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  margin-right: 20px;
+  font-size: 11px;
+  color: var(--muted);
+}
 .cut-list-summary span {
   font-size: 11px;
   color: var(--muted);
@@ -897,7 +906,7 @@ input:focus-visible {
 }
 .cut-list-table tbody th {
   font-weight: 500;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 .cut-list-table td:nth-child(2) {
   color: #6f6a62;

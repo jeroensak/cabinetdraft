@@ -6,12 +6,15 @@ import { projectFilename } from '../domain/import-export/projectJson'
 import { t } from '../i18n'
 import { formatBare, unitSymbol } from '../units'
 
-import { groupCutList } from './partGroups'
-import { partName } from './partNames'
+import { cutListRows, groupCutList } from './partGroups'
 import fontUrl from '../assets/fonts/NotoSans-Regular.ttf?url'
 
 /** Render validated domain rows directly; no DOM or SVG measurements. */
-export function createCutListPdf(project: Project, font: string) {
+export function createCutListPdf(
+  project: Project,
+  font: string,
+  merged = true,
+) {
   const result = deriveCutList(project)
   if (!result.available || result.items.length === 0)
     throw new Error('No valid cut list is available')
@@ -57,14 +60,14 @@ export function createCutListPdf(project: Project, font: string) {
         ],
         columns,
       ],
-      body: group.items.map((item) => [
-        item.id,
-        item.moduleName,
-        partName(item, measureUnit),
-        item.quantity,
-        formatBare(item.length, measureUnit),
-        formatBare(item.width, measureUnit),
-        formatBare(item.thickness, measureUnit),
+      body: cutListRows(group.items, measureUnit, merged).map((row) => [
+        row.ids.join(', '),
+        row.cabinets.join(', '),
+        row.name,
+        row.quantity,
+        formatBare(row.length, measureUnit),
+        formatBare(row.width, measureUnit),
+        formatBare(row.thickness, measureUnit),
       ]),
       theme: 'striped',
       styles: {
@@ -118,7 +121,7 @@ export function createCutListPdf(project: Project, font: string) {
     )
     doc.setTextColor(100)
     doc.text(
-      t('pdf.note', {
+      t(merged ? 'pdf.noteMerged' : 'pdf.note', {
         unit: t(measureUnit === 'inch' ? 'unit.inchPlural' : 'unit.mmPlural'),
       }),
       15,
@@ -129,13 +132,13 @@ export function createCutListPdf(project: Project, font: string) {
   return doc
 }
 
-export async function downloadCutListPdf(project: Project) {
+export async function downloadCutListPdf(project: Project, merged = true) {
   const response = await fetch(fontUrl)
   if (!response.ok) throw new Error('Could not load PDF font')
   const bytes = new Uint8Array(await response.arrayBuffer())
   let binary = ''
   for (const byte of bytes) binary += String.fromCharCode(byte)
-  const doc = createCutListPdf(project, btoa(binary))
+  const doc = createCutListPdf(project, btoa(binary), merged)
   await doc.save(
     projectFilename(project.name).replace(/\.json$/, '-cut-list.pdf'),
     { returnPromise: true },

@@ -5,8 +5,7 @@ import { useMeasure } from '../units/useMeasure'
 
 import { Link } from 'react-router'
 import { deriveCutList } from '../domain/cutlist/deriveCutList'
-import { groupCutList } from './partGroups'
-import { partName } from './partNames'
+import { cutListRows, groupCutList } from './partGroups'
 import { useProjectStore } from '../store/projectStore'
 import { trackEvent } from '../app/analytics'
 
@@ -17,6 +16,7 @@ export function CutListPage() {
 
   const project = useProjectStore((state) => state.present)
   const result = useMemo(() => deriveCutList(project), [project])
+  const [merged, setMerged] = useState(true)
   const [downloading, setDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)
   const download = async () => {
@@ -24,7 +24,7 @@ export function CutListPage() {
     setDownloadError(null)
     try {
       const { downloadCutListPdf } = await import('./cutListPdf')
-      await downloadCutListPdf(project)
+      await downloadCutListPdf(project, merged)
       trackEvent('cut_list_pdf_downloaded')
     } catch {
       trackEvent('cut_list_pdf_failed')
@@ -69,6 +69,14 @@ export function CutListPage() {
         <div className="cut-list-card">
           <div className="cut-list-summary">
             <strong>{t('count.parts', { count: result.items.length })}</strong>
+            <label className="cut-list-merge">
+              <input
+                type="checkbox"
+                checked={merged}
+                onChange={(event) => setMerged(event.target.checked)}
+              />
+              {t('cutList.mergeIdentical')}
+            </label>
             <span>{t('cutList.allCabinets')}</span>
           </div>
           {result.items.length > 0 ? (
@@ -107,23 +115,25 @@ export function CutListPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {group.items.map((item, index) => (
-                        <tr
-                          key={item.id}
-                          data-module-start={
-                            index > 0 &&
-                            group.items[index - 1].moduleId !== item.moduleId
-                          }
-                        >
-                          <th scope="row">{item.id}</th>
-                          <td>{item.moduleName}</td>
-                          <td>{partName(item, unit)}</td>
-                          <td>{item.quantity}</td>
-                          <td>{formatBare(item.length, unit)}</td>
-                          <td>{formatBare(item.width, unit)}</td>
-                          <td>{formatBare(item.thickness, unit)}</td>
-                        </tr>
-                      ))}
+                      {cutListRows(group.items, unit, merged).map(
+                        (row, index, rows) => (
+                          <tr
+                            key={row.ids[0]}
+                            data-module-start={
+                              index > 0 &&
+                              rows[index - 1].moduleId !== row.moduleId
+                            }
+                          >
+                            <th scope="row">{row.ids.join(', ')}</th>
+                            <td>{row.cabinets.join(', ')}</td>
+                            <td>{row.name}</td>
+                            <td>{row.quantity}</td>
+                            <td>{formatBare(row.length, unit)}</td>
+                            <td>{formatBare(row.width, unit)}</td>
+                            <td>{formatBare(row.thickness, unit)}</td>
+                          </tr>
+                        ),
+                      )}
                     </tbody>
                   </table>
                 </section>
@@ -136,7 +146,7 @@ export function CutListPage() {
             </div>
           )}
           <p className="cut-list-note">
-            {t('cutList.note', {
+            {t(merged ? 'cutList.noteMerged' : 'cutList.note', {
               unit: t(unit === 'inch' ? 'unit.inchPlural' : 'unit.mmPlural'),
             })}
           </p>

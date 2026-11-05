@@ -321,5 +321,9 @@
   "newDesign.unitsNote": "Les unités ne peuvent plus être modifiées une fois la conception créée.",
   "settings.units": "Unités",
   "field.inches": "Saisissez des pouces au 1/32 près, par exemple 31 1/2 ou 3/4.",
-  "canvas.fromBottom": "{{value}} depuis le bas"
+  "canvas.fromBottom": "{{value}} depuis le bas",
+  "cutList.mergeIdentical": "Regrouper les pièces identiques",
+  "part.drawer-side": "Côté de tiroir",
+  "cutList.noteMerged": "Toutes les dimensions sont en {{unit}}. Les pièces identiques partagent une ligne.",
+  "pdf.noteMerged": "Toutes les dimensions en {{unit}}. Les pièces identiques partagent une ligne."
 }
