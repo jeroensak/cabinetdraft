@@ -64,3 +64,7 @@ The user explicitly requested simple drawer boxes after V1: reusable designs wit
 ## Approved post-V1 extension: drawer front options
 
 The user explicitly requested a choice of drawer fronts: full or wave top, overlay or inset, and an adjustable front height. This supersedes the overlay-only front geometry of specification sections 20–23 only for drawer fronts linked to a drawer design; the frozen specification remains unchanged and doors are unaffected. [Drawer front rules](DRAWER_BOXES.md#drawer-fronts) govern the new behavior.
+
+## Cut List parts lists
+
+The user requested a shorter-reading Cut List. The Cut List page and PDF present the canonical rows in up to four lists, in this order: cabinet bases (sides, top, bottom, back), shelves and dividers, doors, and drawers (each drawer's front and box together). Empty lists are left out. Grouping is presentation only: `deriveCutList` output, identifiers, one row per physical panel and the columns of specification section 32 are unchanged.

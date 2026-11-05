@@ -748,12 +748,40 @@ input:focus-visible {
   overflow: auto;
   min-height: 0;
 }
+.cut-list-group + .cut-list-group {
+  margin-top: 32px;
+}
+.cut-list-group h2 {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0 8px 12px;
+}
+.cut-list-group h2 small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  margin-left: 4px;
+}
 .cut-list-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
+}
+.cut-list-table thead th:nth-child(1) {
+  width: 200px;
+}
+.cut-list-table thead th:nth-child(4) {
+  width: 64px;
+}
+.cut-list-table thead th:nth-child(5),
+.cut-list-table thead th:nth-child(6) {
+  width: 100px;
+}
+.cut-list-table thead th:nth-child(7) {
+  width: 120px;
 }
 .cut-list-table thead th {
   position: sticky;

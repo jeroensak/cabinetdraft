@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { deriveCutList } from '../domain/cutlist/deriveCutList'
+import { groupCutList } from './partGroups'
 import { partName } from './partNames'
 import { useProjectStore } from '../store/projectStore'
 import { trackEvent } from '../app/analytics'
@@ -67,41 +68,52 @@ export function CutListPage() {
           </div>
           {result.items.length > 0 ? (
             <div className="cut-list-scroll">
-              <table className="cut-list-table">
-                <caption className="sr-only">
-                  Physical panels for {project.name}
-                </caption>
-                <thead>
-                  <tr>
-                    <th scope="col">ID</th>
-                    <th scope="col">Cabinet</th>
-                    <th scope="col">Part</th>
-                    <th scope="col">Qty</th>
-                    <th scope="col">Length (mm)</th>
-                    <th scope="col">Width (mm)</th>
-                    <th scope="col">Thickness (mm)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {result.items.map((item, index) => (
-                    <tr
-                      key={item.id}
-                      data-module-start={
-                        index > 0 &&
-                        result.items[index - 1].moduleId !== item.moduleId
-                      }
-                    >
-                      <th scope="row">{item.id}</th>
-                      <td>{item.moduleName}</td>
-                      <td>{partName(item)}</td>
-                      <td>{item.quantity}</td>
-                      <td>{item.length}</td>
-                      <td>{item.width}</td>
-                      <td>{item.thickness}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              {groupCutList(result.items).map((group) => (
+                <section
+                  key={group.id}
+                  className="cut-list-group"
+                  aria-labelledby={`cut-list-group-${group.id}`}
+                >
+                  <h2 id={`cut-list-group-${group.id}`}>
+                    {group.title} <small>{group.items.length}</small>
+                  </h2>
+                  <table className="cut-list-table">
+                    <caption className="sr-only">
+                      {group.title} for {project.name}
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Cabinet</th>
+                        <th scope="col">Part</th>
+                        <th scope="col">Qty</th>
+                        <th scope="col">Length (mm)</th>
+                        <th scope="col">Width (mm)</th>
+                        <th scope="col">Thickness (mm)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {group.items.map((item, index) => (
+                        <tr
+                          key={item.id}
+                          data-module-start={
+                            index > 0 &&
+                            group.items[index - 1].moduleId !== item.moduleId
+                          }
+                        >
+                          <th scope="row">{item.id}</th>
+                          <td>{item.moduleName}</td>
+                          <td>{partName(item)}</td>
+                          <td>{item.quantity}</td>
+                          <td>{item.length}</td>
+                          <td>{item.width}</td>
+                          <td>{item.thickness}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </section>
+              ))}
             </div>
           ) : (
             <div className="cut-list-empty">

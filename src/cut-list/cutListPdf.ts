@@ -3,6 +3,7 @@ import { autoTable } from 'jspdf-autotable'
 import type { Project } from '../domain/project/types'
 import { deriveCutList } from '../domain/cutlist/deriveCutList'
 import { projectFilename } from '../domain/import-export/projectJson'
+import { groupCutList } from './partGroups'
 import { partName } from './partNames'
 import fontUrl from '../assets/fonts/NotoSans-Regular.ttf?url'
 
@@ -25,75 +26,88 @@ export function createCutListPdf(project: Project, font: string) {
     title: `${project.name} - Cut List`,
     creator: 'Cabinet Designer',
   })
-  autoTable(doc, {
-    startY: 42,
-    margin: { top: 42, right: 15, bottom: 20, left: 15 },
-    head: [
-      [
-        'ID',
-        'Cabinet',
-        'Part',
-        'Qty',
-        'Length (mm)',
-        'Width (mm)',
-        'Thickness (mm)',
+  const columns = [
+    'ID',
+    'Cabinet',
+    'Part',
+    'Qty',
+    'Length (mm)',
+    'Width (mm)',
+    'Thickness (mm)',
+  ]
+  let startY = 42
+  for (const group of groupCutList(result.items)) {
+    autoTable(doc, {
+      startY,
+      margin: { top: 42, right: 15, bottom: 20, left: 15 },
+      // The title is part of the head, so it repeats on each page of its list
+      // and can never be stranded at the bottom of a page without its rows.
+      head: [
+        [
+          {
+            content: `${group.title} (${group.items.length})`,
+            colSpan: columns.length,
+            styles: { fontSize: 11, fillColor: [255, 255, 255], textColor: 31 },
+          },
+        ],
+        columns,
       ],
-    ],
-    body: result.items.map((item) => [
-      item.id,
-      item.moduleName,
-      partName(item),
-      item.quantity,
-      item.length,
-      item.width,
-      item.thickness,
-    ]),
-    theme: 'striped',
-    styles: {
-      font: 'NotoSans',
-      fontStyle: 'normal',
-      fontSize: 9,
-      cellPadding: 2.5,
-      textColor: [31, 41, 51],
-      overflow: 'linebreak',
-    },
-    headStyles: {
-      fillColor: [37, 109, 103],
-      textColor: 255,
-      fontStyle: 'normal',
-    },
-    alternateRowStyles: { fillColor: [246, 244, 239] },
-    columnStyles: {
-      0: { cellWidth: 43 },
-      1: { cellWidth: 62 },
-      2: { cellWidth: 32 },
-      3: { cellWidth: 14, halign: 'right' },
-      4: { cellWidth: 38, halign: 'right' },
-      5: { cellWidth: 38, halign: 'right' },
-      6: { cellWidth: 40, halign: 'right' },
-    },
-    showHead: 'everyPage',
-    rowPageBreak: 'avoid',
-    willDrawPage: () => {
-      doc.setFontSize(19)
-      doc.setTextColor(31, 41, 51)
-      doc.text('Cut List', 15, 17)
-      doc.setFontSize(10)
-      const lines: string[] = doc.splitTextToSize(project.name, 267)
-      doc.text(lines.length > 2 ? [lines[0], lines[1] + '…'] : lines, 15, 24)
-      doc.setFontSize(8)
-      doc.setTextColor(100)
-      doc.text(
-        `${project.modules.length} ${project.modules.length === 1 ? 'cabinet' : 'cabinets'}  ·  ${result.items.length} parts  ·  Configuration valid`,
-        15,
-        36,
-      )
-    },
-  })
+      body: group.items.map((item) => [
+        item.id,
+        item.moduleName,
+        partName(item),
+        item.quantity,
+        item.length,
+        item.width,
+        item.thickness,
+      ]),
+      theme: 'striped',
+      styles: {
+        font: 'NotoSans',
+        fontStyle: 'normal',
+        fontSize: 9,
+        cellPadding: 2.5,
+        textColor: [31, 41, 51],
+        overflow: 'linebreak',
+      },
+      headStyles: {
+        fillColor: [37, 109, 103],
+        textColor: 255,
+        fontStyle: 'normal',
+      },
+      alternateRowStyles: { fillColor: [246, 244, 239] },
+      columnStyles: {
+        0: { cellWidth: 50 },
+        1: { cellWidth: 47 },
+        2: { cellWidth: 60 },
+        3: { cellWidth: 14, halign: 'right' },
+        4: { cellWidth: 30, halign: 'right' },
+        5: { cellWidth: 30, halign: 'right' },
+        6: { cellWidth: 36, halign: 'right' },
+      },
+      showHead: 'everyPage',
+      rowPageBreak: 'avoid',
+    })
+    startY =
+      (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable
+        .finalY + 8
+  }
   const pages = doc.getNumberOfPages()
   for (let page = 1; page <= pages; page++) {
     doc.setPage(page)
+    doc.setFontSize(19)
+    doc.setTextColor(31, 41, 51)
+    doc.text('Cut List', 15, 17)
+    doc.setFontSize(10)
+    const lines: string[] = doc.splitTextToSize(project.name, 267)
+    doc.text(lines.length > 2 ? [lines[0], lines[1] + '…'] : lines, 15, 24)
     doc.setFontSize(8)
+    doc.setTextColor(100)
+    doc.text(
+      `${project.modules.length} ${project.modules.length === 1 ? 'cabinet' : 'cabinets'}  ·  ${result.items.length} parts  ·  Configuration valid`,
+      15,
+      36,
+    )
     doc.setTextColor(100)
     doc.text(
       'All dimensions in millimetres. Each row represents one physical panel.',

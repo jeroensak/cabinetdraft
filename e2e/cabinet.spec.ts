@@ -26,7 +26,7 @@ test('default design produces the expected physical parts', async ({
     page.getByRole('button', { name: 'Cabinet 1 double door 1' }),
   ).toBeVisible()
   await page.getByRole('link', { name: 'Cut List', exact: true }).click()
-  await expect(page.getByRole('row')).toHaveCount(9)
+  await expect(page.getByRole('row')).toHaveCount(11)
   await expect(
     page.getByRole('row').filter({ hasText: 'C1-SIDE-L' }),
   ).toContainText('597')
@@ -55,7 +55,7 @@ test('new resized cabinet, shelf and door update manufacturing output and surviv
     .click({ modifiers: ['Shift'] })
   await page.getByRole('button', { name: 'Add door', exact: true }).click()
   await page.getByRole('link', { name: 'Cut List', exact: true }).click()
-  await expect(page.getByRole('row')).toHaveCount(16)
+  await expect(page.getByRole('row')).toHaveCount(18)
   await expect(
     page.getByRole('row').filter({ hasText: 'C2-SHELF-1' }),
   ).toContainText('864')
@@ -63,7 +63,7 @@ test('new resized cabinet, shelf and door update manufacturing output and surviv
     page.getByRole('row').filter({ hasText: 'C2-DOOR-1' }),
   ).toContainText('896')
   await page.reload()
-  await expect(page.getByRole('row')).toHaveCount(16)
+  await expect(page.getByRole('row')).toHaveCount(18)
   await page.getByRole('link', { name: 'Designer', exact: true }).click()
   await expect(
     page.getByRole('button', { name: 'Cabinet 2, 900 mm', exact: true }),
@@ -188,6 +188,7 @@ test('export and confirmed import restore the full design', async ({
   await download.saveAs(file)
   const exported = JSON.parse(await readFile(file, 'utf8'))
   expect(Object.keys(exported).sort()).toEqual([
+    'drawerDesigns',
     'id',
     'modules',
     'name',

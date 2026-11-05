@@ -121,7 +121,7 @@ describe('application shell', () => {
     await user.click(screen.getByRole('link', { name: 'Cut List' }))
     expect(screen.getByText('Cut list unavailable')).toBeVisible()
     await user.click(screen.getByRole('button', { name: 'Undo' }))
-    expect(screen.getByRole('table')).toBeVisible()
+    expect(screen.getAllByRole('table')[0]!).toBeVisible()
     await user.click(screen.getByRole('button', { name: 'Settings' }))
     expect(screen.getByLabelText('Front gap (mm)')).toHaveValue('2')
     await user.click(screen.getByLabelText('Back panel enabled'))

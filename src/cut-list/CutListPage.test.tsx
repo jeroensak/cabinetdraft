@@ -82,7 +82,7 @@ describe('Cut List page', () => {
     const { container } = renderCutList()
     expect(screen.getByText('✓ Configuration valid')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Download PDF' })).toBeEnabled()
-    expect(screen.getAllByRole('row')).toHaveLength(9)
+    expect(screen.getAllByRole('row')).toHaveLength(11)
     const door = screen.getByRole('row', { name: /C1-DOOR-1-L/ })
     expect(
       within(door)
@@ -90,16 +90,25 @@ describe('Cut List page', () => {
         .map((cell) => cell.textContent),
     ).toEqual(['Cabinet 1', 'Door', '1', '2196', '397', '18'])
     expect(
-      screen.getByRole('columnheader', { name: 'Thickness (mm)' }),
-    ).toBeInTheDocument()
+      screen.getAllByRole('columnheader', { name: 'Thickness (mm)' }),
+    ).toHaveLength(3)
     expect(container.querySelector('svg')).toBeNull()
+  })
+  it('splits the cut list into parts lists, leaving out empty ones', () => {
+    renderCutList()
+    expect(
+      screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent),
+    ).toEqual(['Cabinet bases 5', 'Shelves and dividers 1', 'Doors 2'])
+    const bases = screen.getByRole('region', { name: /Cabinet bases/ })
+    expect(within(bases).getByRole('row', { name: /C1-BACK/ })).toBeVisible()
+    expect(within(bases).queryByRole('row', { name: /C1-DOOR/ })).toBeNull()
   })
   it('keeps identical modules separate and reflects edits and array order', () => {
     const original = useProjectStore.getState().present
     const project = duplicateModule(original, original.modules[0].id)
     useProjectStore.setState({ present: project })
     renderCutList()
-    expect(screen.getAllByRole('row')).toHaveLength(17)
+    expect(screen.getAllByRole('row')).toHaveLength(19)
     act(() =>
       useProjectStore
         .getState()
@@ -146,11 +155,11 @@ describe('Cut List page', () => {
     expect(
       screen.getByText('Resolve configuration errors in the Designer first.'),
     ).toBeInTheDocument()
-    expect(screen.queryByRole('table')).toBeNull()
+    expect(screen.queryAllByRole('table')).toHaveLength(0)
     expect(screen.getByRole('button', { name: 'Download PDF' })).toBeDisabled()
     expect(screen.queryByText('C1-SIDE-L')).toBeNull()
     act(() => useProjectStore.getState().undo())
-    expect(screen.getByRole('table')).toBeInTheDocument()
+    expect(screen.getAllByRole('table')).toHaveLength(3)
   })
   it('handles an empty project and provides a working return route', async () => {
     mockResizeObserver()
