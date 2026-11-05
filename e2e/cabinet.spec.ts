@@ -306,7 +306,7 @@ test('divider openings support partial shelves, spanning doors and batch drawers
   await page
     .getByRole('button', { name: 'Cabinet 2 space 4', exact: true })
     .click({ modifiers: ['Shift'] })
-  await page.getByRole('button', { name: 'Add drawer…', exact: true }).click()
+  await page.getByRole('button', { name: 'Add drawer', exact: true }).click()
   await page
     .getByRole('button', { name: '+ New drawer design', exact: true })
     .click()

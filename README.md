@@ -85,6 +85,6 @@ This is an approved post-V1 extension. See [construction and migration rules](do
 
 ## Drawer boxes
 
-Select one or more spaces and choose **Add drawer…** to open the drawer designer. Create reusable drawer designs (four equal-height walls, a bottom and an overlay front on undermount slides) and apply one to every selected space in a single undoable action. The box width always follows each space, minus a side gap of at least 3 mm per side; the height defaults to half the space height. Box panels appear in the canvas, the Cut List and the PDF. See [drawer box rules](docs/DRAWER_BOXES.md).
+Select one or more spaces and choose **Add drawer** to open the drawer designer. Create reusable drawer designs (four equal-height walls, a bottom and an overlay front on undermount slides) and apply one to every selected space in a single undoable action. The box width always follows each space, minus a side gap of at least 3 mm per side; the height defaults to half the space height. Box panels appear in the canvas, the Cut List and the PDF. See [drawer box rules](docs/DRAWER_BOXES.md).
 
 Project JSON uses schema version 4; existing V1–V3 local saves and imports migrate without changing their design.

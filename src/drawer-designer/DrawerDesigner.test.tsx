@@ -41,7 +41,7 @@ describe('Drawer designer', () => {
     await user.keyboard('{Shift>}')
     await user.click(screen.getByRole('button', { name: 'Cabinet 1 space 2' }))
     await user.keyboard('{/Shift}')
-    await user.click(screen.getByRole('button', { name: 'Add drawer…' }))
+    await user.click(screen.getByRole('button', { name: 'Add drawer' }))
 
     expect(
       screen.getByRole('heading', { name: 'Drawer designs' }),
@@ -71,7 +71,7 @@ describe('Drawer designer', () => {
       ),
     ).toStrictEqual([designId, designId])
     expect(
-      screen.getByRole('button', { name: 'Add drawer…' }),
+      screen.getByRole('button', { name: 'Add drawer' }),
     ).toBeInTheDocument()
 
     act(() => useProjectStore.getState().undo())
@@ -82,7 +82,7 @@ describe('Drawer designer', () => {
     const user = userEvent.setup()
     render(<DesignerPage />)
     await user.click(screen.getByRole('button', { name: 'Cabinet 1 space 1' }))
-    await user.click(screen.getByRole('button', { name: 'Add drawer…' }))
+    await user.click(screen.getByRole('button', { name: 'Add drawer' }))
     await user.click(
       screen.getByRole('button', { name: '+ New drawer design' }),
     )
@@ -119,7 +119,7 @@ describe('Drawer designer', () => {
     const user = userEvent.setup()
     const { container } = render(<DesignerPage />)
     await user.click(screen.getByRole('button', { name: 'Cabinet 1 space 1' }))
-    await user.click(screen.getByRole('button', { name: 'Add drawer…' }))
+    await user.click(screen.getByRole('button', { name: 'Add drawer' }))
     await user.click(
       screen.getByRole('button', { name: '+ New drawer design' }),
     )
@@ -185,7 +185,7 @@ describe('Drawer designer', () => {
 
     await user.click(screen.getByRole('button', { name: '← Back to cabinet' }))
     await user.click(screen.getByRole('button', { name: 'Cabinet 1 space 1' }))
-    await user.click(screen.getByRole('button', { name: 'Add drawer…' }))
+    await user.click(screen.getByRole('button', { name: 'Add drawer' }))
     await user.click(
       screen.getByRole('button', { name: 'Apply to 1 selected space' }),
     )

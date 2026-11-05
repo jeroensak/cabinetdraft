@@ -118,7 +118,7 @@
   "inspector.addShelf": "Add shelf",
   "inspector.addDivider": "Add divider",
   "inspector.addDoor": "Add door",
-  "inspector.addDrawer": "Add drawer…",
+  "inspector.addDrawer": "Add drawer",
   "inspector.rectangleNote": "Select a rectangle of spaces to add one spanning door.",
   "inspector.duplicate": "Duplicate",
   "inspector.delete": "Delete",

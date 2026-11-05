@@ -88,7 +88,7 @@ describe('Fronts mode', () => {
     await user.click(screen.getByRole('button', { name: 'Cabinet 1 space 2' }))
     await user.keyboard('{/Shift}')
     expect(screen.getByText('2 selected spaces')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Add drawer…' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Add drawer' })).toBeEnabled()
     expect(
       screen.queryByRole('button', { name: 'Add drawer front' }),
     ).toBeNull()
