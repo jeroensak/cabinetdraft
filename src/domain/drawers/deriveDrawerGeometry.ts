@@ -87,6 +87,28 @@ export function validateDrawerDesign(design: DrawerDesignInput): DrawerIssue[] {
       field: 'heightPercent',
       message: 'Box height must be a whole percentage from 1 to 100.',
     })
+  if (
+    !Number.isSafeInteger(design.frontHeightPercent) ||
+    design.frontHeightPercent < 1 ||
+    design.frontHeightPercent > 100
+  )
+    issues.push({
+      code: 'invalid-drawer-design',
+      field: 'frontHeightPercent',
+      message: 'Front height must be a whole percentage from 1 to 100.',
+    })
+  if (design.frontStyle !== 'full' && design.frontStyle !== 'wave')
+    issues.push({
+      code: 'invalid-drawer-design',
+      field: 'frontStyle',
+      message: 'Choose a full or wave top drawer front.',
+    })
+  if (design.frontMount !== 'overlay' && design.frontMount !== 'inset')
+    issues.push({
+      code: 'invalid-drawer-design',
+      field: 'frontMount',
+      message: 'Choose an overlay or inset drawer front.',
+    })
   if (design.depth <= 2 * design.wallThickness)
     issues.push({
       code: 'invalid-drawer-design',
@@ -133,6 +155,8 @@ export function deriveDrawerGeometry(
   const t = design.wallThickness
   const x = horizontal.left + design.sideClearance
   const y = vertical.bottom + design.bottomClearance
+  // An inset front fills the first part of the opening, so the box starts behind it.
+  const z = design.frontMount === 'inset' ? settings.frontThickness : 0
   const issues = validateDrawerDesign(design)
   const { carcassDepth } = deriveCarcassDimensions(module, settings)
   if (height + design.bottomClearance + design.topClearance > openingHeight)
@@ -141,11 +165,13 @@ export function deriveDrawerGeometry(
       field: 'height',
       message: `The box height plus vertical clearances (${height + design.bottomClearance + design.topClearance} mm) exceeds the ${openingHeight} mm opening.`,
     })
-  if (depth + design.rearClearance > carcassDepth)
+  if (z + depth + design.rearClearance > carcassDepth)
     issues.push({
       code: 'drawer-does-not-fit',
       field: 'depth',
-      message: `The box depth plus rear clearance (${depth + design.rearClearance} mm) exceeds the ${carcassDepth} mm cabinet depth.`,
+      message: z
+        ? `The inset front, box depth and rear clearance (${z + depth + design.rearClearance} mm) exceed the ${carcassDepth} mm cabinet depth.`
+        : `The box depth plus rear clearance (${depth + design.rearClearance} mm) exceeds the ${carcassDepth} mm cabinet depth.`,
     })
   if (design.bottomRecess + design.bottomThickness >= height)
     issues.push({
@@ -171,17 +197,17 @@ export function deriveDrawerGeometry(
   })
   const inner = width - 2 * t
   const boxPanels: PhysicalPanel[] = [
-    panel('drawer-side-left', height, depth, t, 'side', { x, y, z: 0 }),
+    panel('drawer-side-left', height, depth, t, 'side', { x, y, z }),
     panel('drawer-side-right', height, depth, t, 'side', {
       x: x + width - t,
       y,
-      z: 0,
+      z,
     }),
-    panel('drawer-box-front', height, inner, t, 'face', { x: x + t, y, z: 0 }),
+    panel('drawer-box-front', height, inner, t, 'face', { x: x + t, y, z }),
     panel('drawer-box-back', height, inner, t, 'face', {
       x: x + t,
       y,
-      z: depth - t,
+      z: z + depth - t,
     }),
     panel(
       'drawer-bottom',
@@ -192,7 +218,7 @@ export function deriveDrawerGeometry(
       {
         x: x + t,
         y: y + design.bottomRecess,
-        z: t,
+        z: z + t,
       },
     ),
   ]
@@ -217,7 +243,7 @@ export function deriveDrawerGeometry(
       top: vertical.top,
     },
     boxPanels,
-    frontPanels: deriveFrontGeometry(module, settings, front).panels,
+    frontPanels: deriveFrontGeometry(module, settings, front, design).panels,
     issues,
   }
 }

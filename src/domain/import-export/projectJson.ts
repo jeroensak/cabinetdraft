@@ -1,4 +1,11 @@
-import { isProject, migrateV1, migrateV2, migrateV3, migrateV4 } from './schema'
+import {
+  isProject,
+  migrateV1,
+  migrateV2,
+  migrateV3,
+  migrateV4,
+  migrateV5,
+} from './schema'
 import { projectData } from '../project/projectData'
 import { PROJECT_SCHEMA_VERSION, type Project } from '../project/types'
 import { editProject } from '../commands/core'
@@ -26,7 +33,8 @@ function migrateProject(value: unknown): Project {
     value.schemaVersion !== 1 &&
     value.schemaVersion !== 2 &&
     value.schemaVersion !== 3 &&
-    value.schemaVersion !== 4
+    value.schemaVersion !== 4 &&
+    value.schemaVersion !== 5
   )
     throw new ProjectImportError('unsupported-version')
   const typed =
@@ -38,9 +46,11 @@ function migrateProject(value: unknown): Project {
           ? migrateV3(value)
           : value.schemaVersion === 4
             ? migrateV4(value)
-            : isProject(value)
-              ? value
-              : null
+            : value.schemaVersion === 5
+              ? migrateV5(value)
+              : isProject(value)
+                ? value
+                : null
   if (!typed) throw new ProjectImportError('invalid-structure')
   const project = projectData(typed)
   if (

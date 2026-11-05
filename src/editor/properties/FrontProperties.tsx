@@ -35,7 +35,7 @@ export function FrontProperties({
       ? deriveDrawerGeometry(module, settings, front, design)
       : null
   const { error, run } = useCommandAction()
-  const geometry = deriveFrontGeometry(module, settings, front)
+  const geometry = deriveFrontGeometry(module, settings, front, design)
   const boundaryName = (boundary: Boundary) =>
     boundary.type === 'module-bottom'
       ? 'Cabinet bottom'

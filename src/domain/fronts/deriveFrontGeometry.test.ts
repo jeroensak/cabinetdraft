@@ -313,4 +313,67 @@ describe('deriveFrontGeometry', () => {
     })
     expect(deriveFrontGeometry(module, settings, door)).toStrictEqual(expected)
   })
+
+  describe('drawer front options', () => {
+    const module = {
+      ...createDefaultProject().modules[0]!,
+      shelves: [],
+      fronts: [],
+    }
+    const settings = createDefaultProject().settings
+    const drawer = {
+      id: 'drawer',
+      type: 'drawer' as const,
+      bottomBoundary: { type: 'module-bottom' as const },
+      topBoundary: { type: 'module-top' as const },
+    }
+    const options = {
+      frontStyle: 'full' as const,
+      frontMount: 'overlay' as const,
+      frontHeightPercent: 100,
+    }
+    const panel = (patch: Partial<typeof options> | object = {}) =>
+      deriveFrontGeometry(module, settings, drawer, { ...options, ...patch })
+        .panels[0]!
+
+    it('keeps the plain overlay front at 100%', () => {
+      expect(panel()).toStrictEqual(
+        deriveFrontGeometry(module, settings, drawer).panels[0],
+      )
+    })
+
+    it('lowers the top edge and keeps the bottom edge', () => {
+      const full = panel()
+      const half = panel({ frontHeightPercent: 50 })
+      expect(half.length).toBe(Math.round(full.length / 2))
+      expect(half.position).toStrictEqual(full.position)
+    })
+
+    it('fits an inset front inside the opening with the gap all round', () => {
+      const t = settings.corpusThickness
+      const g = settings.frontGap
+      const inset = panel({ frontMount: 'inset' })
+      expect(inset.position).toStrictEqual({ x: t + g, y: t + g, z: 0 })
+      expect(inset.width).toBe(module.width - 2 * t - 2 * g)
+      expect(inset.length).toBe(module.height - 2 * t - 2 * g)
+    })
+
+    it('records the wave dip without changing the blank', () => {
+      const wave = panel({ frontStyle: 'wave' })
+      expect(wave.length).toBe(panel().length)
+      expect(wave.waveDip).toBe(Math.round(wave.length * 0.15))
+      expect(panel()).not.toHaveProperty('waveDip')
+    })
+
+    it('never applies drawer options to doors', () => {
+      const door = { ...drawer, type: 'door' as const, leaves: 1 as const }
+      expect(
+        deriveFrontGeometry(module, settings, door, {
+          ...options,
+          frontMount: 'inset',
+          frontStyle: 'wave',
+        }).panels,
+      ).toStrictEqual(deriveFrontGeometry(module, settings, door).panels)
+    })
+  })
 })

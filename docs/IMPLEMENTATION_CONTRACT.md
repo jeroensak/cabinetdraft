@@ -60,3 +60,7 @@ The user explicitly requested space-level vertical dividers after V1. This super
 ## Approved post-V1 extension: drawer boxes
 
 The user explicitly requested simple drawer boxes after V1: reusable designs with four equal-height walls, a bottom and the existing overlay front, on undermount slides only. This supersedes the V1 drawer-box non-goal only for this extension; the frozen specification remains unchanged. [Drawer box construction and editing rules](DRAWER_BOXES.md) govern the new behavior. The same Project JSON → pure domain → independent SVG/Cut List pipeline applies.
+
+## Approved post-V1 extension: drawer front options
+
+The user explicitly requested a choice of drawer fronts: full or wave top, overlay or inset, and an adjustable front height. This supersedes the overlay-only front geometry of specification sections 20–23 only for drawer fronts linked to a drawer design; the frozen specification remains unchanged and doors are unaffected. [Drawer front rules](DRAWER_BOXES.md#drawer-fronts) govern the new behavior.

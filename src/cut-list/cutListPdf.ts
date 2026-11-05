@@ -3,7 +3,7 @@ import { autoTable } from 'jspdf-autotable'
 import type { Project } from '../domain/project/types'
 import { deriveCutList } from '../domain/cutlist/deriveCutList'
 import { projectFilename } from '../domain/import-export/projectJson'
-import { partNames } from './partNames'
+import { partName } from './partNames'
 import fontUrl from '../assets/fonts/NotoSans-Regular.ttf?url'
 
 /** Render validated domain rows directly; no DOM or SVG measurements. */
@@ -42,7 +42,7 @@ export function createCutListPdf(project: Project, font: string) {
     body: result.items.map((item) => [
       item.id,
       item.moduleName,
-      partNames[item.part],
+      partName(item),
       item.quantity,
       item.length,
       item.width,

@@ -30,7 +30,12 @@ import { uniqueDesignName } from './uniqueDesignName'
 
 type MeasurementField = Exclude<
   keyof DrawerDesignInput,
-  'name' | 'slideType' | 'heightPercent'
+  | 'name'
+  | 'slideType'
+  | 'heightPercent'
+  | 'frontStyle'
+  | 'frontMount'
+  | 'frontHeightPercent'
 >
 const boxFields: [MeasurementField, string][] = [
   ['wallThickness', 'Wall thickness'],
@@ -145,6 +150,10 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
           ),
         )
       : false
+  const updateFront = (patch: Partial<DrawerDesignInput>) => {
+    setShowFront(true)
+    return update(patch)
+  }
   const create = (input: DrawerDesignInput) => {
     if (run(() => execute((project) => addDrawerDesign(project, input))))
       selectDesign(useProjectStore.getState().present.drawerDesigns.at(-1)!.id)
@@ -290,6 +299,49 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
                 onCommit={(value) => update({ [field]: Number(value) })}
               />
             ))}
+            <h3 className="eyebrow dimension-heading">Drawer front</h3>
+            <label className="property-field">
+              <span>Style</span>
+              <select
+                aria-label="Front style"
+                value={design.frontStyle}
+                onChange={(event) =>
+                  updateFront({
+                    frontStyle: event.target
+                      .value as DrawerDesign['frontStyle'],
+                  })
+                }
+              >
+                <option value="full">Full front</option>
+                <option value="wave">Wave top</option>
+              </select>
+            </label>
+            <label className="property-field">
+              <span>Position</span>
+              <select
+                aria-label="Front position"
+                value={design.frontMount}
+                onChange={(event) =>
+                  updateFront({
+                    frontMount: event.target
+                      .value as DrawerDesign['frontMount'],
+                  })
+                }
+              >
+                <option value="overlay">Overlay (on the cabinet front)</option>
+                <option value="inset">Inset (inside the opening)</option>
+              </select>
+            </label>
+            <DraftField
+              key={`${design.id}-frontHeightPercent-${design.frontHeightPercent}`}
+              label="Front height"
+              numeric
+              unit="%"
+              value={design.frontHeightPercent}
+              onCommit={(value) =>
+                updateFront({ frontHeightPercent: Number(value) })
+              }
+            />
             <h3 className="eyebrow dimension-heading">Clearances</h3>
             {clearanceFields.map(([field, label]) => (
               <DraftField
@@ -305,7 +357,9 @@ export function DrawerDesigner({ context }: { context: DrawerDesignerState }) {
               {MIN_DRAWER_SIDE_CLEARANCE} mm per side). Box height is a
               percentage of the space’s inner height, shared by all four walls;
               the bottom sits between them, raised by the recess to clear the
-              slides.
+              slides. Front height is a percentage of the front’s full height,
+              keeping its bottom edge. An inset front moves the box back by its
+              thickness.
             </p>
             {blockedByDoor && (
               <p className="field-error">

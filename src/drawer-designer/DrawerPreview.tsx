@@ -90,7 +90,7 @@ export function DrawerPreview({
                 key={face.key}
                 className={`panel-face face-${face.side}`}
                 data-source={face.source}
-                points={face.points.map((p) => `${p.x},${p.y}`).join(' ')}
+                points={face.outline.map((p) => `${p.x},${p.y}`).join(' ')}
               />
             ))}
           </g>

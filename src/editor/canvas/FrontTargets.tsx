@@ -1,4 +1,5 @@
 import type { Arrangement } from '../../domain/cabinet/deriveArrangement'
+import { frontDesign } from '../../domain/drawers/types'
 import { deriveFrontGeometry } from '../../domain/fronts/deriveFrontGeometry'
 import { useProjectStore } from '../../store/projectStore'
 import { panelFaces } from './projection'
@@ -6,6 +7,7 @@ import { frontName } from '../frontName'
 
 export function FrontTargets({ arrangement }: { arrangement: Arrangement }) {
   const settings = useProjectStore((state) => state.present.settings)
+  const designs = useProjectStore((state) => state.present.drawerDesigns)
   const selection = useProjectStore((state) => state.editor.selection)
   const setSelection = useProjectStore((state) => state.setSelection)
   const setHover = useProjectStore((state) => state.setHover)
@@ -21,6 +23,7 @@ export function FrontTargets({ arrangement }: { arrangement: Arrangement }) {
             module,
             settings,
             front,
+            frontDesign(designs, front),
           ).panels.flatMap((panel) => panelFaces(panel, origin))
           const choose = () =>
             setSelection({
@@ -60,7 +63,7 @@ export function FrontTargets({ arrangement }: { arrangement: Arrangement }) {
               {faces.map((face, i) => (
                 <polygon
                   key={i}
-                  points={face.points.map((p) => `${p.x},${p.y}`).join(' ')}
+                  points={face.outline.map((p) => `${p.x},${p.y}`).join(' ')}
                 />
               ))}
             </g>

@@ -1,3 +1,4 @@
+import { frontDesign } from '../drawers/types'
 import {
   deriveDrawerGeometry,
   validateDrawerDesign,
@@ -354,7 +355,12 @@ export function validateProject(project: Project): ValidationIssue[] {
               },
             })
       }
-      const frontGeometry = deriveFrontGeometry(module, project.settings, front)
+      const frontGeometry = deriveFrontGeometry(
+        module,
+        project.settings,
+        front,
+        frontDesign(project.drawerDesigns, front),
+      )
       for (const issue of frontGeometry.issues) {
         const { code, moduleId: issueModuleId, frontId, ...data } = issue
         issues.push({ code, moduleId: issueModuleId, frontId, data })

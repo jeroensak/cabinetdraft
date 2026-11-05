@@ -32,6 +32,7 @@ const measurementFields = [
 function checkDesign(input: DrawerDesignInput) {
   for (const field of measurementFields) integer(input[field], field)
   integer(input.heightPercent, 'heightPercent')
+  integer(input.frontHeightPercent, 'frontHeightPercent')
   const issues = validateDrawerDesign(input)
   if (issues.length) throw new CommandError('invalid-drawer-design', { issues })
 }

@@ -1,4 +1,5 @@
 import { deriveModuleDrawerPanels } from '../drawers/deriveModuleDrawerPanels'
+import { frontDesign } from '../drawers/types'
 import { deriveCabinetGeometry } from '../cabinet/deriveCabinetGeometry'
 import { deriveFrontGeometry } from '../fronts/deriveFrontGeometry'
 import type { PanelSource } from '../geometry/physicalPanel'
@@ -17,6 +18,8 @@ export interface CutListItem {
   length: number
   width: number
   thickness: number
+  /** Wave top fronts are cut from this blank, then dip this far at mid-width. */
+  waveDip?: number
 }
 
 export type CutListResult =
@@ -71,7 +74,13 @@ export function deriveCutList(project: Project): CutListResult {
       ...carcassPanels,
       ...deriveModuleDrawerPanels(project, module),
       ...module.fronts.flatMap(
-        (front) => deriveFrontGeometry(module, project.settings, front).panels,
+        (front) =>
+          deriveFrontGeometry(
+            module,
+            project.settings,
+            front,
+            frontDesign(project.drawerDesigns, front),
+          ).panels,
       ),
     ]
     for (const panel of panels) {
@@ -84,6 +93,7 @@ export function deriveCutList(project: Project): CutListResult {
         length: panel.length,
         width: panel.width,
         thickness: panel.thickness,
+        ...(panel.waveDip !== undefined ? { waveDip: panel.waveDip } : {}),
       })
     }
   })

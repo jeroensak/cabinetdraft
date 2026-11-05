@@ -22,7 +22,7 @@ describe('project JSON boundary', () => {
     })
     const migrated = parseProject(raw)
     expect(migrated).toStrictEqual(v2)
-    expect(JSON.parse(exportProject(migrated)).schemaVersion).toBe(5)
+    expect(JSON.parse(exportProject(migrated)).schemaVersion).toBe(6)
   })
 
   it('migrates V3 projects with an empty drawer library and keeps drawer designs on roundtrip', () => {
@@ -48,8 +48,19 @@ describe('project JSON boundary', () => {
   it('migrates V4 drawer heights to percentages of the opening', () => {
     const project = createDefaultProject()
     const module = project.modules[0]!
-    const { heightPercent: _omitted, ...v4Design } = defaultDrawerDesign()
-    expect(_omitted).toBe(50)
+    const {
+      heightPercent: _omitted,
+      frontStyle: _style,
+      frontMount: _mount,
+      frontHeightPercent: _front,
+      ...v4Design
+    } = defaultDrawerDesign()
+    expect([_omitted, _style, _mount, _front]).toStrictEqual([
+      50,
+      'full',
+      'overlay',
+      100,
+    ])
     const v4 = {
       ...project,
       schemaVersion: 4,
@@ -74,11 +85,46 @@ describe('project JSON boundary', () => {
       ],
     }
     const migrated = parseProject(JSON.stringify(v4))
-    expect(migrated.schemaVersion).toBe(5)
+    expect(migrated.schemaVersion).toBe(6)
     expect(
       migrated.drawerDesigns.map((design) => design.heightPercent),
     ).toStrictEqual([50, 20, 50])
     expect(migrated.drawerDesigns[1]).not.toHaveProperty('height')
+  })
+
+  it('rejects drawer designs with a missing height or an unknown front option', () => {
+    const project = createDefaultProject()
+    const design = { id: 'design-1', ...defaultDrawerDesign() }
+    for (const broken of [
+      { ...design, heightPercent: undefined },
+      { ...design, frontHeightPercent: undefined },
+      { ...design, frontStyle: 'zigzag' },
+      { ...design, frontMount: 'floating' },
+    ])
+      expect(() =>
+        parseProject(JSON.stringify({ ...project, drawerDesigns: [broken] })),
+      ).toThrow('invalid-structure')
+  })
+
+  it('gives V5 designs a full overlay front at full height', () => {
+    const {
+      frontStyle: _style,
+      frontMount: _mount,
+      frontHeightPercent: _front,
+      ...v5Design
+    } = defaultDrawerDesign()
+    expect([_style, _mount, _front]).toStrictEqual(['full', 'overlay', 100])
+    const project = createDefaultProject()
+    const migrated = parseProject(
+      JSON.stringify({
+        ...project,
+        schemaVersion: 5,
+        drawerDesigns: [{ ...v5Design, id: 'design-1' }],
+      }),
+    )
+    expect(migrated.drawerDesigns).toStrictEqual([
+      { id: 'design-1', ...defaultDrawerDesign() },
+    ])
   })
 
   it('rejects broken divider references and duplicate divider IDs', () => {
@@ -107,7 +153,7 @@ describe('project JSON boundary', () => {
       ...project,
       selection: 'ignored',
     } as typeof project)
-    expect(raw).toContain('\n  "schemaVersion": 5,')
+    expect(raw).toContain('\n  "schemaVersion": 6,')
     expect(raw).not.toContain('selection')
     expect(parseProject(raw)).toEqual(project)
   })

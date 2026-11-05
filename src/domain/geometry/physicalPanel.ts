@@ -40,4 +40,6 @@ export interface PhysicalPanel {
   orientation: PanelOrientation
   /** Minimum corner; extents follow orientation and manufacturing dimensions. */
   position: PhysicalPosition
+  /** Wave top: how far the edge dips at mid-width. Length is the uncut blank. */
+  waveDip?: number
 }

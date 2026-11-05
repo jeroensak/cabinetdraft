@@ -29,7 +29,9 @@ function drawerDesign(value: unknown): boolean {
     !record(value) ||
     typeof value.id !== 'string' ||
     typeof value.name !== 'string' ||
-    value.slideType !== 'undermount'
+    value.slideType !== 'undermount' ||
+    (value.frontStyle !== 'full' && value.frontStyle !== 'wave') ||
+    (value.frontMount !== 'overlay' && value.frontMount !== 'inset')
   )
     return false
   return [
@@ -37,6 +39,7 @@ function drawerDesign(value: unknown): boolean {
     'bottomThickness',
     'depth',
     'heightPercent',
+    'frontHeightPercent',
     'sideClearance',
     'bottomClearance',
     'topClearance',
@@ -158,6 +161,12 @@ export function migrateV3(value: unknown): Project | null {
   return isProject(migrated) ? migrated : null
 }
 
+const defaultFrontOptions = {
+  frontStyle: 'full',
+  frontMount: 'overlay',
+  frontHeightPercent: 100,
+}
+
 /** The whole percentage closest to a V4 fixed height in the first drawer using
  * the design. Out-of-range results stay as they are for validation to report. */
 function percentForFixedHeight(
@@ -191,7 +200,11 @@ export function migrateV4(value: unknown): Project | null {
   const migrated = {
     ...value,
     schemaVersion: PROJECT_SCHEMA_VERSION,
-    drawerDesigns: designs.map((design) => ({ ...design, heightPercent: 50 })),
+    drawerDesigns: designs.map((design) => ({
+      ...design,
+      ...defaultFrontOptions,
+      heightPercent: 50,
+    })),
   }
   if (!isProject(migrated)) return null
   return {
@@ -206,4 +219,22 @@ export function migrateV4(value: unknown): Project | null {
         : design
     }),
   }
+}
+
+/** V5 designs gain the drawer front options; existing fronts keep their shape. */
+export function migrateV5(value: unknown): Project | null {
+  if (
+    !record(value) ||
+    value.schemaVersion !== 5 ||
+    !Array.isArray(value.drawerDesigns)
+  )
+    return null
+  const migrated = {
+    ...value,
+    schemaVersion: PROJECT_SCHEMA_VERSION,
+    drawerDesigns: value.drawerDesigns.map((design) =>
+      record(design) ? { ...design, ...defaultFrontOptions } : design,
+    ),
+  }
+  return isProject(migrated) ? migrated : null
 }

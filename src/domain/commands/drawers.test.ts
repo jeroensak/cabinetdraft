@@ -60,6 +60,8 @@ describe('drawer design commands', () => {
       { name: '  ' },
       { heightPercent: 0 },
       { heightPercent: 101 },
+      { frontHeightPercent: 0 },
+      { frontHeightPercent: 101 },
       { depth: 30 },
     ])
       rejects(
@@ -261,6 +263,43 @@ describe('drawer geometry and cut list', () => {
     )
     expect(geometry.height).toBe(268)
     expect(geometry.issues).toStrictEqual([])
+  })
+
+  it('moves the box behind an inset front and rejects a box that no longer fits', () => {
+    const project = withDesign()
+    const front = { id: 'drawer', type: 'drawer' as const, ...lower(project) }
+    const module = project.modules[0]!
+    const design = project.drawerDesigns[0]!
+    const inset = deriveDrawerGeometry(module, project.settings, front, {
+      ...design,
+      frontMount: 'inset',
+    })
+    expect(inset.boxPanels.map((panel) => panel.position.z)).toStrictEqual([
+      18, 18, 18, 452, 34,
+    ])
+    expect(inset.issues).toStrictEqual([])
+    const tooDeep = deriveDrawerGeometry(module, project.settings, front, {
+      ...design,
+      depth: module.depth,
+      frontMount: 'inset',
+    })
+    expect(tooDeep.issues[0]!.message).toContain('inset front')
+  })
+
+  it('applies the design front options to the cut list', () => {
+    const designed = withDesign()
+    const project = applyDrawerDesign(designed, 'design-1', [
+      { moduleId: designed.modules[0]!.id, range: lower(designed) },
+    ])
+    project.drawerDesigns[0]!.frontStyle = 'wave'
+    project.drawerDesigns[0]!.frontHeightPercent = 50
+    const result = deriveCutList(project)
+    expect(result.available).toBe(true)
+    if (!result.available) return
+    const fronts = result.items.filter((item) => item.part === 'drawer')
+    expect(fronts.length).toBeGreaterThan(0)
+    for (const item of fronts)
+      expect(item.waveDip).toBe(Math.round(item.length * 0.15))
   })
 
   it('reports vertical overflow and a bottom taller than the walls', () => {

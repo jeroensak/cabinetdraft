@@ -115,6 +115,31 @@ describe('Drawer designer', () => {
     expect(useProjectStore.getState().editor.drawerDesigner).toBeNull()
   })
 
+  it('sets the drawer front style, position and height on the design', async () => {
+    const user = userEvent.setup()
+    render(<DesignerPage />)
+    await user.click(
+      screen.getByRole('button', { name: '+ New drawer design' }),
+    )
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Front style' }),
+      'wave',
+    )
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Front position' }),
+      'inset',
+    )
+    const height = screen.getByRole('textbox', { name: 'Front height (%)' })
+    expect(height).toHaveValue('100')
+    await user.clear(height)
+    await user.type(height, '60{Enter}')
+    expect(useProjectStore.getState().present.drawerDesigns[0]).toMatchObject({
+      frontStyle: 'wave',
+      frontMount: 'inset',
+      frontHeightPercent: 60,
+    })
+  })
+
   it('lists designs in the left menu and opens them without target spaces', async () => {
     const user = userEvent.setup()
     render(<DesignerPage />)

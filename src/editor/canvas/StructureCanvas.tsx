@@ -1,4 +1,5 @@
 import { deriveModuleDrawerPanels } from '../../domain/drawers/deriveModuleDrawerPanels'
+import { frontDesign } from '../../domain/drawers/types'
 import { deriveFrontGeometry } from '../../domain/fronts/deriveFrontGeometry'
 import { FrontTargets } from './FrontTargets'
 import { useMemo, useRef, useState } from 'react'
@@ -49,8 +50,12 @@ export function StructureCanvas() {
               ...(mode === 'fronts'
                 ? module.fronts.flatMap(
                     (front) =>
-                      deriveFrontGeometry(module, project.settings, front)
-                        .panels,
+                      deriveFrontGeometry(
+                        module,
+                        project.settings,
+                        front,
+                        frontDesign(project.drawerDesigns, front),
+                      ).panels,
                   )
                 : []),
             ].flatMap((panel, index) =>
@@ -178,7 +183,7 @@ export function StructureCanvas() {
           {faces.map((face) => (
             <polygon
               key={face.key}
-              points={face.points.map((p) => `${p.x},${p.y}`).join(' ')}
+              points={face.outline.map((p) => `${p.x},${p.y}`).join(' ')}
               className={`panel-face face-${face.side}`}
               data-module-id={face.module.id}
               data-source={face.source}

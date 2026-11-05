@@ -18,8 +18,18 @@ export interface DrawerDesign {
   rearClearance: number
   /** Bottom panel's underside above the lower edge of the four equal-height walls. */
   bottomRecess: number
+  /** Full rectangle, or a top edge that dips towards the middle. */
+  frontStyle: 'full' | 'wave'
+  /** Overlay sits on the carcass front; inset sits inside the opening. */
+  frontMount: 'overlay' | 'inset'
+  /** Whole percentage of the front's full height, measured from its bottom edge. */
+  frontHeightPercent: number
 }
 export type DrawerDesignInput = Omit<DrawerDesign, 'id'>
+export type DrawerFrontOptions = Pick<
+  DrawerDesign,
+  'frontStyle' | 'frontMount' | 'frontHeightPercent'
+>
 
 /** Generic editable dimensions, not a hardware compatibility certification. */
 export function defaultDrawerDesign(): DrawerDesignInput {
@@ -35,6 +45,9 @@ export function defaultDrawerDesign(): DrawerDesignInput {
     topClearance: 7,
     rearClearance: 3,
     bottomRecess: 13,
+    frontStyle: 'full',
+    frontMount: 'overlay',
+    frontHeightPercent: 100,
   }
 }
 
@@ -53,5 +66,18 @@ export function drawerDesignData(design: DrawerDesign): DrawerDesign {
     topClearance: design.topClearance,
     rearClearance: design.rearClearance,
     bottomRecess: design.bottomRecess,
+    frontStyle: design.frontStyle,
+    frontMount: design.frontMount,
+    frontHeightPercent: design.frontHeightPercent,
   }
+}
+
+/** The design shaping a drawer front; doors and box-less fronts have none. */
+export function frontDesign(
+  designs: readonly DrawerDesign[],
+  front: { type: string; drawerDesignId?: string },
+): DrawerDesign | undefined {
+  return front.type === 'drawer'
+    ? designs.find((design) => design.id === front.drawerDesignId)
+    : undefined
 }

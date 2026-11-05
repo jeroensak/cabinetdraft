@@ -25,8 +25,10 @@ export function projectPoint({ x, y, z }: PhysicalPosition): Point {
   return { x: x + z * 0.18, y: -y - z * 0.1 }
 }
 
+const WAVE_SAMPLES = 32
+
 export function panelFaces(panel: PhysicalPanel, origin: PhysicalPosition) {
-  const { length, width, thickness, orientation, position } = panel
+  const { length, width, thickness, orientation, position, waveDip } = panel
   const [dx, dy, dz] =
     orientation === 'side'
       ? [thickness, length, width]
@@ -41,6 +43,19 @@ export function panelFaces(panel: PhysicalPanel, origin: PhysicalPosition) {
     y: origin.y + position.y + y,
     z: origin.z + position.z + z,
   })
+  // Sides stay at full height; the top edge dips smoothly to waveDip at mid-width.
+  const waveEdge = (z: number) =>
+    Array.from({ length: WAVE_SAMPLES + 1 }, (_, i) => {
+      const u = i / WAVE_SAMPLES
+      const dip = ((waveDip ?? 0) * (1 - Math.cos(2 * Math.PI * u))) / 2
+      return corner(dx * u, dy - dip, z)
+    })
+  const waveOutlines: Record<string, PhysicalPosition[]> | null = waveDip
+    ? {
+        front: [corner(0, 0, 0), corner(dx, 0, 0), ...waveEdge(0).reverse()],
+        top: [...waveEdge(0), ...waveEdge(dz).reverse()],
+      }
+    : null
   const faces = [
     {
       side: 'front',
@@ -73,7 +88,9 @@ export function panelFaces(panel: PhysicalPanel, origin: PhysicalPosition) {
   return faces.map(({ side, corners }) => ({
     side,
     corners,
+    // Ordering and bounds use the rectangle; `outline` is what gets drawn.
     points: corners.map(projectPoint),
+    outline: (waveOutlines?.[side] ?? corners).map(projectPoint),
     // Camera direction is (0.18, 0.1, -1); far faces are painted first.
     distance:
       corners.reduce((sum, p) => sum + p.x * 0.18 + p.y * 0.1 - p.z, 0) / 4,

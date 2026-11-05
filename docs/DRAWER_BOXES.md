@@ -11,7 +11,7 @@ This post-V1 extension was requested by the user. It supersedes the V1 drawer-bo
 
 ## Construction
 
-A drawer consists of five box panels plus the existing overlay drawer front:
+A drawer consists of five box panels plus a drawer front:
 
 ```text
 openingWidth  = space internal width (between supporting sides/dividers)
@@ -25,7 +25,18 @@ bottom        = (boxWidth − 2 × wall) × (depth − 2 × wall) × bottomThick
 - The box sits `sideClearance` from each side of the opening, `bottomClearance` above the opening bottom, and starts at the carcass front (z = 0). The bottom sits between all four walls, raised by `bottomRecess` above their lower edge to clear the undermount slides.
 - Percentage height is a placement choice and rounds to the nearest whole millimetre, like centred shelves. All other manufacturing dimensions remain exact and are never rounded.
 - A drawer fits when `height + bottomClearance + topClearance ≤ spaceHeight`, the recessed bottom sits below the top of the walls, and `depth + rearClearance ≤ carcassDepth`, and every panel is a positive integer size. Applying a design that does not fit every target is rejected atomically. Later edits (moving shelves, resizing cabinets, changing the design) may leave a non-fitting drawer persisted for repair; validation reports it and the Cut List is unavailable until it is fixed.
+- The box starts behind an inset front: `z = frontThickness`, and the depth check becomes `frontThickness + depth + rearClearance ≤ carcassDepth`.
 - Splitting a space that holds a drawer creates two drawer fronts that keep the same design; each box is re-derived for its own space.
+
+## Drawer fronts
+
+A design also sets the front of every drawer that uses it. A drawer front without a design keeps the default full overlay front.
+
+- `frontStyle`: `full` is the plain rectangle, on which a handle would typically go. `wave` keeps the same blank, with a top edge that stays at full height at both sides and dips smoothly to `waveDip = round(frontHeight × 0.15)` at mid-width.
+- `frontMount`: `overlay` sits on the carcass front as before. `inset` sits inside the opening with `frontGap` on all four sides, its face flush with the carcass front.
+- `frontHeightPercent` (1–100, default 100): `frontHeight = round(fullFrontHeight × percent / 100)`, where the full height is the overlay or inset height of that front. The bottom edge stays put and the top edge lowers. 100% leaves the exact full height unrounded.
+
+The Cut List gives the uncut rectangular blank and names the wave dip. No handles, hardware or drilling are generated.
 
 ## Editing
 
@@ -33,4 +44,4 @@ The drawer designer is a separate workspace. Open it from one or more selected s
 
 ## Persistence
 
-Schema version 4 adds `drawerDesigns` and the optional `drawerDesignId` on drawer fronts. Version 1–3 saves and imports migrate with an empty library and unchanged designs. Schema version 5 replaces the stored `height` with `heightPercent`: an automatic height becomes 50%, and a fixed height becomes the closest whole percentage of the first drawer using that design (50% if none does), so a fixed box may change by a few millimetres and shared designs may change more. Box panels, widths, heights in millimetres and fit results are derived, never saved.
+Schema version 4 adds `drawerDesigns` and the optional `drawerDesignId` on drawer fronts. Version 1–3 saves and imports migrate with an empty library and unchanged designs. Schema version 5 replaces the stored `height` with `heightPercent`: an automatic height becomes 50%, and a fixed height becomes the closest whole percentage of the first drawer using that design (50% if none does), so a fixed box may change by a few millimetres and shared designs may change more. Schema version 6 adds `frontStyle`, `frontMount` and `frontHeightPercent` to designs; older designs migrate to `full`, `overlay` and 100%, so existing fronts are unchanged. Box panels, widths, heights in millimetres and fit results are derived, never saved.

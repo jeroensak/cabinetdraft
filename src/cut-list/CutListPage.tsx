@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { deriveCutList } from '../domain/cutlist/deriveCutList'
-import { partNames } from './partNames'
+import { partName } from './partNames'
 import { useProjectStore } from '../store/projectStore'
 import { trackEvent } from '../app/analytics'
 
@@ -93,7 +93,7 @@ export function CutListPage() {
                     >
                       <th scope="row">{item.id}</th>
                       <td>{item.moduleName}</td>
-                      <td>{partNames[item.part]}</td>
+                      <td>{partName(item)}</td>
                       <td>{item.quantity}</td>
                       <td>{item.length}</td>
                       <td>{item.width}</td>
