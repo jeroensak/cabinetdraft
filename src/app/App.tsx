@@ -4,6 +4,7 @@ import { ProjectFiles } from './ProjectFiles'
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Navigate, Outlet, Route, Routes } from 'react-router'
 import { DesignerPage } from '../editor/DesignerPage'
+import { NewDesignDialog } from '../editor/module-list/NewDesignDialog'
 import { CutListPage } from '../cut-list/CutListPage'
 import { ProjectSettings } from '../editor/properties/ProjectSettings'
 import { installHistoryShortcuts, useProjectStore } from '../store/projectStore'
@@ -18,6 +19,8 @@ function Layout() {
   const canRedo = useProjectStore((state) => state.future.length > 0)
   const undo = useProjectStore((state) => state.undo)
   const redo = useProjectStore((state) => state.redo)
+  const needsFirstDesign = useProjectStore((state) => state.needsFirstDesign)
+  const skipFirstDesign = useProjectStore((state) => state.skipFirstDesign)
   const [settingsOpen, setSettingsOpen] = useState(false)
   useEffect(() => installHistoryShortcuts(useProjectStore), [])
 
@@ -33,7 +36,7 @@ function Layout() {
           <div className="project-identity">
             {' '}
             <strong>{t('app.name')}</strong>
-            <span title={name}>{name}</span>
+            {!needsFirstDesign && <span title={name}>{name}</span>}
           </div>
           <nav aria-label={t('nav.main')} className="segmented navigation">
             <NavLink to="/designer">{t('nav.designer')}</NavLink>
@@ -88,9 +91,10 @@ function Layout() {
           </section>
         )}
         <SaveStatus />
-        <main className="app-main">
-          <Outlet />
-        </main>
+        <main className="app-main">{!needsFirstDesign && <Outlet />}</main>
+        {needsFirstDesign && (
+          <NewDesignDialog required onClose={skipFirstDesign} />
+        )}
       </div>
     </>
   )

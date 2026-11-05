@@ -35,6 +35,7 @@ export interface PersistenceState {
 function readProject(storage?: ProjectStorage): {
   project: Project
   persistence: PersistenceState
+  firstVisit: boolean
 } {
   let loadError: PersistenceState['loadError'] = storage
     ? null
@@ -53,6 +54,7 @@ function readProject(storage?: ProjectStorage): {
               recoveryData: null,
               unsaved: false,
             },
+            firstVisit: false,
           }
         } catch {
           /* Preserve unreadable saved data. */
@@ -68,8 +70,11 @@ function readProject(storage?: ProjectStorage): {
       project: t('default.project'),
       cabinet: `${t('default.cabinet')} 1`,
     }),
-
     persistence: { loadError, saveError: null, recoveryData, unsaved: true },
+    // The default project is only a fallback for browsers that can't save; a
+    // new visitor picks a template instead and it is never stored.
+    firstVisit:
+      Boolean(storage) && !loadError && !readLibrary(storage!)?.length,
   }
 }
 
@@ -113,6 +118,9 @@ export interface ProjectStoreState {
   persistence: PersistenceState
   /** Null when the saved library is unreadable and must be left alone. */
   designs: DesignSummary[] | null
+  /** Nothing is saved yet, so the app waits for a first design. */
+  needsFirstDesign: boolean
+  skipFirstDesign(): void
   /** Both return false, leaving the open design as it was, when nothing changed. */
   switchDesign(id: string): boolean
   createDesign(raw: string, name: string): boolean
@@ -193,6 +201,7 @@ export function createProjectStore(options: CreateProjectStoreOptions = {}) {
         future: [],
         previewBase: null,
         designs: summaries(library),
+        needsFirstDesign: false,
         editor: {
           selection: null,
           hover: null,
@@ -215,6 +224,8 @@ export function createProjectStore(options: CreateProjectStoreOptions = {}) {
     }
     return {
       designs: storage ? summaries(readLibrary(storage)) : null,
+      needsFirstDesign: !options.initialProject && loaded.firstVisit,
+      skipFirstDesign: () => set({ needsFirstDesign: false }),
       switchDesign: (id) => {
         const library = currentLibrary()
         const target = library?.find((design) => design.id === id)
@@ -228,7 +239,10 @@ export function createProjectStore(options: CreateProjectStoreOptions = {}) {
         }
       },
       createDesign: (raw, name) => {
-        const library = currentLibrary()
+        // The unsaved fallback project must not become a design of its own.
+        const library = get().needsFirstDesign
+          ? storage && readLibrary(storage)
+          : currentLibrary()
         if (!library) return false
         const template = parseProject(raw)
         const project = projectData({
@@ -273,6 +287,7 @@ export function createProjectStore(options: CreateProjectStoreOptions = {}) {
           ? { ...parsed, id: createId() }
           : parsed
         set({
+          needsFirstDesign: false,
           present: project,
           past: [...state.past, state.previewBase ?? state.present],
           future: [],
@@ -326,6 +341,7 @@ export function createProjectStore(options: CreateProjectStoreOptions = {}) {
           past: [...state.past, baseline],
           future: [],
           previewBase: null,
+          needsFirstDesign: false,
         })
         save(next)
       },

@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { seedSavedProject } from './seed.js'
 
 test('production HTML provides metadata and discovery files before JavaScript', async ({
   request,
@@ -38,6 +39,7 @@ test('production HTML provides metadata and discovery files before JavaScript', 
 test('navigation updates titles, indexing rules and canonical URLs without duplicates', async ({
   page,
 }) => {
+  await seedSavedProject(page)
   await page.goto('/cut-list')
   await expect(page).toHaveTitle(
     'Cabinet Cut List & PDF Export | Cabinet Designer',

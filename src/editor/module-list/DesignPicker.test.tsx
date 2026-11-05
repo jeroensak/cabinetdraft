@@ -7,6 +7,7 @@ import { createDefaultProject } from '../../domain/project/createDefaultProject'
 import { useProjectStore } from '../../store/projectStore'
 import { DESIGN_LIBRARY_KEY } from '../../store/designLibrary'
 import { DesignPicker } from './DesignPicker'
+import { NewDesignDialog } from './NewDesignDialog'
 
 afterEach(() => {
   cleanup()
@@ -99,6 +100,24 @@ it('deletes the open design only after confirmation, never the last one', async 
   expect(useProjectStore.getState().present.name).toBe('Kitchen')
   expect(screen.getAllByRole('option')).toHaveLength(1)
   expect(remove).toBeDisabled()
+})
+
+it('cannot be dismissed on a first visit unless saving fails', async () => {
+  const user = userEvent.setup()
+  const onClose = vi.fn()
+  useProjectStore.setState({ needsFirstDesign: true })
+  render(<NewDesignDialog required onClose={onClose} />)
+  expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull()
+  await user.keyboard('{Escape}')
+  expect(onClose).not.toHaveBeenCalled()
+
+  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    throw new Error('quota')
+  })
+  await user.click(screen.getByRole('button', { name: 'Create design' }))
+  expect(screen.getByRole('alert')).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Cancel' }))
+  expect(onClose).toHaveBeenCalledOnce()
 })
 
 it('turns switching off when saved designs are unreadable', () => {

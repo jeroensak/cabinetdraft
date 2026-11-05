@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 6,
+  "id": "saved-1",
+  "name": "Untitled cabinet",
+  "settings": {
+    "corpusThickness": 18,
+    "backPanelEnabled": true,
+    "backPanelThickness": 3,
+    "frontThickness": 18,
+    "frontGap": 2
+  },
+  "drawerDesigns": [],
+  "modules": [
+    {
+      "id": "saved-2",
+      "name": "Cabinet 1",
+      "width": 800,
+      "height": 2200,
+      "depth": 600,
+      "shelves": [
+        {
+          "id": "saved-3",
+          "bottom": 1091
+        }
+      ],
+      "dividers": [],
+      "fronts": [
+        {
+          "id": "saved-4",
+          "type": "door",
+          "bottomBoundary": {
+            "type": "module-bottom"
+          },
+          "topBoundary": {
+            "type": "module-top"
+          },
+          "leaves": 2
+        }
+      ]
+    }
+  ]
+}

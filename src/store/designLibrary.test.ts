@@ -19,6 +19,12 @@ function memory(initial: Record<string, string> = {}) {
     },
   }
 }
+/** A returning user, whose open design is already theirs. */
+function existingStore(disk: ReturnType<typeof memory>) {
+  const store = createProjectStore({ storage: disk })
+  store.getState().skipFirstDesign()
+  return store
+}
 const template = (name = 'Template') =>
   exportProject({ ...createDefaultProject(), name })
 
@@ -46,7 +52,7 @@ describe('local designs', () => {
 
   it('restores the open design and library after a reload', () => {
     const disk = memory()
-    const first = createProjectStore({ storage: disk })
+    const first = existingStore(disk)
     first.getState().createDesign(template(), 'Second')
     const reloaded = createProjectStore({ storage: disk }).getState()
     expect(reloaded.present.name).toBe('Second')
@@ -54,7 +60,7 @@ describe('local designs', () => {
   })
 
   it('gives each design from one template its own ID and falls back to the template name', () => {
-    const store = createProjectStore({ storage: memory() })
+    const store = existingStore(memory())
     const raw = template('Wardrobe')
     store.getState().createDesign(raw, '')
     const first = store.getState().present
@@ -90,12 +96,46 @@ describe('local designs', () => {
 
   it('keeps the design when the delete cannot be saved', () => {
     const disk = memory()
-    const store = createProjectStore({ storage: disk })
+    const store = existingStore(disk)
     store.getState().createDesign(template(), 'Second')
     disk.failWrites = true
     expect(store.getState().deleteDesign()).toBe(false)
     expect(store.getState().present.name).toBe('Second')
     expect(store.getState().designs).toHaveLength(2)
+  })
+
+  it('saves only the chosen design on a first visit', () => {
+    const disk = memory()
+    const store = createProjectStore({ storage: disk })
+    expect(store.getState().needsFirstDesign).toBe(true)
+    expect(disk.getItem(PROJECT_STORAGE_KEY)).toBeNull()
+    expect(store.getState().createDesign(template(), 'First')).toBe(true)
+    expect(store.getState().needsFirstDesign).toBe(false)
+    expect(store.getState().designs?.map((d) => d.name)).toStrictEqual([
+      'First',
+    ])
+    const reloaded = createProjectStore({ storage: disk }).getState()
+    expect(reloaded.present.name).toBe('First')
+    expect(reloaded.needsFirstDesign).toBe(false)
+  })
+
+  it('does not ask for a first design without working storage or with unreadable data', () => {
+    expect(
+      createProjectStore({
+        storage: memory({ [PROJECT_STORAGE_KEY]: 'not json' }),
+      }).getState().needsFirstDesign,
+    ).toBe(false)
+  })
+
+  it('still asks when saving fails, then lets the visitor skip it', () => {
+    const disk = memory()
+    disk.failWrites = true
+    const store = createProjectStore({ storage: disk })
+    expect(store.getState().createDesign(template(), 'First')).toBe(false)
+    expect(store.getState().needsFirstDesign).toBe(true)
+    store.getState().skipFirstDesign()
+    expect(store.getState().needsFirstDesign).toBe(false)
+    expect(store.getState().present.modules).toHaveLength(1)
   })
 
   it('stays on the open design and keeps its history when saving fails', () => {
@@ -123,7 +163,7 @@ describe('local designs', () => {
 
   it('import replaces the open design without taking over another saved one', () => {
     const disk = memory()
-    const store = createProjectStore({ storage: disk })
+    const store = existingStore(disk)
     store.getState().createDesign(template(), 'Second')
     const second = store.getState().present
     const first = store.getState().designs![0]!

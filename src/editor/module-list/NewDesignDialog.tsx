@@ -3,7 +3,14 @@ import { useTranslation } from '../../i18n'
 import { designTemplates, localizedTemplate } from '../../design-templates'
 import { useProjectStore } from '../../store/projectStore'
 
-export function NewDesignDialog({ onClose }: { onClose(): void }) {
+export function NewDesignDialog({
+  required = false,
+  onClose,
+}: {
+  /** The app has nothing to show yet, so it can't be dismissed unless saving fails. */
+  required?: boolean
+  onClose(): void
+}) {
   const { t } = useTranslation()
 
   const createDesign = useProjectStore((state) => state.createDesign)
@@ -11,6 +18,7 @@ export function NewDesignDialog({ onClose }: { onClose(): void }) {
   const [name, setName] = useState('')
   const [failed, setFailed] = useState(false)
   const template = designTemplates.find((item) => item.id === templateId)
+  const closable = !required || failed
   const submit = (event: FormEvent) => {
     event.preventDefault()
     if (!template) return
@@ -32,7 +40,7 @@ export function NewDesignDialog({ onClose }: { onClose(): void }) {
         aria-labelledby="new-design-title"
         onSubmit={submit}
         onKeyDown={(event) => {
-          if (event.key === 'Escape') onClose()
+          if (event.key === 'Escape' && closable) onClose()
         }}
       >
         <h2 id="new-design-title">{t('newDesign.title')}</h2>
@@ -65,9 +73,11 @@ export function NewDesignDialog({ onClose }: { onClose(): void }) {
           </p>
         )}
         <div className="dialog-actions">
-          <button type="button" className="pill" onClick={onClose}>
-            {t('newDesign.cancel')}
-          </button>
+          {closable && (
+            <button type="button" className="pill" onClick={onClose}>
+              {t('newDesign.cancel')}
+            </button>
+          )}
           <button type="submit" className="pill primary" disabled={!template}>
             {t('newDesign.create')}
           </button>

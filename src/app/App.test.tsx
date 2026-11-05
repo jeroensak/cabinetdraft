@@ -17,6 +17,7 @@ afterEach(() => {
 beforeEach(() => {
   mockResizeObserver()
   useProjectStore.setState({
+    needsFirstDesign: false,
     present: createDefaultProject(),
     past: [],
     future: [],

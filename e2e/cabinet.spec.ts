@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
+import { seedSavedProject } from './seed.js'
 
 async function dimension(page: Page, name: string, value: string) {
   const field = page.getByLabel(`${name} (mm)`, { exact: true })
@@ -7,8 +8,9 @@ async function dimension(page: Page, name: string, value: string) {
   await field.press('Enter')
 }
 
-// Every test gets a fresh browser context and localStorage automatically.
+// Every test gets a fresh browser context, then a saved default project.
 test.beforeEach(async ({ page }) => {
+  await seedSavedProject(page)
   await page.goto('/designer')
 })
 
