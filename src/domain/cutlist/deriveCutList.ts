@@ -1,3 +1,4 @@
+import { deriveModuleDrawerPanels } from '../drawers/deriveModuleDrawerPanels'
 import { deriveCabinetGeometry } from '../cabinet/deriveCabinetGeometry'
 import { deriveFrontGeometry } from '../fronts/deriveFrontGeometry'
 import type { PanelSource } from '../geometry/physicalPanel'
@@ -56,12 +57,19 @@ export function deriveCutList(project: Project): CutListResult {
           return `DIVIDER-${dividerPanels.findIndex((panel) => panel.source.type === 'divider' && panel.source.dividerId === source.dividerId) + 1}`
         case 'door':
           return `DOOR-${doors.findIndex((front) => front.id === source.frontId) + 1}${source.leaf === 'single' ? '' : source.leaf === 'left' ? '-L' : '-R'}`
+        case 'drawer-side-left':
+        case 'drawer-side-right':
+        case 'drawer-box-front':
+        case 'drawer-box-back':
+        case 'drawer-bottom':
+          return `DRAWER-${drawers.findIndex((front) => front.id === source.frontId) + 1}-${{ 'drawer-side-left': 'SIDE-L', 'drawer-side-right': 'SIDE-R', 'drawer-box-front': 'BOX-FRONT', 'drawer-box-back': 'BOX-BACK', 'drawer-bottom': 'BOTTOM' }[source.type]}`
         case 'drawer':
           return `DRAWER-${drawers.findIndex((front) => front.id === source.frontId) + 1}`
       }
     }
     const panels = [
       ...carcassPanels,
+      ...deriveModuleDrawerPanels(project, module),
       ...module.fronts.flatMap(
         (front) => deriveFrontGeometry(module, project.settings, front).panels,
       ),

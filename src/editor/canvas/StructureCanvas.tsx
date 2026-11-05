@@ -1,3 +1,4 @@
+import { deriveModuleDrawerPanels } from '../../domain/drawers/deriveModuleDrawerPanels'
 import { deriveFrontGeometry } from '../../domain/fronts/deriveFrontGeometry'
 import { FrontTargets } from './FrontTargets'
 import { useMemo, useRef, useState } from 'react'
@@ -44,6 +45,7 @@ export function StructureCanvas() {
           .flatMap(({ module, origin, geometry }) =>
             [
               ...geometry.panels,
+              ...deriveModuleDrawerPanels(project, module),
               ...(mode === 'fronts'
                 ? module.fronts.flatMap(
                     (front) =>
@@ -66,7 +68,7 @@ export function StructureCanvas() {
           )
           .sort((a, b) => a.layer - b.layer || a.distance - b.distance),
       ),
-    [arrangement, mode, project.settings],
+    [arrangement, mode, project],
   )
   const screen = (x: number, y: number, z = 0) => {
     const p = projectPoint({ x, y, z })

@@ -23,6 +23,9 @@ export function PropertiesInspector() {
   const selection = useProjectStore((state) => state.editor.selection)
   const setSelection = useProjectStore((state) => state.setSelection)
   const execute = useProjectStore((state) => state.execute)
+  const openDrawerDesigner = useProjectStore(
+    (state) => state.openDrawerDesigner,
+  )
   const { error, run } = useCommandAction()
   const module = project.modules.find((item) => item.id === selection?.moduleId)
   const front =
@@ -209,9 +212,9 @@ export function PropertiesInspector() {
                   : `${spaces.length} selected spaces`}
               </p>
               <p className="inspector-note muted">
-                Shift-click neighbouring spaces to select more. Shelves and
-                drawer fronts are added to each selected space. A door covers
-                the selected rectangle.
+                Shift-click neighbouring spaces to select more. Shelves, drawer
+                fronts and drawers are added to each selected space. A door
+                covers the selected rectangle.
               </p>
               <div className="context-actions">
                 <button
@@ -271,6 +274,19 @@ export function PropertiesInspector() {
                   }
                 >
                   Add drawer front
+                </button>
+                <button
+                  className="pill"
+                  disabled={!spaces.length}
+                  onClick={() =>
+                    openDrawerDesigner({
+                      moduleId: module.id,
+                      ranges: spaces.map(spaceRange),
+                      designId: null,
+                    })
+                  }
+                >
+                  Add drawer…
                 </button>
               </div>
               {!doorRange && spaces.length > 1 && (

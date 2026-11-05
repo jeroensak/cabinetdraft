@@ -6,6 +6,7 @@ import { useProjectStore } from '../store/projectStore'
 import { StructureCanvas } from './canvas/StructureCanvas'
 import { ModuleList } from './module-list/ModuleList'
 import { PropertiesInspector } from './properties/PropertiesInspector'
+import { DrawerDesigner } from '../drawer-designer/DrawerDesigner'
 
 export function DesignerPage() {
   const { error, run } = useCommandAction()
@@ -23,6 +24,7 @@ export function DesignerPage() {
         return
       const state = useProjectStore.getState()
       if (
+        state.editor.drawerDesigner ||
         !state.editor.selection ||
         state.editor.selection.type === 'space' ||
         state.previewBase
@@ -40,6 +42,7 @@ export function DesignerPage() {
   }, [run])
   const project = useProjectStore((state) => state.present)
   const persistence = useProjectStore((state) => state.persistence)
+  const drawerDesigner = useProjectStore((state) => state.editor.drawerDesigner)
   const valid = validateProject(project).length === 0
   const saveStatus = persistence.loadError
     ? 'Saved project could not be loaded. Autosave paused.'
@@ -48,6 +51,7 @@ export function DesignerPage() {
       : persistence.unsaved
         ? 'Not yet saved'
         : 'Saved locally'
+  if (drawerDesigner) return <DrawerDesigner context={drawerDesigner} />
   return (
     <section className="designer-layout" aria-labelledby="designer-title">
       <ModuleList />

@@ -56,3 +56,7 @@ The user requested a downloadable PDF from the Cut List. Export uses validated c
 ## Approved post-V1 extension: vertical dividers
 
 The user explicitly requested space-level vertical dividers after V1. This supersedes the V1 vertical-divider non-goal only for this extension; the frozen specification remains unchanged. [Divider construction and editing rules](VERTICAL_DIVIDERS.md) govern the new behavior. The same Project JSON → pure domain → independent SVG/Cut List pipeline applies.
+
+## Approved post-V1 extension: drawer boxes
+
+The user explicitly requested simple drawer boxes after V1: reusable designs with four equal-height walls, a bottom and the existing overlay front, on undermount slides only. This supersedes the V1 drawer-box non-goal only for this extension; the frozen specification remains unchanged. [Drawer box construction and editing rules](DRAWER_BOXES.md) govern the new behavior. The same Project JSON → pure domain → independent SVG/Cut List pipeline applies.

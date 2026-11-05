@@ -81,4 +81,10 @@ The Cut List includes a **Download PDF** button for valid, nonempty projects. It
 
 Select a space and choose **Add divider** to create two independently selectable spaces. Add shelves, doors, or drawer fronts inside either opening, and repeat to build nested compartments. Shift-click neighbouring spaces to add a shelf or drawer front to each, or one door across a rectangular selection. Each action supports undo/redo, and all physical panels appear in the Cut List and PDF.
 
-This is an approved post-V1 extension. See [construction and migration rules](docs/VERTICAL_DIVIDERS.md). Project JSON uses schema version 3; existing V1 and V2 local saves and imports migrate without changing their design.
+This is an approved post-V1 extension. See [construction and migration rules](docs/VERTICAL_DIVIDERS.md).
+
+## Drawer boxes
+
+Select one or more spaces and choose **Add drawer…** to open the drawer designer. Create reusable drawer designs (four equal-height walls, a bottom and an overlay front on undermount slides) and apply one to every selected space in a single undoable action. The box width always follows each space, minus a side gap of at least 3 mm per side; the height defaults to half the space height. Box panels appear in the canvas, the Cut List and the PDF. See [drawer box rules](docs/DRAWER_BOXES.md).
+
+Project JSON uses schema version 4; existing V1–V3 local saves and imports migrate without changing their design.

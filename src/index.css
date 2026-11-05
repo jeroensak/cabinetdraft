@@ -156,6 +156,9 @@ input:focus-visible {
 .cabinet-sidebar > h2 {
   margin: 0 6px 18px;
 }
+.cabinet-sidebar > h2.sidebar-section {
+  margin-top: 28px;
+}
 .module-list {
   list-style: none;
   padding: 0;
@@ -890,4 +893,53 @@ input:focus-visible {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+.panel-face[data-source^='drawer-'].face-front {
+  fill: #eadfcb;
+}
+.panel-face[data-source^='drawer-'].face-top {
+  fill: #f8f1e4;
+}
+.panel-face[data-source^='drawer-'].face-right {
+  fill: #dccdb3;
+}
+.drawer-preview {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+.drawer-preview .panel-face {
+  cursor: default;
+}
+.drawer-preview .panel-face[data-source='drawer'] {
+  fill-opacity: 0.85;
+}
+.drawer-opening {
+  fill: #fffdf8;
+  stroke: #9a968c;
+  stroke-dasharray: 4 3;
+  stroke-width: 1;
+}
+.drawer-preview-empty {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  text-align: center;
+}
+.drawer-front-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+.drawer-designer .properties-inspector .field-error {
+  margin-top: 12px;
+}
+.drawer-designer .context-actions {
+  margin-top: 20px;
+}
+.panel-face[data-source^='drawer-'][data-hovered='true'] {
+  fill: #e7f2ef;
 }

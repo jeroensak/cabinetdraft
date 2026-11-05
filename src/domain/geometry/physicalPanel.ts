@@ -13,6 +13,15 @@ export type PanelSource =
   | { type: 'divider'; dividerId: string }
   | { type: 'door'; frontId: string; leaf: 'single' | 'left' | 'right' }
   | { type: 'drawer'; frontId: string }
+  | {
+      type:
+        | 'drawer-side-left'
+        | 'drawer-side-right'
+        | 'drawer-box-front'
+        | 'drawer-box-back'
+        | 'drawer-bottom'
+      frontId: string
+    }
 
 /** Maps manufacturing dimensions onto physical axes without duplicating sizes.
  * side: length=y, width=z, thickness=x

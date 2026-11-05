@@ -29,10 +29,11 @@ export interface DoorFront extends HorizontalRange {
   leaves: 1 | 2
 }
 
-/** A visible drawer front covering exactly one space; no drawer box. */
+/** A front covering one space, optionally linked to a reusable drawer box design. */
 export interface DrawerFront extends HorizontalRange {
   id: string
   type: 'drawer'
+  drawerDesignId?: string
   bottomBoundary: Boundary
   topBoundary: Boundary
 }
