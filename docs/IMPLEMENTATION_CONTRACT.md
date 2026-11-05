@@ -104,3 +104,7 @@ The user requested designs in inches, in the fractional notation used in America
 A project with `settings.unit: 'inch'` stores every measurement as a whole number of 1/32 inch units. Omitted means millimetres, so existing projects need no migration. All domain formulas stay unit-agnostic and still require whole numbers, which keeps inch sizes exact: 1/16 inch has no whole-millimetre value, and a halved 1/16 inch size is still a whole unit. Percentage heights and centred placements round to a whole 1/32 inch, as they round to a whole millimetre otherwise. Groove depths may be half a unit, shown in 1/64ths.
 
 The unit is chosen in the New design dialog and can't be changed afterwards. Templates are millimetre files, converted once at creation by `convertToInches`: sheet thicknesses to the nearest 1/8 inch, everything else to the nearest 1/16 inch. That rounding is why no conversion exists for a design already in use. An imported project keeps its unit. Formatting and parsing live in `src/units`; input finer than 1/32 inch is refused, never rounded.
+
+## Cut List PDF assembly pages
+
+The user requested a printable assembly view. After its lists, the PDF adds one page per cabinet: the structure and the fronts side by side, labelled with the cut list IDs. `deriveLabelledPanels` is the one source of those IDs for both, and the drawing uses canonical panels with the Designer's projection helpers only. The Cut List page itself still renders no drawing.

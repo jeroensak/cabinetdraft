@@ -327,5 +327,7 @@
   "cutList.noteMerged": "Alle maten zijn in {{unit}}. Identieke onderdelen delen een rij.",
   "pdf.noteMerged": "Alle maten in {{unit}}. Identieke onderdelen delen een rij.",
   "design.duplicate": "Ontwerp dupliceren",
-  "design.duplicateFailed": "Dit ontwerp kon niet worden gedupliceerd."
+  "design.duplicateFailed": "Dit ontwerp kon niet worden gedupliceerd.",
+  "pdf.assembly": "Montage: {{cabinet}}",
+  "pdf.assemblyNote": "Labels zijn de ID’s uit de zaaglijst zonder het voorvoegsel {{prefix}}."
 }

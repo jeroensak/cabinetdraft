@@ -327,5 +327,7 @@
   "cutList.noteMerged": "Toutes les dimensions sont en {{unit}}. Les pièces identiques partagent une ligne.",
   "pdf.noteMerged": "Toutes les dimensions en {{unit}}. Les pièces identiques partagent une ligne.",
   "design.duplicate": "Dupliquer la conception",
-  "design.duplicateFailed": "Cette conception n’a pas pu être dupliquée."
+  "design.duplicateFailed": "Cette conception n’a pas pu être dupliquée.",
+  "pdf.assembly": "Assemblage : {{cabinet}}",
+  "pdf.assemblyNote": "Les étiquettes sont les ID de la liste de découpe sans le préfixe {{prefix}}."
 }

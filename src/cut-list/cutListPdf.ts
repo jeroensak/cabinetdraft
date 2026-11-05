@@ -1,11 +1,15 @@
 import { jsPDF } from 'jspdf'
 import { autoTable } from 'jspdf-autotable'
 import type { Project } from '../domain/project/types'
-import { deriveCutList } from '../domain/cutlist/deriveCutList'
+import {
+  deriveCutList,
+  deriveLabelledPanels,
+} from '../domain/cutlist/deriveCutList'
 import { projectFilename } from '../domain/import-export/projectJson'
 import { t } from '../i18n'
 import { formatBare, unitSymbol } from '../units'
 
+import { addAssemblyPage } from './assemblyPages'
 import { cutListRows, groupCutList } from './partGroups'
 import fontUrl from '../assets/fonts/NotoSans-Regular.ttf?url'
 
@@ -100,22 +104,39 @@ export function createCutListPdf(
       (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable
         .finalY + 8
   }
+  const listPages = doc.getNumberOfPages()
+  const labelled = deriveLabelledPanels(project)
+  for (const module of project.modules)
+    addAssemblyPage(
+      doc,
+      labelled.filter((item) => item.moduleId === module.id),
+      { structure: t('canvas.structure'), fronts: t('canvas.fronts') },
+    )
   const pages = doc.getNumberOfPages()
   for (let page = 1; page <= pages; page++) {
     doc.setPage(page)
     doc.setFontSize(19)
     doc.setTextColor(31, 41, 51)
-    doc.text(t('cutList.title'), 15, 17)
+    const cabinet = project.modules[page - listPages - 1]
+    doc.text(
+      cabinet
+        ? t('pdf.assembly', { cabinet: cabinet.name })
+        : t('cutList.title'),
+      15,
+      17,
+    )
     doc.setFontSize(10)
     const lines: string[] = doc.splitTextToSize(project.name, 267)
     doc.text(lines.length > 2 ? [lines[0], lines[1] + '…'] : lines, 15, 24)
     doc.setFontSize(8)
     doc.setTextColor(100)
     doc.text(
-      t('pdf.summary', {
-        cabinets: t('count.cabinets', { count: project.modules.length }),
-        parts: t('count.parts', { count: result.items.length }),
-      }),
+      cabinet
+        ? t('pdf.assemblyNote', { prefix: `C${page - listPages}-` })
+        : t('pdf.summary', {
+            cabinets: t('count.cabinets', { count: project.modules.length }),
+            parts: t('count.parts', { count: result.items.length }),
+          }),
       15,
       36,
     )

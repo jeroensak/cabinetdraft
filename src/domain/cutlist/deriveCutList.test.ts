@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createDefaultProject } from '../project/createDefaultProject'
-import { deriveCutList } from './deriveCutList'
+import { deriveCutList, deriveLabelledPanels } from './deriveCutList'
 
 function fixture() {
   let id = 0
@@ -191,5 +191,14 @@ describe('deriveCutList', () => {
     const project = fixture()
     project.modules = []
     expect(deriveCutList(project)).toStrictEqual({ available: true, items: [] })
+  })
+
+  it('gives every cut list row the same ID as its labelled panel', () => {
+    const project = createDefaultProject()
+    const result = deriveCutList(project)
+    if (!result.available) throw new Error('expected a cut list')
+    expect(deriveLabelledPanels(project).map((item) => item.id)).toStrictEqual(
+      result.items.map((item) => item.id),
+    )
   })
 })
