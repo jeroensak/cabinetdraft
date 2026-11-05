@@ -30,6 +30,9 @@ export type CommandErrorCode =
   | 'drawer-design-in-use'
   | 'drawer-does-not-fit'
   | 'space-occupied'
+  | 'blank-name'
+  | 'invalid-size'
+  | 'size-too-large'
 
 export class CommandError extends Error {
   readonly code: CommandErrorCode

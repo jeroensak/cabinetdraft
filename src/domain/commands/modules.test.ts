@@ -216,4 +216,29 @@ describe('module and project commands', () => {
       'id-conflict',
     )
   })
+
+  it('refuses blank names, and trims the rest', () => {
+    const project = fixture()
+    const moduleId = project.modules[0]!.id
+    expect(() => renameProject(project, '   ')).toThrow('blank-name')
+    expect(() => renameModule(project, moduleId, '')).toThrow('blank-name')
+    expect(renameProject(project, '  Hall  ').name).toBe('Hall')
+  })
+
+  it('refuses sizes of zero or less and obvious typing slips', () => {
+    const project = fixture()
+    const moduleId = project.modules[0]!.id
+    expect(() => setModuleDimensions(project, moduleId, { width: 0 })).toThrow(
+      'invalid-size',
+    )
+    expect(() => setModuleDimensions(project, moduleId, { width: -5 })).toThrow(
+      'invalid-size',
+    )
+    expect(() =>
+      setModuleDimensions(project, moduleId, { width: 999999999 }),
+    ).toThrow('size-too-large')
+    expect(
+      setModuleDimensions(project, moduleId, { depth: 40 }).modules[0]!.depth,
+    ).toBe(40)
+  })
 })

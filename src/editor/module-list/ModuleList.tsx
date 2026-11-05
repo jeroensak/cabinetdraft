@@ -126,7 +126,9 @@ export function ModuleList() {
                 ⋮⋮
               </span>
               <span className="module-label">
-                <strong>{module.name}</strong>
+                <strong className="clamped" title={module.name}>
+                  {module.name}
+                </strong>
                 <small>{measure(module.width)}</small>
               </span>
             </button>

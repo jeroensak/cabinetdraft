@@ -1,6 +1,7 @@
 import { parseProject } from '../domain/import-export/projectJson'
 import { create } from 'zustand'
 import { t } from '../i18n'
+import { hasOpenModal } from './hasOpenModal'
 import { reconcileSelection } from './selection'
 import { updateProjectSettings, type BoundaryRange } from '../domain/commands'
 import { projectData } from '../domain/project/projectData'
@@ -89,6 +90,8 @@ export type Hover =
   | { type: 'front'; moduleId: string; frontId: string }
   | null
 
+export type ViewMode = 'structure' | 'fronts'
+
 export interface ViewportState {
   zoom: number
   pan: Point
@@ -109,6 +112,8 @@ export interface EditorState {
   hover: Hover
   viewport: ViewportState
   drawerDesigner?: DrawerDesignerState | null
+  /** Which canvas view is open; survives leaving and returning to the Designer. */
+  viewMode?: ViewMode
 }
 
 export interface ProjectStoreState {
@@ -124,6 +129,15 @@ export interface ProjectStoreState {
   /** Nothing is saved yet, so the app waits for a first design. */
   needsFirstDesign: boolean
   skipFirstDesign(): void
+  /** Another tab changed the open design, and this tab followed it. */
+  updatedInOtherTab: boolean
+  dismissTabUpdate(): void
+  adoptFromOtherTab(raw: string): void
+  refreshDesigns(): void
+  /** A short message with an Undo action, or null. */
+  notice: string | null
+  setNotice(notice: string | null): void
+  setViewMode(viewMode: ViewMode): void
   /** Both return false, leaving the open design as it was, when nothing changed. */
   switchDesign(id: string): boolean
   createDesign(raw: string, name: string, unit?: MeasurementUnit): boolean
@@ -207,6 +221,8 @@ export function createProjectStore(options: CreateProjectStoreOptions = {}) {
         previewBase: null,
         designs: summaries(library),
         needsFirstDesign: false,
+        updatedInOtherTab: false,
+        notice: null,
         editor: {
           selection: null,
           hover: null,
@@ -231,6 +247,45 @@ export function createProjectStore(options: CreateProjectStoreOptions = {}) {
       designs: storage ? summaries(readLibrary(storage)) : null,
       needsFirstDesign: !options.initialProject && loaded.firstVisit,
       skipFirstDesign: () => set({ needsFirstDesign: false }),
+      updatedInOtherTab: false,
+      dismissTabUpdate: () => set({ updatedInOtherTab: false }),
+      adoptFromOtherTab: (raw) => {
+        const state = get()
+        if (state.persistence.loadError) return
+        let project: Project
+        try {
+          project = parseProject(raw)
+        } catch {
+          return
+        }
+        if (sameProject(project, state.previewBase ?? state.present)) return
+        set({
+          present: project,
+          past: [],
+          future: [],
+          previewBase: null,
+          needsFirstDesign: false,
+          updatedInOtherTab: true,
+          notice: null,
+          designs: storage ? summaries(readLibrary(storage)) : state.designs,
+          ...(project.id === state.present.id
+            ? {}
+            : {
+                editor: {
+                  selection: null,
+                  hover: null,
+                  viewport: { zoom: 1, pan: { x: 0, y: 0 } },
+                },
+              }),
+        })
+      },
+      refreshDesigns: () => {
+        if (storage) set({ designs: summaries(readLibrary(storage)) })
+      },
+      notice: null,
+      setNotice: (notice) => set({ notice }),
+      setViewMode: (viewMode) =>
+        set((state) => ({ editor: { ...state.editor, viewMode } })),
       switchDesign: (id) => {
         const library = currentLibrary()
         const target = library?.find((design) => design.id === id)
@@ -356,6 +411,8 @@ export function createProjectStore(options: CreateProjectStoreOptions = {}) {
           future: [],
           previewBase: null,
           needsFirstDesign: false,
+          updatedInOtherTab: false,
+          notice: null,
         })
         save(next)
       },
@@ -500,6 +557,22 @@ function browserStorage(): ProjectStorage | undefined {
   }
 }
 
+/** Tabs share one browser storage, so each follows the others instead of
+ * silently overwriting them with its own older copy. */
+export function installTabSync(
+  store: ReturnType<typeof createProjectStore>,
+  target: Pick<Window, 'addEventListener' | 'removeEventListener'> = window,
+): () => void {
+  const onStorage = (event: Event) => {
+    const { key, newValue } = event as StorageEvent
+    if (key === PROJECT_STORAGE_KEY && newValue !== null)
+      store.getState().adoptFromOtherTab(newValue)
+    if (key === DESIGN_LIBRARY_KEY) store.getState().refreshDesigns()
+  }
+  target.addEventListener('storage', onStorage)
+  return () => target.removeEventListener('storage', onStorage)
+}
+
 /** Bind the V1 undo/redo shortcuts to a window or compatible event target. */
 export function installHistoryShortcuts(
   store: ReturnType<typeof createProjectStore>,
@@ -509,6 +582,7 @@ export function installHistoryShortcuts(
     if (
       event.defaultPrevented ||
       event.isComposing ||
+      hasOpenModal() ||
       !(event.metaKey || event.ctrlKey) ||
       event.altKey ||
       event.key.toLowerCase() !== 'z'

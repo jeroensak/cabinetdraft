@@ -5,7 +5,7 @@ import { useMeasure } from '../../units/useMeasure'
 import { frontDesign } from '../../domain/drawers/types'
 import { deriveFrontGeometry } from '../../domain/fronts/deriveFrontGeometry'
 import { FrontTargets } from './FrontTargets'
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
 import { deriveArrangement } from '../../domain/cabinet/deriveArrangement'
 import { validateProject } from '../../domain/validation/validateProject'
 import { useProjectStore } from '../../store/projectStore'
@@ -19,7 +19,8 @@ export function StructureCanvas() {
   const { t } = useTranslation()
   const { measure } = useMeasure()
 
-  const [mode, setMode] = useState<'structure' | 'fronts'>('structure')
+  const mode = useProjectStore((state) => state.editor.viewMode ?? 'structure')
+  const setMode = useProjectStore((state) => state.setViewMode)
   const project = useProjectStore((state) => state.present)
   const selection = useProjectStore((state) => state.editor.selection)
   const hover = useProjectStore((state) => state.editor.hover)

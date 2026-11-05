@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { test, expect } from '@playwright/test'
+import { seedSavedProject } from './seed.js'
 
 test('a first visit asks for a design and saves only the chosen one', async ({
   page,
@@ -97,4 +98,41 @@ test('a broken share link explains itself and changes nothing', async ({
   await page.goto('/designer#design=broken')
   await expect(page.getByRole('alert')).toContainText('share link')
   await expect(page.getByRole('dialog', { name: 'New design' })).toBeVisible()
+})
+
+test('shortcuts leave the design alone while a dialog is open', async ({
+  page,
+}) => {
+  await seedSavedProject(page)
+  await page.goto('/designer')
+  await page.getByRole('button', { name: 'Cabinet 1, 800 mm' }).click()
+  await page.getByRole('button', { name: '+ New design' }).click()
+  await page.getByRole('button', { name: 'Create design' }).focus()
+  await page.keyboard.press('Delete')
+  await page.keyboard.press('ControlOrMeta+z')
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await expect(
+    page.getByRole('button', { name: 'Cabinet 1, 800 mm' }),
+  ).toBeVisible()
+})
+
+test('a second tab follows the first instead of overwriting it', async ({
+  context,
+}) => {
+  const first = await context.newPage()
+  await seedSavedProject(first)
+  await first.goto('/designer')
+  const second = await context.newPage()
+  await seedSavedProject(second)
+  await second.goto('/designer')
+
+  await first.getByLabel('Design name').fill('From first tab')
+  await first.getByLabel('Design name').press('Enter')
+  await expect(second.getByLabel('Design name')).toHaveValue('From first tab')
+  await expect(second.getByRole('status').first()).toContainText('another tab')
+
+  await second.getByRole('button', { name: '+ Add cabinet' }).click()
+  await expect(first.locator('.module-row')).toHaveCount(2)
+  await expect(first.getByLabel('Design name')).toHaveValue('From first tab')
 })

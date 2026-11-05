@@ -112,3 +112,7 @@ The user requested a printable assembly view. After its lists, the PDF adds one 
 ## Approved post-V1 extension: share links
 
 The user requested sharing a design by link. There is still no backend: the design's project JSON is gzipped into the URL fragment, which browsers don't send to servers, and analytics already strip fragments. Opening a link goes through the same parse, validate and migrate boundary as a file import, asks for confirmation, and adds a new design with its own ID and its original unit instead of replacing anything. The fragment is cleared from the address bar once read. A link expanding past 5 MB is refused.
+
+## Usability and safety rules
+
+Canvas shortcuts do nothing while a dialog is open. Tabs follow each other: a tab receiving another tab's save adopts it, clears its undo history and says so, so an older copy can't silently overwrite newer work. Names can't be blank. Cabinet sizes must be above zero and at most 100 m or 4,000 inches, which catches typing slips without setting furniture minimums. An invalid design explains why on the Designer and Cut List pages. The canvas view is editor state and survives navigation, and Settings no longer repeats the design name.

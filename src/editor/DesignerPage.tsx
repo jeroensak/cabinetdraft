@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { useTranslation } from '../i18n'
-import { deleteSelection, isTextEditing } from './deleteSelection'
+import { deleteWithNotice, isTextEditing } from './deleteSelection'
+import { hasOpenModal } from '../store/hasOpenModal'
+import { ValidationIssues } from '../app/ValidationIssues'
 import { useCommandAction } from './useCommandAction'
 import { validateProject } from '../domain/validation/validateProject'
 import { useProjectStore } from '../store/projectStore'
@@ -18,6 +20,7 @@ export function DesignerPage() {
       if (
         event.defaultPrevented ||
         event.isComposing ||
+        hasOpenModal() ||
         event.metaKey ||
         event.ctrlKey ||
         event.altKey ||
@@ -34,11 +37,7 @@ export function DesignerPage() {
       )
         return
       event.preventDefault()
-      run(() =>
-        state.execute((project) =>
-          deleteSelection(project, state.editor.selection),
-        ),
-      )
+      deleteWithNotice(run)
     }
     window.addEventListener('keydown', keydown)
     return () => window.removeEventListener('keydown', keydown)
@@ -46,7 +45,8 @@ export function DesignerPage() {
   const project = useProjectStore((state) => state.present)
   const persistence = useProjectStore((state) => state.persistence)
   const drawerDesigner = useProjectStore((state) => state.editor.drawerDesigner)
-  const valid = validateProject(project).length === 0
+  const issues = validateProject(project)
+  const valid = issues.length === 0
   const saveStatus = persistence.loadError
     ? t('status.loadError')
     : persistence.saveError
@@ -65,6 +65,7 @@ export function DesignerPage() {
             {error}
           </p>
         )}
+        <ValidationIssues project={project} issues={issues} />
         <footer className="editor-status">
           <span className="validation-badge" data-valid={valid}>
             {valid ? t('status.valid') : t('status.invalid')}

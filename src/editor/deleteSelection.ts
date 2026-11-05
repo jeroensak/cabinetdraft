@@ -5,6 +5,8 @@ import {
   removeDivider,
 } from '../domain/commands'
 import type { Project } from '../domain/project/types'
+import { t } from '../i18n'
+import { useProjectStore } from '../store/projectStore'
 import type { Selection } from '../store/types'
 
 export function deleteSelection(
@@ -31,4 +33,20 @@ export function isTextEditing(event: KeyboardEvent) {
           node.isContentEditable ||
           node.closest('[contenteditable]:not([contenteditable="false"])')),
     )
+}
+
+/** Cabinets go without asking, so their deletion offers an Undo. */
+export function deleteWithNotice(run: (action: () => void) => boolean) {
+  const state = useProjectStore.getState()
+  const { selection } = state.editor
+  const deleted =
+    selection?.type === 'module'
+      ? state.present.modules.find((item) => item.id === selection.moduleId)
+      : undefined
+  const done = run(() =>
+    state.execute((project) => deleteSelection(project, selection)),
+  )
+  if (done && deleted)
+    state.setNotice(t('notice.cabinetDeleted', { name: deleted.name }))
+  return done
 }

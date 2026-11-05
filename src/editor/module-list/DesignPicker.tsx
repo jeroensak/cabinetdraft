@@ -31,6 +31,13 @@ export function DesignPicker() {
     id,
     name: id === project.id ? project.name : name,
   }))
+  const copyName = () => {
+    const base = t('drawer.copyName', { name: project.name })
+    let name = base
+    for (let n = 2; options.some((item) => item.name === name); n++)
+      name = `${base} ${n}`
+    return name
+  }
   return (
     <section className="design-picker" aria-labelledby="design-picker-title">
       <h2 className="eyebrow" id="design-picker-title">
@@ -57,8 +64,7 @@ export function DesignPicker() {
         label={t('design.name')}
         value={project.name}
         onCommit={(name) =>
-          Boolean(name.trim()) &&
-          run(() => execute((project) => renameProject(project, name.trim())))
+          run(() => execute((project) => renameProject(project, name)))
         }
       />
       <button
@@ -73,9 +79,7 @@ export function DesignPicker() {
         disabled={unavailable}
         onClick={() =>
           setFailure(
-            duplicateDesign(t('drawer.copyName', { name: project.name }))
-              ? null
-              : t('design.duplicateFailed'),
+            duplicateDesign(copyName()) ? null : t('design.duplicateFailed'),
           )
         }
       >

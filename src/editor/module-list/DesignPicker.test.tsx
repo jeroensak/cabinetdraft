@@ -149,6 +149,36 @@ it('duplicates the open design from the menu', async () => {
   ).toEqual(['Kitchen', 'Kitchen copy'])
 })
 
+it('gives each duplicate its own name', async () => {
+  const user = userEvent.setup()
+  render(<DesignPicker />)
+  const button = screen.getByRole('button', { name: 'Duplicate design' })
+  await user.click(button)
+  await user.selectOptions(
+    screen.getByRole('combobox', { name: 'Current design' }),
+    'Kitchen',
+  )
+  await user.click(button)
+  expect(
+    screen.getAllByRole('option').map((option) => option.textContent),
+  ).toEqual(['Kitchen', 'Kitchen copy', 'Kitchen copy 2'])
+})
+
+it('keeps keyboard focus in the dialog, closes on Escape and returns focus', async () => {
+  const user = userEvent.setup()
+  render(<DesignPicker />)
+  const opener = screen.getByRole('button', { name: '+ New design' })
+  await user.click(opener)
+  const dialog = screen.getByRole('dialog')
+  for (let i = 0; i < 14; i++) {
+    await user.tab()
+    expect(dialog).toContainElement(document.activeElement as HTMLElement)
+  }
+  await user.keyboard('{Escape}')
+  expect(screen.queryByRole('dialog')).toBeNull()
+  expect(opener).toHaveFocus()
+})
+
 it('cannot be dismissed on a first visit unless saving fails', async () => {
   const user = userEvent.setup()
   const onClose = vi.fn()
