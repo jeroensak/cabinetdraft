@@ -17,7 +17,7 @@
     <path d="M839 154h182v355H839Z" fill="#e7e5dc"/>
     <path d="M839 154h182v135H887V154Z" fill="#fffdf8"/>
     <path d="M839 315h182v180H887V315Z" fill="#fffdf8"/>
-    <path d="m839 315 48-28h134v14l-48 28H839Z" fill="#ffffff"/>
+    <path d="m839 315 48-28h134v28Z" fill="#ffffff"/>
     <path d="M839 315h182v14H839Z" fill="#d4dfd7"/>
     <path d="m839 509 48-28h134v28Z" fill="#ffffff"/>
     <path d="M1021 154v355M887 154v133M887 329v152" fill="none"/>
