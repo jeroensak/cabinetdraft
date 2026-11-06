@@ -7,12 +7,13 @@ import { validateProject } from '../domain/validation/validateProject'
 import { setLanguage } from '../i18n'
 import { designTemplates, localizedTemplate } from './index'
 
-it('ships exactly four valid starting templates', () => {
+it('ships exactly five valid starting templates', () => {
   expect(designTemplates.map((template) => template.id)).toStrictEqual([
     './template-1.json',
     './template-2.json',
     './template-3.json',
     './template-4.json',
+    './template-5.json',
   ])
   for (const template of designTemplates)
     expect(validateProject(parseProject(template.raw))).toStrictEqual([])
@@ -21,6 +22,7 @@ it('ships exactly four valid starting templates', () => {
     'Wave drawer sideboard',
     'Drawers and door',
     'Media wall',
+    'Record cabinet',
   ])
 })
 
@@ -38,6 +40,41 @@ it('makes the media wall a large, varied five-cabinet run', () => {
   expect(shelves.some((shelf) => shelf.rightBoundary)).toBe(true)
 })
 
+it('builds the record cabinet as five wave drawers over a double door', () => {
+  const project = parseProject(designTemplates[4]!.raw)
+  const [module] = project.modules
+  expect(module).toMatchObject({ width: 1978, height: 810, depth: 420 })
+  expect(module!.shelves.map((shelf) => shelf.bottom)).toStrictEqual([404])
+  expect(module!.dividers.map((divider) => divider.left)).toStrictEqual([
+    392, 784, 1176, 1568, 490, 980, 1470,
+  ])
+
+  const cutList = deriveCutList(project)
+  if (!cutList.available) throw new Error('The cut list should be available')
+  const parts = new Map<string, number>()
+  for (const { part, length, width, thickness, waveDip } of cutList.items) {
+    const row = [part, length, width, thickness, waveDip ?? 0].join(' ')
+    parts.set(row, (parts.get(row) ?? 0) + 1)
+  }
+  expect(Object.fromEntries(parts)).toStrictEqual({
+    'side-left 810 410 18 0': 1,
+    'side-right 810 410 18 0': 1,
+    'top 1942 410 18 0': 1,
+    'bottom 1942 410 18 0': 1,
+    'shelf 1942 410 18 0': 1,
+    'divider 370 410 18 0': 4,
+    'divider 386 390 18 0': 3,
+    'back 810 1978 10 0': 1,
+    'drawer 220 370 18 33': 5,
+    'door 382 968 18 0': 2,
+    'drawer-side-left 152 340 16 0': 5,
+    'drawer-side-right 152 340 16 0': 5,
+    'drawer-box-front 152 332 16 0': 5,
+    'drawer-box-back 152 332 16 0': 5,
+    'drawer-bottom 348 324 16 0': 5,
+  })
+})
+
 it('gives a valid, cuttable inch design from every template', () => {
   for (const template of designTemplates) {
     const project = convertToInches(parseProject(template.raw))
@@ -46,13 +83,13 @@ it('gives a valid, cuttable inch design from every template', () => {
   }
 })
 
-it('uses the default 18 mm drawer walls in every template', () => {
+it('uses the default 18 mm drawer walls, except in the 16 mm record drawer', () => {
   const walls = designTemplates.flatMap((template) =>
     parseProject(template.raw).drawerDesigns.map(
       (design) => design.wallThickness,
     ),
   )
-  expect(walls).toStrictEqual([18, 18, 18, 18, 18])
+  expect(walls).toStrictEqual([18, 18, 18, 18, 18, 16])
   expect(defaultDrawerDesign().wallThickness).toBe(18)
 })
 

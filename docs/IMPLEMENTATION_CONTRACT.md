@@ -83,7 +83,7 @@ Duplicating copies the open design under a new ID, keeping its unit, and opens t
 
 A first visit with nothing saved opens the New design dialog instead of the example cabinet of specification section 5, which this supersedes. The dialog must be completed, the workspace stays empty behind it and nothing is stored until a design is created. Cancel appears only if saving fails. The default project remains as the fallback for browsers that can't store anything, and it never enters the design library.
 
-Templates are project exports in `src/design-templates/`, named `template-1.json` to `template-4.json`. They appear in file name order under the project name inside each file, and are bundled at build time. A design made from a template gets its own new ID.
+Templates are project exports in `src/design-templates/`, named `template-1.json` to `template-5.json`. They appear in file name order under the project name inside each file, and are bundled at build time. A design made from a template gets its own new ID.
 
 ## Approved post-V1 extension: translations
 
