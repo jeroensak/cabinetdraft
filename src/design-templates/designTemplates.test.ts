@@ -7,11 +7,12 @@ import { validateProject } from '../domain/validation/validateProject'
 import { setLanguage } from '../i18n'
 import { designTemplates, localizedTemplate } from './index'
 
-it('ships exactly three valid starting templates', () => {
+it('ships exactly four valid starting templates', () => {
   expect(designTemplates.map((template) => template.id)).toStrictEqual([
     './template-1.json',
     './template-2.json',
     './template-3.json',
+    './template-4.json',
   ])
   for (const template of designTemplates)
     expect(validateProject(parseProject(template.raw))).toStrictEqual([])
@@ -19,7 +20,22 @@ it('ships exactly three valid starting templates', () => {
     'Empty cabinet',
     'Wave drawer sideboard',
     'Drawers and door',
+    'Media wall',
   ])
+})
+
+it('makes the media wall a large, varied five-cabinet run', () => {
+  const { modules } = parseProject(designTemplates[3]!.raw)
+  const total = modules.reduce((sum, module) => sum + module.width, 0)
+  expect(total).toBe(5000)
+  expect(new Set(modules.map((module) => module.height)).size).toBe(5)
+  const fronts = modules.flatMap((module) => module.fronts)
+  expect(new Set(fronts.map((front) => front.type))).toStrictEqual(
+    new Set(['door', 'drawer']),
+  )
+  const shelves = modules.flatMap((module) => module.shelves)
+  expect(shelves.some((shelf) => shelf.leftBoundary)).toBe(true)
+  expect(shelves.some((shelf) => shelf.rightBoundary)).toBe(true)
 })
 
 it('gives a valid, cuttable inch design from every template', () => {
@@ -36,7 +52,7 @@ it('uses the default 18 mm drawer walls in every template', () => {
       (design) => design.wallThickness,
     ),
   )
-  expect(walls).toStrictEqual([18, 18, 18])
+  expect(walls).toStrictEqual([18, 18, 18, 18, 18])
   expect(defaultDrawerDesign().wallThickness).toBe(18)
 })
 
