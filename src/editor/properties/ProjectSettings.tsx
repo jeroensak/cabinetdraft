@@ -1,4 +1,4 @@
-import { useTranslation } from '../../i18n'
+import { Trans, useTranslation } from '../../i18n'
 import { useMeasure } from '../../units/useMeasure'
 
 import { useProjectStore } from '../../store/projectStore'
@@ -44,12 +44,15 @@ export function ProjectSettings() {
         />
         {t('settings.backEnabled')}
       </label>
-      <dl className="settings-values">
-        <div>
-          <dt>{t('settings.units')}</dt>
-          <dd>{t(unit === 'inch' ? 'unit.inch' : 'unit.mm')}</dd>
-        </div>
-      </dl>
+      <p className="settings-units">
+        <Trans
+          i18nKey="settings.unitsNote"
+          values={{
+            unit: t(unit === 'inch' ? 'unit.inchPlural' : 'unit.mmPlural'),
+          }}
+          components={{ strong: <strong /> }}
+        />
+      </p>
       <p className="muted">{t('settings.note')}</p>
       {error && (
         <p role="alert" className="field-error">

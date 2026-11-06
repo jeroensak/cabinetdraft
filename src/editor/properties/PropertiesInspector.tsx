@@ -1,5 +1,9 @@
 import { duplicateCabinet } from '../module-list/moduleActions'
-import { DoorMountField, DrawerDesignField } from './FrontChoices'
+import {
+  DoorLeavesField,
+  DoorMountField,
+  DrawerDesignField,
+} from './FrontChoices'
 import { FrontProperties } from './FrontProperties'
 import { frontName } from '../frontName'
 import { useTranslation } from '../../i18n'
@@ -340,11 +344,18 @@ export function PropertiesInspector() {
                 </p>
               )}
               {occupants.length === 1 && occupants[0].type === 'door' && (
-                <DoorMountField
-                  moduleId={module.id}
-                  door={occupants[0]}
-                  run={run}
-                />
+                <>
+                  <DoorLeavesField
+                    moduleId={module.id}
+                    door={occupants[0]}
+                    run={run}
+                  />
+                  <DoorMountField
+                    moduleId={module.id}
+                    door={occupants[0]}
+                    run={run}
+                  />
+                </>
               )}
               {occupants.length === 1 && occupants[0].type === 'drawer' && (
                 <>

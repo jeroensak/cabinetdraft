@@ -69,8 +69,19 @@ describe('cutListRows', () => {
     expect(cutListRows(sides, 'mm', false)).toHaveLength(2)
   })
 
-  it('keeps different parts of the same size apart', () => {
+  it('treats a top and bottom as one part only when merged', () => {
     const parts = [sized('T', 'top', 'one'), sized('B', 'bottom', 'one')]
+    expect(cutListRows(parts, 'mm', true)).toHaveLength(1)
+    expect(cutListRows(parts, 'mm', true)[0]).toMatchObject({
+      ids: ['T', 'B'],
+      name: 'Top / bottom',
+      quantity: 2,
+    })
+    expect(cutListRows(parts, 'mm', false)).toHaveLength(2)
+  })
+
+  it('keeps different parts of the same size apart', () => {
+    const parts = [sized('S', 'shelf', 'one'), sized('D', 'divider', 'one')]
     expect(cutListRows(parts, 'mm', true)).toHaveLength(2)
   })
 })

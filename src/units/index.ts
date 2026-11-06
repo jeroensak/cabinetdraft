@@ -45,15 +45,30 @@ export function parseInches(text: string): number | null {
 const number = (value: number, grouped: boolean) =>
   value.toLocaleString(i18n.resolvedLanguage, { useGrouping: grouped })
 
-/** A size with its unit: 800 mm, or 31 1/2". */
+const INCHES_PER_FOOT = 12
+/** Below this, workshop sizes read best in plain inches, such as 34 1/2". */
+const FEET_FROM_INCHES = 48
+
+/** A large size in feet and inches: 6' 8 1/2", or 8' when it is whole feet. */
+function formatFeetAndInches(value: number): string {
+  const perFoot = INCHES_PER_FOOT * UNITS_PER_INCH
+  const size = Math.abs(value)
+  const feet = Math.floor(size / perFoot)
+  const rest = size - feet * perFoot
+  const inches = rest ? ` ${formatInches(rest)}"` : ''
+  return `${value < 0 ? '-' : ''}${feet}'${inches}`
+}
+
+/** A size with its unit: 800 mm, 31 1/2", or 6' 8". */
 export function formatMeasure(
   value: number,
   unit: MeasurementUnit,
   grouped = false,
 ): string {
-  return unit === 'inch'
-    ? `${formatInches(value)}"`
-    : `${number(value, grouped)} mm`
+  if (unit !== 'inch') return `${number(value, grouped)} mm`
+  return Math.abs(value) >= FEET_FROM_INCHES * UNITS_PER_INCH
+    ? formatFeetAndInches(value)
+    : `${formatInches(value)}"`
 }
 
 /** Several sizes together: 754 × 537 mm, or 31 1/2" × 20". */

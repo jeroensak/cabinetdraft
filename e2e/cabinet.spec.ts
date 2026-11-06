@@ -186,7 +186,8 @@ test('export and confirmed import restore the full design', async ({
   page,
 }, testInfo) => {
   const downloadReady = page.waitForEvent('download')
-  await page.getByRole('button', { name: 'Export', exact: true }).click()
+  await page.getByRole('button', { name: 'Import, export and share' }).click()
+  await page.getByRole('menuitem', { name: 'Export' }).click()
   const download = await downloadReady
   expect(download.suggestedFilename()).toBe('untitled-cabinet.json')
   const file = testInfo.outputPath('project.json')
@@ -222,7 +223,8 @@ test('export and confirmed import restore the full design', async ({
     page.getByRole('button', { name: 'Cabinet 1 double door 1' }),
   ).toBeVisible()
   const restoredDownloadReady = page.waitForEvent('download')
-  await page.getByRole('button', { name: 'Export', exact: true }).click()
+  await page.getByRole('button', { name: 'Import, export and share' }).click()
+  await page.getByRole('menuitem', { name: 'Export' }).click()
   const restoredFile = testInfo.outputPath('restored.json')
   await (await restoredDownloadReady).saveAs(restoredFile)
   expect(JSON.parse(await readFile(restoredFile, 'utf8'))).toEqual(exported)
@@ -384,7 +386,8 @@ test('new designs start from a template, keep their name and survive a reload', 
 test('the language picker translates the app and is remembered, without touching the design', async ({
   page,
 }) => {
-  await page.getByRole('combobox', { name: 'Language' }).selectOption('nl')
+  await page.getByRole('button', { name: 'Language' }).click()
+  await page.getByRole('menuitemradio', { name: 'Nederlands' }).click()
   await expect(page.getByRole('link', { name: 'Zaaglijst' })).toBeVisible()
   await expect(page.locator('html')).toHaveAttribute('lang', 'nl')
   await page.reload()
@@ -396,7 +399,8 @@ test('the language picker translates the app and is remembered, without touching
   await expect(
     page.getByRole('row').filter({ hasText: 'C1-SIDE-L' }),
   ).toContainText('Zijkant')
-  await page.getByRole('combobox', { name: 'Taal' }).selectOption('en')
+  await page.getByRole('button', { name: 'Taal' }).click()
+  await page.getByRole('menuitemradio', { name: 'English' }).click()
   await expect(page.getByRole('heading', { name: 'Cut List' })).toBeVisible()
 })
 

@@ -6,7 +6,7 @@ import en from './locales/en.json'
 import fr from './locales/fr.json'
 import nl from './locales/nl.json'
 
-export { useTranslation } from 'react-i18next'
+export { Trans, useTranslation } from 'react-i18next'
 
 export const LANGUAGE_STORAGE_KEY = 'cabinet-designer:language'
 

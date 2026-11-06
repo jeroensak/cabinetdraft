@@ -120,7 +120,7 @@ it('sets inches when creating a design, entered and shown as fractions', async (
   await user.click(
     within(dialog).getByRole('button', { name: 'Create design' }),
   )
-  expect(screen.getByText('Inches')).toBeInTheDocument()
+  expect(screen.getByText('inches')).toBeInTheDocument()
   const thickness = screen.getByRole('textbox', {
     name: 'Corpus thickness (in)',
   })

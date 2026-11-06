@@ -1,4 +1,8 @@
-import { applyDrawerDesign, setDoorMount } from '../../domain/commands'
+import {
+  applyDrawerDesign,
+  setDoorLeaves,
+  setDoorMount,
+} from '../../domain/commands'
 import type {
   DoorFront,
   DrawerFront,
@@ -10,6 +14,40 @@ import { useProjectStore } from '../../store/projectStore'
 import { useMeasure } from '../../units/useMeasure'
 
 type Run = (action: () => void) => boolean
+
+/** Single or double door. */
+export function DoorLeavesField({
+  moduleId,
+  door,
+  run,
+}: {
+  moduleId: string
+  door: DoorFront
+  run: Run
+}) {
+  const { t } = useTranslation()
+  const execute = useProjectStore((state) => state.execute)
+  return (
+    <label className="property-field">
+      <span className="sr-only">{t('frontInfo.doorLeaves')}</span>
+      <select
+        aria-label={t('frontInfo.doorLeaves')}
+        value={door.leaves}
+        onChange={(event) => {
+          const leaves = Number(event.target.value) as 1 | 2
+          run(() =>
+            execute((project) =>
+              setDoorLeaves(project, moduleId, door.id, leaves),
+            ),
+          )
+        }}
+      >
+        <option value={1}>{t('front.single')}</option>
+        <option value={2}>{t('front.double')}</option>
+      </select>
+    </label>
+  )
+}
 
 /** Overlay or inset; the choice is remembered for the next new door. */
 export function DoorMountField({

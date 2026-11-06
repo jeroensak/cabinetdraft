@@ -69,7 +69,7 @@ The user explicitly requested a choice of drawer fronts: full or wave top, overl
 
 The user requested a shorter-reading Cut List. The Cut List page and PDF present the canonical rows in up to four lists, in this order: cabinet bases (sides, top, bottom, back), shelves and dividers, doors, and drawers (each drawer's front and box together). Empty lists are left out. Grouping is presentation only: `deriveCutList` output, identifiers and the columns of specification section 32 are unchanged.
 
-The user also requested merging identical parts into one row with a quantity, the future use specification section 32 anticipates. This supersedes the one-row-per-panel rule of section 30 for display only. It is on by default, parts match on name and size across cabinets, and a merged row lists every part's ID. A checkbox restores one row per panel, on the page and in the PDF.
+The user also requested merging identical parts into one row with a quantity, the future use specification section 32 anticipates. This supersedes the one-row-per-panel rule of section 30 for display only. It is on by default, parts match on name and size across cabinets, and a merged row lists every part's ID. A checkbox restores one row per panel, on the page and in the PDF. A cabinet's top and bottom count as one part here, like left and right sides, shown as Top / bottom.
 
 ## Approved post-V1 extension: grooved drawer bottoms
 
@@ -99,11 +99,15 @@ An inset door sits inside its opening with `frontGap` on all four sides, its fac
 
 The position last chosen for a door is an editor preference stored under `cabinet-designer:door-mount`, never in Project JSON. Every new door takes that position until another is chosen. Existing doors never change with it.
 
+The Designer's Both view sits between Structure and Fronts. It draws the fronts see-through over the structure and keeps Structure's selection: spaces, shelves and dividers, not the fronts themselves. It changes presentation only.
+
 ## Approved post-V1 extension: inch designs
 
 The user requested designs in inches, in the fractional notation used in America, next to millimetres, with the unit set per design so that free switching can't cause rounding errors. This supersedes the measurement rule of specification section 6 for inch designs only; the frozen specification remains unchanged.
 
 A project with `settings.unit: 'inch'` stores every measurement as a whole number of 1/32 inch units. Omitted means millimetres, so existing projects need no migration. All domain formulas stay unit-agnostic and still require whole numbers, which keeps inch sizes exact: 1/16 inch has no whole-millimetre value, and a halved 1/16 inch size is still a whole unit. Percentage heights and centred placements round to a whole 1/32 inch, as they round to a whole millimetre otherwise. Groove depths may be half a unit, shown in 1/64ths.
+
+Sizes of 4 feet and more are displayed in feet and inches, such as 6' 8 1/2". This is notation only: entry fields and the Cut List stay in plain inches.
 
 The unit is chosen in the New design dialog and can't be changed afterwards. Templates are millimetre files, converted once at creation by `convertToInches`: sheet thicknesses to the nearest 1/8 inch, everything else to the nearest 1/16 inch. That rounding is why no conversion exists for a design already in use. An imported project keeps its unit. Formatting and parsing live in `src/units`; input finer than 1/32 inch is refused, never rounded.
 

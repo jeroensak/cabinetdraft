@@ -22,17 +22,21 @@ it('switches the whole page without a reload and lists languages in their own na
       <CutListPage />
     </MemoryRouter>,
   )
+  await user.click(screen.getByRole('button', { name: 'Language' }))
   expect(
-    screen.getAllByRole('option').map((option) => option.textContent),
+    screen.getAllByRole('menuitemradio').map((item) => item.textContent),
   ).toEqual(['English', 'Nederlands', 'Deutsch', 'Français'])
-  await user.selectOptions(
-    screen.getByRole('combobox', { name: 'Language' }),
-    'de',
-  )
+  expect(screen.getByRole('menuitemradio', { name: 'English' })).toBeChecked()
+  await user.click(screen.getByRole('menuitemradio', { name: 'Deutsch' }))
+  expect(screen.queryByRole('menu')).toBeNull()
   expect(
     screen.getByRole('heading', { name: 'Zuschnittliste' }),
   ).toBeInTheDocument()
-  expect(screen.getByRole('combobox', { name: 'Sprache' })).toHaveValue('de')
+  await user.click(screen.getByRole('button', { name: 'Sprache' }))
+  expect(screen.getByRole('menuitemradio', { name: 'Deutsch' })).toBeChecked()
+  await user.keyboard('{Escape}')
+  expect(screen.queryByRole('menu')).toBeNull()
+  expect(screen.getByRole('button', { name: 'Sprache' })).toHaveFocus()
   expect(
     screen.getByRole('heading', { name: /Schrankkorpusse/ }),
   ).toBeInTheDocument()

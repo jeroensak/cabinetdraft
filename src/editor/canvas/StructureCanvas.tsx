@@ -54,7 +54,7 @@ export function StructureCanvas() {
             [
               ...geometry.panels,
               ...deriveModuleDrawerPanels(project, module),
-              ...(mode === 'fronts'
+              ...(mode !== 'structure'
                 ? module.fronts.flatMap(
                     (front) =>
                       deriveFrontGeometry(
@@ -106,7 +106,7 @@ export function StructureCanvas() {
           className="segmented view-switch"
           aria-label={t('canvas.viewLabel')}
         >
-          {(['structure', 'fronts'] as const).map((view) => (
+          {(['structure', 'both', 'fronts'] as const).map((view) => (
             <button
               key={view}
               aria-pressed={mode === view}
@@ -116,16 +116,14 @@ export function StructureCanvas() {
                 setHover(null)
                 if (
                   selection &&
-                  ((view === 'structure' && selection.type === 'front') ||
+                  ((view !== 'fronts' && selection.type === 'front') ||
                     (view === 'fronts' &&
                       ['shelf', 'divider'].includes(selection.type)))
                 )
                   setSelection({ type: 'module', moduleId: selection.moduleId })
               }}
             >
-              {view === 'structure'
-                ? t('canvas.structure')
-                : t('canvas.fronts')}
+              {t(`canvas.${view}`)}
             </button>
           ))}
         </div>
@@ -153,6 +151,7 @@ export function StructureCanvas() {
       <svg
         ref={svgRef}
         className="structure-canvas"
+        data-view={mode}
         aria-label={t('canvas.label')}
         onPointerDown={(event) => {
           if (event.button !== 0 || event.target !== event.currentTarget) return
@@ -188,9 +187,7 @@ export function StructureCanvas() {
       >
         <title>{t('canvas.label')}</title>
         <desc>
-          {mode === 'structure'
-            ? t('canvas.structureDesc')
-            : t('canvas.frontsDesc')}{' '}
+          {t(`canvas.${mode}Desc`)}
           {t('canvas.navigationDesc')}
         </desc>
         <g
@@ -205,7 +202,9 @@ export function StructureCanvas() {
               data-module-id={face.module.id}
               data-source={face.source}
               data-selected={selection?.moduleId === face.module.id}
-              data-hovered={hover?.moduleId === face.module.id}
+              data-hovered={
+                hover?.type !== 'space' && hover?.moduleId === face.module.id
+              }
               data-invalid={invalidIds.has(face.module.id)}
               onPointerEnter={() => hoverModule(face.module.id)}
               onPointerLeave={() => setHover(null)}
