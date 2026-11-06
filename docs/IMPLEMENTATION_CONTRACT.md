@@ -127,6 +127,18 @@ The Cut List page shows the layout as a Sheets view next to Parts. The PDF adds 
 
 The user requested sharing a design by link. There is still no backend: the design's project JSON is gzipped into the URL fragment, which browsers don't send to servers, and analytics already strip fragments. Opening a link goes through the same parse, validate and migrate boundary as a file import, asks for confirmation, and adds a new design with its own ID and its original unit instead of replacing anything. The fragment is cleared from the address bar once read. A link expanding past 5 MB is refused.
 
+## Approved post-V1 extension: edge banding
+
+The user requested edge banding on the Cut List: which edges of each part are banded and how much band to buy. This supersedes the edge banding non-goal of specification section 4 only for this extension, and answers that one V2 item of section 81; the frozen specification remains unchanged.
+
+`settings.edgeBanding: true` turns it on. Omitted means off, so existing projects need no migration, and off is never written out. It is a project setting rather than an editor preference because it describes how the design is built.
+
+`deriveEdgeBanding` in `src/domain/cutlist/edgeBanding.ts` is the one implementation. It reads Cut List rows, so it is another consumer of them and can't change them: `deriveCutList` output and the sheet layout are the same with banding on or off. Sides, tops, bottoms, shelves and dividers are banded along the one front edge, which is always their Length. Doors, including each leaf of a double door, and drawer fronts are banded on all four edges. Back panels and drawer box parts get nothing.
+
+A wave top drawer front is treated as a straight blank, and its whole four-edge length is multiplied by 1.25 to cover the curve. A front's perimeter is an even whole number, so that result can be a half unit, like a groove depth. It is exact and never rounded, and it is only a length to buy: cut sizes stay whole units. The band's thickness is not subtracted from them.
+
+A row's banding counts its quantity, so merged and separate rows of the same parts give the same total. The Cut List page and PDF show the banded edges per row as the last column, and the total on the Parts view and in the summary line of the PDF's list pages, in plain inches for inch designs. Derived banding data is never persisted.
+
 ## Usability and safety rules
 
 Canvas shortcuts do nothing while a dialog is open. Tabs follow each other: a tab receiving another tab's save adopts it, clears its undo history and says so, so an older copy can't silently overwrite newer work. Names can't be blank. Cabinet sizes must be above zero and at most 100 m or 4,000 inches, which catches typing slips without setting furniture minimums. An invalid design explains why on the Designer and Cut List pages. The canvas view is editor state and survives navigation, and Settings no longer repeats the design name.

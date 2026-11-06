@@ -95,5 +95,9 @@ export function formatSheetSize(
 export const formatBare = (value: number, unit: MeasurementUnit) =>
   unit === 'inch' ? formatInches(value) : number(value, false)
 
+/** A long total on the Cut List, which stays in plain inches. */
+export const formatTotalLength = (value: number, unit: MeasurementUnit) =>
+  unit === 'inch' ? `${formatInches(value)}"` : formatMeasure(value, unit, true)
+
 export const unitSymbol = (unit: MeasurementUnit) =>
   unit === 'inch' ? 'in' : 'mm'

@@ -1,11 +1,28 @@
 /// <reference types="node" />
 import { readFileSync } from 'node:fs'
-import { expect, it } from 'vitest'
+import { autoTable, type UserOptions } from 'jspdf-autotable'
+import type { jsPDF } from 'jspdf'
+import { beforeEach, expect, it, vi } from 'vitest'
 import { designTemplates } from '../design-templates'
 import { parseProject } from '../domain/import-export/projectJson'
+import { convertToInches } from '../domain/project/convertToInches'
 import { createDefaultProject } from '../domain/project/createDefaultProject'
 import { setLanguage } from '../i18n'
 import { createCutListPdf } from './cutListPdf'
+
+vi.mock('jspdf-autotable', async (original) => {
+  const real = await original<typeof import('jspdf-autotable')>()
+  return {
+    ...real,
+    autoTable: vi.fn((doc: jsPDF, options: UserOptions) => {
+      if (!vi.isMockFunction(doc.text)) vi.spyOn(doc, 'text')
+      return real.autoTable(doc, options)
+    }),
+  }
+})
+beforeEach(() => {
+  vi.mocked(autoTable).mockClear()
+})
 
 const font = readFileSync(
   new URL('../assets/fonts/NotoSans-Regular.ttf', import.meta.url),
@@ -52,4 +69,39 @@ it('adds one assembly page per cabinet, for drawers and wave fronts too', () => 
     const lists = createCutListPdf(project, font).getNumberOfPages()
     expect(lists).toBeGreaterThan(project.modules.length)
   }
+})
+const tables = () =>
+  vi.mocked(autoTable).mock.calls.map(([, options]) => options as UserOptions)
+const drawnText = (pdf: jsPDF) =>
+  vi.mocked(pdf.text).mock.calls.map(([text]) => String(text))
+
+it('leaves the table as it was while edge banding is off', () => {
+  const pdf = createCutListPdf(createDefaultProject(), font)
+  for (const table of tables()) expect(table.head![1]).toHaveLength(7)
+  expect(drawnText(pdf).join(' ')).not.toContain('banding')
+})
+it('adds the banded edges of each row and the total on the list pages', () => {
+  const project = createDefaultProject()
+  project.settings.edgeBanding = true
+  const pdf = createCutListPdf(project, font)
+  const head = tables()[0]!.head![1] as string[]
+  expect(head.at(-1)).toBe('Edge banding')
+  const cells = tables().flatMap((table) =>
+    (table.body as string[][]).map((row) => row.at(-1)),
+  )
+  expect(new Set(cells)).toStrictEqual(
+    new Set(['Front edge', 'None', 'All 4 edges']),
+  )
+  const text = drawnText(pdf)
+  expect(text.filter((line) => line.includes('Edge banding needed'))).toEqual([
+    expect.stringMatching(
+      /Configuration valid {2}· {2}Edge banding needed: [\d,]+ mm$/,
+    ),
+  ])
+})
+it('states an inch total in plain inches', () => {
+  const project = convertToInches(createDefaultProject())
+  project.settings.edgeBanding = true
+  const text = drawnText(createCutListPdf(project, font))
+  expect(text.join(' ')).toMatch(/Edge banding needed: [\d /]+"/)
 })

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  formatTotalLength,
   formatBare,
   formatInches,
   formatMeasure,
@@ -81,5 +82,15 @@ describe('inch notation', () => {
     expect(formatSize([inches(31.5), inches(20)], 'inch')).toBe('31 1/2" × 20"')
     expect(formatBare(inches(31.5), 'inch')).toBe('31 1/2')
     expect(formatBare(754, 'mm')).toBe('754')
+  })
+})
+
+describe('formatTotalLength', () => {
+  it('groups millimetres and keeps a half exact', () => {
+    expect(formatTotalLength(12345.5, 'mm')).toBe('12,345.5 mm')
+  })
+
+  it('stays in plain inches, however long, down to a half unit', () => {
+    expect(formatTotalLength(inches(600) + 0.5, 'inch')).toBe('600 1/64"')
   })
 })

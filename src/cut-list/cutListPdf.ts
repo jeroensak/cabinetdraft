@@ -7,13 +7,15 @@ import {
 } from '../domain/cutlist/deriveCutList'
 import { projectFilename } from '../domain/import-export/projectJson'
 import { t } from '../i18n'
-import { formatBare, unitSymbol } from '../units'
+import { formatBare, formatTotalLength, unitSymbol } from '../units'
 
 import { addAssemblyPage } from './assemblyPages'
 import { addSheetPages } from './sheetPages'
 import { deriveSheetLayout } from '../domain/cutlist/sheetLayout'
 import { loadSheetPreference } from '../store/sheetStockPreference'
+import { deriveEdgeBanding } from '../domain/cutlist/edgeBanding'
 import { cutListRows, groupCutList } from './partGroups'
+import { bandedEdgesLabel, bandingNote } from './partNames'
 import fontUrl from '../assets/fonts/NotoSans-Regular.ttf?url'
 
 /** Render validated domain rows directly; no DOM or SVG measurements. */
@@ -41,6 +43,7 @@ export function createCutListPdf(
     title: `${project.name} - ${t('cutList.title')}`,
     creator: t('app.name'),
   })
+  const banding = deriveEdgeBanding(project.settings, result.items)
   const columns = [
     t('cutList.id'),
     t('cutList.cabinet'),
@@ -49,6 +52,7 @@ export function createCutListPdf(
     t('cutList.length', { unit: symbol }),
     t('cutList.width', { unit: symbol }),
     t('cutList.thickness', { unit: symbol }),
+    ...(banding ? [t('cutList.banding')] : []),
   ]
   let startY = 42
   for (const group of groupCutList(result.items)) {
@@ -75,6 +79,7 @@ export function createCutListPdf(
         formatBare(row.length, measureUnit),
         formatBare(row.width, measureUnit),
         formatBare(row.thickness, measureUnit),
+        ...(banding ? [bandedEdgesLabel(row)] : []),
       ]),
       theme: 'striped',
       styles: {
@@ -91,15 +96,26 @@ export function createCutListPdf(
         fontStyle: 'normal',
       },
       alternateRowStyles: { fillColor: [246, 244, 239] },
-      columnStyles: {
-        0: { cellWidth: 50 },
-        1: { cellWidth: 43 },
-        2: { cellWidth: 60 },
-        3: { cellWidth: 18, halign: 'right' },
-        4: { cellWidth: 30, halign: 'right' },
-        5: { cellWidth: 30, halign: 'right' },
-        6: { cellWidth: 36, halign: 'right' },
-      },
+      columnStyles: banding
+        ? {
+            0: { cellWidth: 42 },
+            1: { cellWidth: 36 },
+            2: { cellWidth: 54 },
+            3: { cellWidth: 14, halign: 'right' },
+            4: { cellWidth: 27, halign: 'right' },
+            5: { cellWidth: 27, halign: 'right' },
+            6: { cellWidth: 29, halign: 'right' },
+            7: { cellWidth: 38 },
+          }
+        : {
+            0: { cellWidth: 50 },
+            1: { cellWidth: 43 },
+            2: { cellWidth: 60 },
+            3: { cellWidth: 18, halign: 'right' },
+            4: { cellWidth: 30, halign: 'right' },
+            5: { cellWidth: 30, halign: 'right' },
+            6: { cellWidth: 36, halign: 'right' },
+          },
       showHead: 'everyPage',
       rowPageBreak: 'avoid',
     })
@@ -147,10 +163,24 @@ export function createCutListPdf(
       sheetPage?.summary ??
         (cabinet
           ? t('pdf.assemblyNote', { prefix: `C${page - firstAssembly}-` })
-          : t('pdf.summary', {
-              cabinets: t('count.cabinets', { count: project.modules.length }),
-              parts: t('count.parts', { count: result.items.length }),
-            })),
+          : [
+              t('pdf.summary', {
+                cabinets: t('count.cabinets', {
+                  count: project.modules.length,
+                }),
+                parts: t('count.parts', { count: result.items.length }),
+              }),
+              ...(banding
+                ? [
+                    t('cutList.bandingTotal', {
+                      length: formatTotalLength(
+                        banding.totalLength,
+                        measureUnit,
+                      ),
+                    }),
+                  ]
+                : []),
+            ].join('  ·  ')),
       15,
       36,
     )
@@ -158,13 +188,17 @@ export function createCutListPdf(
     const unitName = t(
       measureUnit === 'inch' ? 'unit.inchPlural' : 'unit.mmPlural',
     )
-    doc.text(
-      sheetPage
-        ? doc.splitTextToSize(t('sheets.note', { unit: unitName }), 245)
-        : t(merged ? 'pdf.noteMerged' : 'pdf.note', { unit: unitName }),
-      15,
-      sheetPage ? 195 : 199,
-    )
+    const listNote = t(merged ? 'pdf.noteMerged' : 'pdf.note', {
+      unit: unitName,
+    })
+    // Assembly pages share this footer, and their parts carry no banding column.
+    const footer = sheetPage
+      ? t('sheets.note', { unit: unitName })
+      : banding && !cabinet
+        ? `${listNote} ${bandingNote(banding)}`
+        : listNote
+    const footerLines: string[] = doc.splitTextToSize(footer, 245)
+    doc.text(footerLines, 15, sheetPage || footerLines.length > 1 ? 195 : 199)
     doc.text(t('pdf.page', { page, pages }), 282, 199, { align: 'right' })
   }
   return doc

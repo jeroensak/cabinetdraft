@@ -44,6 +44,16 @@ export function ProjectSettings() {
         />
         {t('settings.backEnabled')}
       </label>
+      <label className="settings-checkbox">
+        <input
+          type="checkbox"
+          checked={project.settings.edgeBanding === true}
+          onChange={(event) =>
+            run(() => updateSettings({ edgeBanding: event.target.checked }))
+          }
+        />
+        {t('settings.edgeBanding')}
+      </label>
       <p className="settings-units">
         <Trans
           i18nKey="settings.unitsNote"

@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from '../i18n'
-import { formatBare, unitSymbol } from '../units'
+import { formatBare, formatTotalLength, unitSymbol } from '../units'
 import { useMeasure } from '../units/useMeasure'
 
 import { Link } from 'react-router'
 import { deriveCutList } from '../domain/cutlist/deriveCutList'
+import { deriveEdgeBanding } from '../domain/cutlist/edgeBanding'
 import { cutListRows, groupCutList } from './partGroups'
+import { bandedEdgesLabel, bandingNote } from './partNames'
 import { useProjectStore } from '../store/projectStore'
 import { trackEvent } from '../app/analytics'
 import { ValidationIssues } from '../app/ValidationIssues'
@@ -18,6 +20,13 @@ export function CutListPage() {
 
   const project = useProjectStore((state) => state.present)
   const result = useMemo(() => deriveCutList(project), [project])
+  const banding = useMemo(
+    () =>
+      result.available
+        ? deriveEdgeBanding(project.settings, result.items)
+        : null,
+    [project.settings, result],
+  )
   const [merged, setMerged] = useState(true)
   const [view, setView] = useState<'parts' | 'sheets'>('parts')
   const [downloading, setDownloading] = useState(false)
@@ -142,6 +151,7 @@ export function CutListPage() {
                         <th scope="col">
                           {t('cutList.thickness', { unit: symbol })}
                         </th>
+                        {banding && <th scope="col">{t('cutList.banding')}</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -161,6 +171,7 @@ export function CutListPage() {
                             <td>{formatBare(row.length, unit)}</td>
                             <td>{formatBare(row.width, unit)}</td>
                             <td>{formatBare(row.thickness, unit)}</td>
+                            {banding && <td>{bandedEdgesLabel(row)}</td>}
                           </tr>
                         ),
                       )}
@@ -168,6 +179,16 @@ export function CutListPage() {
                   </table>
                 </section>
               ))}
+            </div>
+          )}
+          {view === 'parts' && banding && result.items.length > 0 && (
+            <div className="cut-list-banding">
+              <strong>
+                {t('cutList.bandingTotal', {
+                  length: formatTotalLength(banding.totalLength, unit),
+                })}
+              </strong>
+              <span>{bandingNote(banding)}</span>
             </div>
           )}
           {view === 'parts' && (

@@ -66,6 +66,8 @@ export function isProject(value: unknown): value is Project {
     !Number.isSafeInteger(settings.frontThickness) ||
     !Number.isSafeInteger(settings.frontGap) ||
     typeof settings.backPanelEnabled !== 'boolean' ||
+    (settings.edgeBanding !== undefined &&
+      typeof settings.edgeBanding !== 'boolean') ||
     (settings.unit !== undefined &&
       settings.unit !== 'mm' &&
       settings.unit !== 'inch')

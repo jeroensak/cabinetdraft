@@ -200,5 +200,7 @@ export function updateProjectSettings(
     }
     if (settings.backPanelEnabled !== undefined)
       draft.settings.backPanelEnabled = settings.backPanelEnabled
+    if (settings.edgeBanding === true) draft.settings.edgeBanding = true
+    if (settings.edgeBanding === false) delete draft.settings.edgeBanding
   })
 }

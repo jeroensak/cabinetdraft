@@ -13,6 +13,8 @@ export interface ProjectSettings {
   backPanelThickness: number
   frontThickness: number
   frontGap: number
+  /** Omitted means off, so older projects stay unchanged. */
+  edgeBanding?: boolean
 }
 
 export const PROJECT_SCHEMA_VERSION = 6

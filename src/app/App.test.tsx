@@ -135,6 +135,18 @@ describe('application shell', () => {
     expect(screen.queryByText('C1-BACK')).toBeNull()
   })
 
+  it('turns edge banding on from Settings, as one undoable step', async () => {
+    const user = userEvent.setup()
+    renderDesigner()
+    await user.click(screen.getByRole('button', { name: 'Settings' }))
+    await user.click(screen.getByLabelText('Edge banding enabled'))
+    expect(useProjectStore.getState().present.settings.edgeBanding).toBe(true)
+    await user.click(screen.getByRole('button', { name: 'Undo' }))
+    expect(useProjectStore.getState().present.settings).not.toHaveProperty(
+      'edgeBanding',
+    )
+  })
+
   it('shows global settings separately and enables file controls', async () => {
     const user = userEvent.setup()
     renderDesigner()
