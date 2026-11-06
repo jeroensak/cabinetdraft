@@ -90,7 +90,7 @@ test('a share link opens as a new design for someone else, after asking', async 
   expect(message).toContain('Shared hallway')
   await expect(to).toHaveURL(/\/designer$/)
   await expect(
-    to.getByRole('button', { name: 'Wide cabinet, 2000 mm', exact: true }),
+    to.getByRole('button', { name: 'Wide cabinet, 1998 mm', exact: true }),
   ).toBeVisible()
   await to.reload()
   await expect(to.getByLabel('Design name')).toHaveValue('Shared hallway')
