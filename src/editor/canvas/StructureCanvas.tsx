@@ -277,15 +277,18 @@ export function StructureCanvas() {
                 value: measure(arrangement.totalWidth),
               })}
             />
-            <Dimension
-              from={screen(0, 0)}
-              to={screen(0, arrangement.maximumHeight)}
-              vertical
-              offset={-58}
-              label={t('canvas.max', {
-                value: measure(arrangement.maximumHeight),
-              })}
-            />
+            {/* A selected shelf's measure needs this spot beside the first cabinet. */}
+            {!(selection?.type === 'shelf' && selected?.origin.x === 0) && (
+              <Dimension
+                from={screen(0, 0)}
+                to={screen(0, arrangement.maximumHeight)}
+                vertical
+                offset={-58}
+                label={t('canvas.max', {
+                  value: measure(arrangement.maximumHeight),
+                })}
+              />
+            )}
             {selected && (
               <>
                 <Dimension

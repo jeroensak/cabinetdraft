@@ -12,7 +12,11 @@ import { useMeasure } from '../../units/useMeasure'
 
 import { useProjectStore } from '../../store/projectStore'
 import { commandMessage } from '../useCommandAction'
+import { Dimension } from './Dimension'
 import type { Point } from './projection'
+
+/** Left of the cabinet, inside the overall height dimension. */
+const SHELF_MEASURE_OFFSET = -24
 
 export function StructureTargets({
   item,
@@ -186,6 +190,10 @@ export function StructureTargets({
             )
             const selected =
               selection?.type === 'divider' && selection.dividerId === dividerId
+            // Above the cabinet, clear of the panels, like the other dimensions.
+            const cabinetTop = screen(origin.x, module.height)
+            const measureY =
+              screen(origin.x, module.height, module.depth).y - 30
             const choose = () =>
               setSelection({ type: 'divider', moduleId: module.id, dividerId })
             return (
@@ -227,11 +235,19 @@ export function StructureTargets({
                   )}
                 />
                 {selected && (
-                  <text className="shelf-position" x={p.x + 8} y={p.y - 10}>
-                    {t('canvas.fromLeft', {
-                      value: measure(panel.position.x),
-                    })}
-                  </text>
+                  <g className="panel-measure">
+                    <path
+                      strokeDasharray="3 3"
+                      d={`M${cabinetTop.x},${cabinetTop.y} V${measureY} M${p.x},${p.y} V${measureY}`}
+                    />
+                    <Dimension
+                      from={{ x: cabinetTop.x, y: measureY }}
+                      to={{ x: p.x, y: measureY }}
+                      label={t('canvas.fromLeft', {
+                        value: measure(panel.position.x),
+                      })}
+                    />
+                  </g>
                 )}
               </g>
             )
@@ -246,6 +262,8 @@ export function StructureTargets({
               origin.x + panel.position.x,
               panel.position.y + panel.thickness,
             )
+            const cabinetBottom = screen(origin.x, 0)
+            const shelfBottom = screen(origin.x, panel.position.y).y
             const choose = () =>
               setSelection({ type: 'shelf', moduleId: module.id, shelfId })
             return (
@@ -286,11 +304,21 @@ export function StructureTargets({
                 />
                 {selection?.type === 'shelf' &&
                   selection.shelfId === shelfId && (
-                    <text className="shelf-position" x={p.x + 8} y={p.y - 10}>
-                      {t('canvas.fromBottom', {
-                        value: measure(panel.position.y),
-                      })}
-                    </text>
+                    <g className="panel-measure">
+                      <path
+                        strokeDasharray="3 3"
+                        d={`M${p.x},${shelfBottom} H${cabinetBottom.x + SHELF_MEASURE_OFFSET} M${cabinetBottom.x},${cabinetBottom.y} H${cabinetBottom.x + SHELF_MEASURE_OFFSET}`}
+                      />
+                      <Dimension
+                        from={cabinetBottom}
+                        to={{ x: cabinetBottom.x, y: shelfBottom }}
+                        vertical
+                        offset={SHELF_MEASURE_OFFSET}
+                        label={t('canvas.fromBottom', {
+                          value: measure(panel.position.y),
+                        })}
+                      />
+                    </g>
                   )}
               </g>
             )
