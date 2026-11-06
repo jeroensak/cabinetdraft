@@ -48,6 +48,7 @@ it('translates the names inside a template without changing its design', () => {
     expect(project.modules.map((module) => module.name)).toStrictEqual([
       'Brede kast',
       'Enkele kast',
+      'Kast 1',
     ])
     expect(project.drawerDesigns.map((design) => design.name)).toStrictEqual([
       'Lade met golffront',
