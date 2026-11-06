@@ -1,7 +1,11 @@
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import type { CutListItem } from '../domain/cutlist/deriveCutList'
 import { cutListRows, groupCutList } from './partGroups'
+import { setLanguage } from '../i18n'
 import { partName } from './partNames'
+
+// These read the English names, whatever language the machine runs in.
+beforeAll(() => setLanguage('en'))
 
 const item = (
   id: string,
