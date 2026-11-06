@@ -5,6 +5,10 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DesignerPage } from './DesignerPage'
 import { createDefaultProject } from '../domain/project/createDefaultProject'
+import { addDividerToSpace } from '../domain/commands'
+import { deriveSpaces } from '../domain/spaces/deriveSpaces'
+import { snapPosition } from '../domain/spaces/snapPosition'
+import { spaceRange } from '../domain/spaces/spaceRanges'
 import { useProjectStore } from '../store/projectStore'
 import { mockResizeObserver } from '../test/mockResizeObserver'
 
@@ -40,7 +44,7 @@ describe('Structure editing', () => {
     fireEvent.pointerMove(shelf, { clientY: 300 - viewport.zoom * 100 })
     expect(
       useProjectStore.getState().present.modules[0].shelves[0].bottom,
-    ).toBe(1191)
+    ).toBe(1190)
     fireEvent.wheel(screen.getByLabelText('Cabinet structure'), {
       deltaY: -100,
     })
@@ -113,25 +117,81 @@ describe('Structure editing', () => {
     fireEvent.pointerMove(shelf, { clientY: 300 - zoom * 100 })
     expect(
       useProjectStore.getState().present.modules[0].shelves[0].bottom,
-    ).toBe(1191)
+    ).toBe(1190)
     expect(useProjectStore.getState().past).toHaveLength(0)
     fireEvent.pointerMove(shelf, { clientY: 300 - zoom * 200 })
+    expect(document.querySelectorAll('.snap-guide')).toHaveLength(9)
+    const active = document.querySelectorAll('.snap-guide[data-active="true"]')
+    expect(active.length).toBeGreaterThan(0)
+    expect(document.querySelectorAll('.snap-space').length).toBe(
+      active.length + 1,
+    )
     fireEvent.pointerUp(shelf)
+    expect(document.querySelectorAll('.snap-guide')).toHaveLength(0)
     expect(useProjectStore.getState().past).toHaveLength(1)
     expect(
       useProjectStore.getState().present.modules[0].shelves[0].bottom,
-    ).toBe(1291)
+    ).toBe(1309)
     fireEvent.pointerDown(shelf, { button: 0, clientY: 300 })
     fireEvent.pointerMove(shelf, { clientY: 250 })
     fireEvent.keyDown(window, { key: 'Escape' })
     expect(
       useProjectStore.getState().present.modules[0].shelves[0].bottom,
-    ).toBe(1291)
+    ).toBe(1309)
     expect(useProjectStore.getState().previewBase).toBeNull()
     act(() => useProjectStore.getState().undo())
     expect(
       useProjectStore.getState().present.modules[0].shelves[0].bottom,
     ).toBe(1091)
+  })
+
+  it('previews divider dragging live, commits once, and cancels an interrupted drag', () => {
+    vi.stubGlobal('PointerEvent', MouseEvent)
+    const project = createDefaultProject()
+    const [space] = deriveSpaces(project.modules[0], project.settings)
+    useProjectStore.setState({
+      present: addDividerToSpace(
+        project,
+        project.modules[0].id,
+        spaceRange(space),
+      ),
+    })
+    const left = () =>
+      useProjectStore.getState().present.modules[0].dividers[0].left
+    const start = left()
+    render(<DesignerPage />)
+    const divider = screen.getByRole('button', {
+      name: new RegExp(`Cabinet 1 divider`),
+    })
+    Object.defineProperty(divider, 'setPointerCapture', { value: vi.fn() })
+    Object.defineProperty(divider, 'releasePointerCapture', { value: vi.fn() })
+    const zoom = useProjectStore.getState().editor.viewport.zoom
+    const { width } = useProjectStore.getState().present.modules[0]
+    const snapped = (value: number) =>
+      snapPosition(
+        value,
+        { start: 18, size: width - 36, thickness: 18 },
+        'mm',
+        6 / zoom,
+      )
+    fireEvent.pointerDown(divider, { button: 0, clientX: 300 })
+    fireEvent.pointerMove(divider, { clientX: 300 + zoom * 120 })
+    expect(left()).toBe(snapped(start + 120))
+    expect(useProjectStore.getState().past).toHaveLength(0)
+    expect(
+      screen.getByText(`${snapped(start + 120)} mm from left`),
+    ).toBeInTheDocument()
+    fireEvent.pointerMove(divider, { clientX: 300 - zoom * 90 })
+    fireEvent.pointerUp(divider)
+    expect(useProjectStore.getState().past).toHaveLength(1)
+    expect(left()).toBe(snapped(start - 90))
+    fireEvent.pointerDown(divider, { button: 0, clientX: 300 })
+    fireEvent.pointerMove(divider, { clientX: 250 })
+    fireEvent.keyDown(window, { key: 'Escape' })
+    expect(left()).toBe(snapped(start - 90))
+    expect(useProjectStore.getState().previewBase).toBeNull()
+    act(() => useProjectStore.getState().undo())
+    expect(left()).toBe(start)
   })
 
   it('deletes a selected shelf via keyboard and clears the selection across undo', async () => {

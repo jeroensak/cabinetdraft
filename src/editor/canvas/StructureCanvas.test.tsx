@@ -31,6 +31,32 @@ beforeEach(() => {
 })
 
 describe('Structure canvas', () => {
+  it('deselects on a click on the empty canvas, but not after dragging it', () => {
+    vi.stubGlobal('PointerEvent', MouseEvent)
+    render(<StructureCanvas />)
+    const canvas = screen.getByLabelText('Cabinet structure')
+    Object.defineProperty(canvas, 'setPointerCapture', { value: vi.fn() })
+    Object.defineProperty(canvas, 'releasePointerCapture', { value: vi.fn() })
+    const moduleId = useProjectStore.getState().present.modules[0].id
+    const selection = { type: 'module', moduleId } as const
+    act(() => useProjectStore.getState().setSelection(selection))
+    const { pan } = useProjectStore.getState().editor.viewport
+
+    fireEvent.pointerDown(canvas, { button: 0, clientX: 100, clientY: 100 })
+    fireEvent.pointerMove(canvas, { clientX: 130, clientY: 140 })
+    fireEvent.pointerUp(canvas)
+    expect(useProjectStore.getState().editor.selection).toEqual(selection)
+    expect(useProjectStore.getState().editor.viewport.pan).toEqual({
+      x: pan.x + 30,
+      y: pan.y + 40,
+    })
+
+    fireEvent.pointerDown(canvas, { button: 0, clientX: 100, clientY: 100 })
+    fireEvent.pointerMove(canvas, { clientX: 101, clientY: 100 })
+    fireEvent.pointerUp(canvas)
+    expect(useProjectStore.getState().editor.selection).toBeNull()
+  })
+
   it('retains the viewport across route remounts and fits modules added while away', () => {
     const first = render(<StructureCanvas />)
     const custom = { zoom: 1, pan: { x: 25, y: 40 } }
