@@ -7,12 +7,13 @@ import { validateProject } from '../domain/validation/validateProject'
 import { setLanguage, t } from '../i18n'
 import { designTemplates, localizedTemplate } from './index'
 
-it('ships exactly four valid starting templates', () => {
+it('ships exactly five valid starting templates', () => {
   expect(designTemplates.map((template) => template.id)).toStrictEqual([
     './template-1.json',
     './template-2.json',
     './template-3.json',
     './template-4.json',
+    './template-5.json',
   ])
   for (const template of designTemplates)
     expect(validateProject(parseProject(template.raw))).toStrictEqual([])
@@ -21,6 +22,7 @@ it('ships exactly four valid starting templates', () => {
     'Drawers and door',
     'Media wall',
     'Record cabinet',
+    'Gallery wall',
   ])
   for (const template of designTemplates)
     expect(t(template.key), template.id).toBe(template.name)
@@ -75,6 +77,15 @@ it('builds the record cabinet as five wave drawers over a double door', () => {
   })
 })
 
+it('keeps the gallery wall symmetrical and its heights in the golden ratio', () => {
+  const { modules } = parseProject(designTemplates[4]!.raw)
+  const sizes = modules.map(({ width, height }) => [width, height])
+  expect(sizes).toStrictEqual(sizes.toReversed())
+  const [tower, step, bench] = modules
+  expect(tower!.height / step!.height).toBeCloseTo(1.62, 2)
+  expect(step!.height / bench!.height).toBeCloseTo(1.62, 2)
+})
+
 it('gives a valid, cuttable inch design from every template', () => {
   for (const template of designTemplates) {
     const project = convertToInches(parseProject(template.raw))
@@ -89,7 +100,7 @@ it('uses the default 18 mm drawer walls, except in the 16 mm record drawer', () 
       (design) => design.wallThickness,
     ),
   )
-  expect(walls).toStrictEqual([18, 18, 18, 16])
+  expect(walls).toStrictEqual([18, 18, 18, 16, 18])
   expect(defaultDrawerDesign().wallThickness).toBe(18)
 })
 
@@ -112,6 +123,57 @@ it('translates the names inside a template without changing its design', () => {
     expect(project.modules[0]!.fronts).toStrictEqual(
       parseProject(raw).modules[0]!.fronts,
     )
+  } finally {
+    setLanguage('en')
+  }
+})
+
+it.each([
+  [
+    'en',
+    'Gallery wall',
+    ['Left tower', 'Left step', 'Centre bench', 'Right step', 'Right tower'],
+  ],
+  [
+    'nl',
+    'Galerijwand',
+    [
+      'Linkertoren',
+      'Linkertrede',
+      'Middenbank',
+      'Rechtertrede',
+      'Rechtertoren',
+    ],
+  ],
+  [
+    'de',
+    'Galeriewand',
+    [
+      'Linker Turm',
+      'Linke Stufe',
+      'Mittelbank',
+      'Rechte Stufe',
+      'Rechter Turm',
+    ],
+  ],
+  [
+    'fr',
+    'Mur galerie',
+    [
+      'Tour gauche',
+      'Gradin gauche',
+      'Banc central',
+      'Gradin droit',
+      'Tour droite',
+    ],
+  ],
+] as const)('labels the gallery wall in %s', (language, name, cabinets) => {
+  const template = designTemplates[4]!
+  setLanguage(language)
+  try {
+    expect(t(template.key)).toBe(name)
+    const { modules } = parseProject(localizedTemplate(template.raw))
+    expect(modules.map((module) => module.name)).toStrictEqual(cabinets)
   } finally {
     setLanguage('en')
   }
