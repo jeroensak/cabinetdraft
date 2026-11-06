@@ -36,8 +36,12 @@ test('a first visit can change language or import a file before choosing', async
   page,
 }) => {
   await page.goto('/designer')
-  await expect(page.getByRole('button', { name: 'Export' })).toHaveCount(0)
-  await page.getByRole('combobox', { name: 'Language' }).selectOption('de')
+  await page.getByRole('button', { name: 'Import, export and share' }).click()
+  await expect(page.getByRole('menuitem', { name: 'Import' })).toBeVisible()
+  await expect(page.getByRole('menuitem', { name: 'Export' })).toHaveCount(0)
+  await page.keyboard.press('Escape')
+  await page.getByRole('button', { name: 'Language' }).click()
+  await page.getByRole('menuitemradio', { name: 'Deutsch' }).click()
   await expect(
     page.getByRole('dialog', { name: 'Neuer Entwurf' }),
   ).toBeVisible()
@@ -66,8 +70,11 @@ test('a share link opens as a new design for someone else, after asking', async 
   await from.getByLabel('Name', { exact: true }).fill('Shared hallway')
   await from.getByRole('radio').nth(1).check()
   await from.getByRole('button', { name: 'Create design' }).click()
-  await from.getByRole('button', { name: 'Share', exact: true }).click()
-  await expect(from.getByRole('button', { name: 'Link copied' })).toBeVisible()
+  await from.getByRole('button', { name: 'Import, export and share' }).click()
+  await from.getByRole('menuitem', { name: 'Share' }).click()
+  await expect(
+    from.getByRole('status').filter({ hasText: 'Link copied' }),
+  ).toBeVisible()
   const link = String(await from.evaluate('navigator.clipboard.readText()'))
   expect(link).toMatch(/\/designer#design=/)
 

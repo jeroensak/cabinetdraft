@@ -1,19 +1,28 @@
 import { languages, setLanguage, useTranslation, type Language } from '../i18n'
+import { HeaderMenu } from './HeaderMenu'
+import { LanguageFlag } from './LanguageFlag'
 
 export function LanguagePicker() {
   const { t, i18n } = useTranslation()
+  const current = i18n.resolvedLanguage as Language
   return (
-    <select
-      className="language-picker"
-      aria-label={t('header.language')}
-      value={i18n.resolvedLanguage}
-      onChange={(event) => setLanguage(event.target.value as Language)}
+    <HeaderMenu
+      label={t('header.language')}
+      icon={<LanguageFlag language={current} />}
     >
       {languages.map((language) => (
-        <option key={language.code} value={language.code} lang={language.code}>
+        <button
+          key={language.code}
+          className="header-menu-item"
+          role="menuitemradio"
+          aria-checked={language.code === current}
+          lang={language.code}
+          onClick={() => setLanguage(language.code)}
+        >
+          <LanguageFlag language={language.code} />
           {language.label}
-        </option>
+        </button>
       ))}
-    </select>
+    </HeaderMenu>
   )
 }

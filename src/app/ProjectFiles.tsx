@@ -8,6 +8,7 @@ import {
 import { useTranslation } from '../i18n'
 import { useProjectStore } from '../store/projectStore'
 import { trackEvent } from './analytics'
+import { HeaderMenu } from './HeaderMenu'
 import { shareHash } from './shareLink'
 
 export function ProjectFiles({ firstVisit = false }: { firstVisit?: boolean }) {
@@ -84,23 +85,46 @@ export function ProjectFiles({ firstVisit = false }: { firstVisit?: boolean }) {
           if (file) void importFile(file)
         }}
       />
-      <button
-        className="pill"
-        disabled={reading}
-        onClick={() => input.current?.click()}
-      >
-        {reading ? t('files.reading') : t('files.import')}
-      </button>
-      {!firstVisit && (
-        <>
-          <button className="pill" onClick={download}>
-            {t('files.export')}
-          </button>
-          <button className="pill" onClick={() => void share()}>
-            {copied ? t('files.linkCopied') : t('files.share')}
-          </button>
-        </>
+      {(reading || copied) && (
+        <span className="file-status" role="status">
+          {reading ? t('files.reading') : t('files.linkCopied')}
+        </span>
       )}
+      <HeaderMenu
+        label={t('files.menu')}
+        icon={
+          <svg className="header-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13" />
+          </svg>
+        }
+      >
+        <button
+          className="header-menu-item"
+          role="menuitem"
+          disabled={reading}
+          onClick={() => input.current?.click()}
+        >
+          {t('files.import')}
+        </button>
+        {!firstVisit && (
+          <>
+            <button
+              className="header-menu-item"
+              role="menuitem"
+              onClick={download}
+            >
+              {t('files.export')}
+            </button>
+            <button
+              className="header-menu-item"
+              role="menuitem"
+              onClick={() => void share()}
+            >
+              {t('files.share')}
+            </button>
+          </>
+        )}
+      </HeaderMenu>
       {error && (
         <div className="file-error" role="alert">
           {error}

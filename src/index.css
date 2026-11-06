@@ -121,13 +121,76 @@ input:focus-visible {
   color: white;
   border-color: var(--accent);
 }
-.language-picker {
-  min-height: 34px;
-  padding: 0 8px;
+.header-menu {
+  position: relative;
+}
+.header-icon-button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 50%;
   background: var(--surface);
+}
+.header-icon-button:hover,
+.header-icon-button[aria-expanded='true'] {
+  border-color: var(--accent);
+}
+.header-icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.language-flag {
+  flex: none;
+  width: 22px;
+  height: 15px;
+  border-radius: 2px;
+  outline: 1px solid #00000022;
+}
+.header-menu-list {
+  position: absolute;
+  /* Above the first-visit dialog, which leaves the header usable. */
+  z-index: 60;
+  top: calc(100% + 8px);
+  right: 0;
+  display: grid;
+  min-width: 160px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px #00000018;
+}
+.header-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 9px;
+  background: none;
   font-size: 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+.header-menu-item:hover,
+.header-menu-item:focus-visible {
+  background: #e7f2ef;
+  outline: none;
+}
+.header-menu-item[aria-checked='true'] {
+  font-weight: 600;
+  color: var(--accent);
+}
+.file-status {
+  font-size: 11px;
+  color: var(--accent);
 }
 .history-button {
   width: 28px;
@@ -769,12 +832,12 @@ input:focus-visible {
   outline: none;
 }
 .space-hit-area:hover {
-  fill: #e7f2ef66;
+  fill: #256d6722;
 }
 .space-hit-area[data-selected='true'] {
-  fill: #e7f2ef99;
+  fill: #256d6744;
   stroke: #256d67;
-  stroke-width: 1;
+  stroke-width: 2;
 }
 .space-hit-area:focus-visible {
   stroke: #256d67;
@@ -826,6 +889,10 @@ input:focus-visible {
 .panel-face[data-source='door'],
 .panel-face[data-source='drawer'] {
   fill: #fffdf9;
+}
+.structure-canvas[data-view='both'] .panel-face[data-source='door'],
+.structure-canvas[data-view='both'] .panel-face[data-source='drawer'] {
+  opacity: 0.6;
 }
 .front-hit-area {
   outline: none;
@@ -1091,6 +1158,19 @@ input:focus-visible {
   align-items: center;
   gap: 8px;
   margin: 18px 0;
+  font-size: 12px;
+  color: #6f6a62;
+}
+.settings-checkbox input {
+  accent-color: var(--accent);
+}
+.settings-units {
+  margin: 18px 0 8px;
+  font-size: 12px;
+  color: #6f6a62;
+}
+.settings-units strong {
+  color: #202722;
 }
 .save-warning {
   display: flex;

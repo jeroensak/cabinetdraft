@@ -63,6 +63,23 @@ describe('Fronts mode', () => {
       screen.getAllByRole('button', { name: /Cabinet 1 space/ }),
     ).toHaveLength(2)
   })
+  it('shows see-through fronts over selectable spaces in Both view', async () => {
+    const user = userEvent.setup()
+    const { container } = render(<DesignerPage />)
+    const doorFaces = () =>
+      container.querySelectorAll('.panel-face[data-source="door"]')
+    expect(doorFaces()).toHaveLength(0)
+    await user.click(screen.getByRole('button', { name: 'Both' }))
+    expect(doorFaces().length).toBeGreaterThan(0)
+    expect(container.querySelector('.structure-canvas')).toHaveAttribute(
+      'data-view',
+      'both',
+    )
+    expect(
+      screen.getAllByRole('button', { name: /Cabinet 1 space/ }),
+    ).toHaveLength(2)
+    expect(screen.queryByRole('button', { name: /double door/ })).toBeNull()
+  })
   it('switches presentation without project/history changes, selects one semantic double door, and edits its leaves', async () => {
     const user = userEvent.setup()
     const project = useProjectStore.getState().present
@@ -120,6 +137,20 @@ describe('Fronts mode', () => {
     await user.click(screen.getByRole('button', { name: 'Remove door' }))
     expect(useProjectStore.getState().present.modules[0].fronts).toEqual([])
     expect(screen.getByRole('button', { name: 'Add door' })).toBeEnabled()
+  })
+  it('switches a door between single and double from its space', async () => {
+    clearFronts()
+    const user = userEvent.setup()
+    render(<DesignerPage />)
+    await user.click(screen.getByRole('button', { name: 'Fronts' }))
+    await user.click(screen.getByRole('button', { name: 'Cabinet 1 space 1' }))
+    await user.click(screen.getByRole('button', { name: 'Add door' }))
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Door leaves' }),
+      'Double door',
+    )
+    const [door] = useProjectStore.getState().present.modules[0].fronts
+    expect(door.type === 'door' && door.leaves).toBe(2)
   })
   it('applies the last door position to every new door', async () => {
     clearFronts()

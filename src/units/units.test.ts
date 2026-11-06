@@ -51,6 +51,23 @@ describe('inch notation', () => {
     },
   )
 
+  it.each([
+    [inches(47 + 7 / 8), '47 7/8"'],
+    [inches(48), "4'"],
+    [inches(80), '6\' 8"'],
+    [inches(80.5), '6\' 8 1/2"'],
+    [inches(96), "8'"],
+    [inches(96 + 1 / 32), '8\' 1/32"'],
+    [-inches(80), '-6\' 8"'],
+  ])('shows large sizes in feet and inches: %i units as %s', (units, text) => {
+    expect(formatMeasure(units, 'inch')).toBe(text)
+  })
+
+  it('keeps plain inches where sizes are typed or cut from', () => {
+    expect(formatInches(inches(80))).toBe('80')
+    expect(formatBare(inches(80), 'inch')).toBe('80')
+  })
+
   it('writes sizes with their unit', () => {
     expect(formatMeasure(800, 'mm')).toBe('800 mm')
     expect(formatMeasure(inches(31.5), 'inch')).toBe('31 1/2"')
