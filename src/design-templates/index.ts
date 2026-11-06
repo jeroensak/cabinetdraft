@@ -13,7 +13,7 @@ const files = import.meta.glob<string>('./*.json', {
 
 export interface DesignTemplate {
   id: string
-  key: 'template.1' | 'template.2' | 'template.3' | 'template.4'
+  key: 'template.1' | 'template.2' | 'template.3' | 'template.4' | 'template.5'
   name: string
   raw: string
 }
