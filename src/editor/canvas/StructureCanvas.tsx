@@ -15,6 +15,9 @@ import { Dimension } from './Dimension'
 import { StructureTargets } from './StructureTargets'
 import { orderFaces } from './orderFaces'
 
+/** Screen pixels the pointer must travel before a press counts as a drag. */
+const PAN_THRESHOLD = 3
+
 export function StructureCanvas() {
   const { t } = useTranslation()
   const { measure } = useMeasure()
@@ -45,6 +48,7 @@ export function StructureCanvas() {
     x: number
     y: number
     pan: { x: number; y: number }
+    moved: boolean
   } | null>(null)
   const faces = useMemo(
     () =>
@@ -160,20 +164,24 @@ export function StructureCanvas() {
             x: event.clientX,
             y: event.clientY,
             pan: viewport.pan,
+            moved: false,
           }
           event.currentTarget.setPointerCapture(event.pointerId)
         }}
         onPointerMove={(event) => {
           if (!drag.current || drag.current.id !== event.pointerId) return
+          const x = event.clientX - drag.current.x
+          const y = event.clientY - drag.current.y
+          if (Math.hypot(x, y) >= PAN_THRESHOLD) drag.current.moved = true
+          if (!drag.current.moved) return
           setViewport({
-            pan: {
-              x: drag.current.pan.x + event.clientX - drag.current.x,
-              y: drag.current.pan.y + event.clientY - drag.current.y,
-            },
+            pan: { x: drag.current.pan.x + x, y: drag.current.pan.y + y },
           })
         }}
         onPointerUp={(event) => {
-          if (drag.current?.id !== event.pointerId) return
+          if (!drag.current || drag.current.id !== event.pointerId) return
+          // A click on the empty canvas deselects; a drag only pans.
+          if (!drag.current.moved) setSelection(null)
           drag.current = null
           event.currentTarget.releasePointerCapture(event.pointerId)
         }}
