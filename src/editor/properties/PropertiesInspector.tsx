@@ -1,4 +1,5 @@
 import { duplicateCabinet } from '../module-list/moduleActions'
+import { DoorMountField, DrawerDesignField } from './FrontChoices'
 import { FrontProperties } from './FrontProperties'
 import { frontName } from '../frontName'
 import { useTranslation } from '../../i18n'
@@ -11,10 +12,16 @@ import {
   moveShelf,
   addShelfToSpace,
   addDoor,
+  removeFront,
   addDividerToSpace,
   moveDivider,
 } from '../../domain/commands'
-import { enclosingRange, spaceRange } from '../../domain/spaces/spaceRanges'
+import {
+  enclosingRange,
+  frontsCovering,
+  spaceRange,
+} from '../../domain/spaces/spaceRanges'
+import type { Front } from '../../domain/fronts/types'
 import { selectedSpaces } from '../../store/selection'
 import { DraftField } from '../../components/DraftField'
 import { deleteWithNotice } from '../deleteSelection'
@@ -28,6 +35,7 @@ export function PropertiesInspector() {
   const selection = useProjectStore((state) => state.editor.selection)
   const setSelection = useProjectStore((state) => state.setSelection)
   const execute = useProjectStore((state) => state.execute)
+  const lastDoorMount = useProjectStore((state) => state.lastDoorMount)
   const openDrawerDesigner = useProjectStore(
     (state) => state.openDrawerDesigner,
   )
@@ -51,6 +59,23 @@ export function PropertiesInspector() {
   const doorRange = module
     ? enclosingRange(module, project.settings, spaces)
     : null
+  const occupants =
+    selection?.type === 'space' && module
+      ? frontsCovering(module, project.settings, spaces)
+      : []
+  const doors = occupants.filter((item) => item.type === 'door')
+  const drawers = occupants.filter((item) => item.type === 'drawer')
+  const removeFronts = (fronts: Front[]) => {
+    if (!module) return
+    run(() =>
+      execute((project) =>
+        fronts.reduce(
+          (next, item) => removeFront(next, module.id, item.id),
+          project,
+        ),
+      ),
+    )
+  }
   const addDivider = () => {
     if (
       module &&
@@ -245,7 +270,7 @@ export function PropertiesInspector() {
                   {t('inspector.addShelf')}
                 </button>
                 <button
-                  className="pill"
+                  className="pill primary"
                   disabled={
                     spaces.length !== 1 ||
                     spaces[0].width <= project.settings.corpusThickness + 1
@@ -254,38 +279,84 @@ export function PropertiesInspector() {
                 >
                   {t('inspector.addDivider')}
                 </button>
-                <button
-                  className="pill"
-                  disabled={!doorRange}
-                  onClick={() => {
-                    if (doorRange)
-                      run(() =>
-                        execute((project) =>
-                          addDoor(project, module.id, doorRange),
-                        ),
-                      )
-                  }}
-                >
-                  {t('inspector.addDoor')}
-                </button>
-                <button
-                  className="pill"
-                  disabled={!spaces.length}
-                  onClick={() =>
-                    openDrawerDesigner({
-                      moduleId: module.id,
-                      ranges: spaces.map(spaceRange),
-                      designId: null,
-                    })
-                  }
-                >
-                  {t('inspector.addDrawer')}
-                </button>
+                {occupants.length === 0 && (
+                  <>
+                    <button
+                      className="pill primary"
+                      disabled={!doorRange}
+                      onClick={() => {
+                        if (doorRange)
+                          run(() =>
+                            execute((project) =>
+                              addDoor(
+                                project,
+                                module.id,
+                                doorRange,
+                                1,
+                                undefined,
+                                lastDoorMount,
+                              ),
+                            ),
+                          )
+                      }}
+                    >
+                      {t('inspector.addDoor')}
+                    </button>
+                    <button
+                      className="pill primary"
+                      disabled={!spaces.length}
+                      onClick={() =>
+                        openDrawerDesigner({
+                          moduleId: module.id,
+                          ranges: spaces.map(spaceRange),
+                          designId: null,
+                        })
+                      }
+                    >
+                      {t('inspector.addDrawer')}
+                    </button>
+                  </>
+                )}
+                {doors.length > 0 && (
+                  <button
+                    className="pill danger"
+                    onClick={() => removeFronts(doors)}
+                  >
+                    {t('inspector.removeDoor', { count: doors.length })}
+                  </button>
+                )}
+                {drawers.length > 0 && (
+                  <button
+                    className="pill danger"
+                    onClick={() => removeFronts(drawers)}
+                  >
+                    {t('inspector.removeDrawer', { count: drawers.length })}
+                  </button>
+                )}
               </div>
-              {!doorRange && spaces.length > 1 && (
+              {occupants.length === 0 && !doorRange && spaces.length > 1 && (
                 <p className="inspector-note muted">
                   {t('inspector.rectangleNote')}
                 </p>
+              )}
+              {occupants.length === 1 && occupants[0].type === 'door' && (
+                <DoorMountField
+                  moduleId={module.id}
+                  door={occupants[0]}
+                  run={run}
+                />
+              )}
+              {occupants.length === 1 && occupants[0].type === 'drawer' && (
+                <>
+                  <h3 className="eyebrow dimension-heading">
+                    {t('frontInfo.drawerBox')}
+                  </h3>
+                  <DrawerDesignField
+                    moduleId={module.id}
+                    drawer={occupants[0]}
+                    run={run}
+                  />
+                </>
               )}
             </>
           )}

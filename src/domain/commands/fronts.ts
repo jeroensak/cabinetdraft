@@ -18,6 +18,7 @@ export function addDoor(
   range: BoundaryRange,
   leafCount: 1 | 2 = 1,
   generateId?: IdGenerator,
+  mount: FrontMount = 'overlay',
 ): Project {
   leaves(leafCount)
   const id = allocateIds(project, generateId)
@@ -27,6 +28,7 @@ export function addDoor(
       type: 'door',
       ...horizontalData(range),
       leaves: leafCount,
+      ...(mount === 'inset' ? { mount } : {}),
       bottomBoundary: { ...range.bottomBoundary },
       topBoundary: { ...range.topBoundary },
     })

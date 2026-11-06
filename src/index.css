@@ -544,6 +544,14 @@ input:focus-visible {
   background: #f3efe6;
   border: none;
 }
+.pill.danger {
+  color: #a63d40;
+  border-color: #a63d40;
+}
+.pill.danger:hover {
+  background: #a63d40;
+  color: white;
+}
 .delete-button {
   color: #a63d40;
   font-size: 11px;
