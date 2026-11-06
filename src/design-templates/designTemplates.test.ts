@@ -1,5 +1,11 @@
 import { expect, it } from 'vitest'
+import {
+  fitPartLabel,
+  partSizeLabel,
+  sheetFontSize,
+} from '../cut-list/sheetDrawingLayout'
 import { deriveCutList } from '../domain/cutlist/deriveCutList'
+import { deriveSheetLayout } from '../domain/cutlist/sheetLayout'
 import { defaultDrawerDesign } from '../domain/drawers/types'
 import { convertToInches } from '../domain/project/convertToInches'
 import { parseProject } from '../domain/import-export/projectJson'
@@ -26,6 +32,28 @@ it('ships exactly five valid starting templates', () => {
   ])
   for (const template of designTemplates)
     expect(t(template.key), template.id).toBe(template.name)
+})
+
+it('labels every part of every template on the default sheets', () => {
+  const stock = { length: 2440, width: 1220, kerf: 4 }
+  for (const template of designTemplates) {
+    const cutList = deriveCutList(parseProject(template.raw))
+    if (!cutList.available) throw new Error('The cut list should be available')
+    for (const priority of ['cuts', 'sheets'] as const) {
+      const unlabelled = deriveSheetLayout(cutList.items, stock, priority)
+        .groups.flatMap((group) => group.sheets)
+        .flatMap((sheet) => sheet.parts)
+        .filter(
+          (part) =>
+            !fitPartLabel(
+              part,
+              partSizeLabel(part, 'mm'),
+              sheetFontSize(stock),
+            ),
+        )
+      expect(unlabelled, template.id).toStrictEqual([])
+    }
+  }
 })
 
 it('makes the media wall a large, varied five-cabinet run', () => {

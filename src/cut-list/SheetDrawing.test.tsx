@@ -86,6 +86,17 @@ describe('SheetDrawing', () => {
     expect(350 - textLength).toBeGreaterThanOrEqual((2440 / 75) * 3 - 0.01)
   })
 
+  it('breaks an ID in two rather than lose it on a short part', () => {
+    const short = draw([
+      part({ id: 'C2-DRAWER-1-BOX-FRONT', spanX: 277, spanY: 99 }),
+    ])
+    const label = short.querySelector('.sheet-part-label')!
+    expect(
+      [...label.querySelectorAll('tspan')].map((line) => line.textContent),
+    ).toStrictEqual(['C2-DRAWER-1', 'BOX-FRONT'])
+    expect(Number(label.getAttribute('font-size'))).toBeGreaterThan(2440 / 150)
+  })
+
   it('leaves a part too small to read to its title', () => {
     const container = draw([part({ spanX: 8, spanY: 8 })])
     expect(container.querySelector('.sheet-part-label')).toBeNull()
