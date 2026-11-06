@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import type { Arrangement } from '../../domain/cabinet/deriveArrangement'
 import { deriveSpaces } from '../../domain/spaces/deriveSpaces'
+import { deriveCarcassDimensions } from '../../domain/cabinet/deriveCarcassDimensions'
 import { sameSpace } from '../../domain/spaces/boundaries'
+import { snapPosition } from '../../domain/spaces/snapPosition'
 import { spaceRange } from '../../domain/spaces/spaceRanges'
 import { spacesInRange, selectedSpaces } from '../../store/selection'
 import { selectSpace } from '../spaceSelection'
@@ -13,8 +15,11 @@ import { useMeasure } from '../../units/useMeasure'
 import { useProjectStore } from '../../store/projectStore'
 import { commandMessage } from '../useCommandAction'
 import { Dimension } from './Dimension'
+import { SnapGuides } from './SnapGuides'
 import type { Point } from './projection'
 
+/** Screen pixels within which a dragged panel jumps to an equal-space position. */
+const SNAP_DISTANCE = 6
 /** Left of the cabinet, inside the overall height dimension. */
 const SHELF_MEASURE_OFFSET = -24
 
@@ -38,6 +43,10 @@ export function StructureTargets({
   const setSelection = useProjectStore((state) => state.setSelection)
   const setHover = useProjectStore((state) => state.setHover)
   const [error, setError] = useState<string | null>(null)
+  const [guide, setGuide] = useState<{
+    axis: 'x' | 'y'
+    position: number
+  } | null>(null)
   const drag = useRef<{
     pointer: number
     start: number
@@ -50,6 +59,7 @@ export function StructureTargets({
   const cancel = () => {
     if (drag.current?.started) useProjectStore.getState().cancelProjectPreview()
     drag.current = null
+    setGuide(null)
   }
   useEffect(() => {
     const escape = (event: KeyboardEvent) => {
@@ -63,6 +73,15 @@ export function StructureTargets({
       cancel()
     }
   }, [])
+  const innerSpan = (axis: 'x' | 'y') => {
+    const carcass = deriveCarcassDimensions(module, project.settings)
+    return axis === 'x'
+      ? { start: project.settings.corpusThickness, size: carcass.internalWidth }
+      : {
+          start: carcass.interiorBottom,
+          size: carcass.interiorTop - carcass.interiorBottom,
+        }
+  }
   /** Drags a panel along one axis as a live preview, committed once on release. */
   const dragHandlers = (
     axis: 'x' | 'y',
@@ -103,12 +122,17 @@ export function StructureTargets({
       }
       // Screen y grows downwards, physical y upwards.
       const moved = (current.axis === 'x' ? delta : -delta) / current.zoom
+      const { corpusThickness, unit = 'mm' } = project.settings
+      const position = snapPosition(
+        current.value + moved,
+        { ...innerSpan(current.axis), thickness: corpusThickness },
+        unit,
+        SNAP_DISTANCE / current.zoom,
+      )
+      setGuide({ axis: current.axis, position })
       try {
         state.updateProjectPreview(
-          current.move(
-            useProjectStore.getState().previewBase!,
-            Math.round(current.value + moved),
-          ),
+          current.move(useProjectStore.getState().previewBase!, position),
         )
         setError(null)
       } catch (error) {
@@ -120,6 +144,7 @@ export function StructureTargets({
       if (drag.current.started)
         useProjectStore.getState().commitProjectPreview()
       drag.current = null
+      setGuide(null)
       event.currentTarget.releasePointerCapture(event.pointerId)
     },
     onPointerCancel: cancel,
@@ -323,6 +348,20 @@ export function StructureTargets({
               </g>
             )
           })}
+      {guide && (
+        <SnapGuides
+          axis={guide.axis}
+          position={guide.position}
+          span={{
+            ...innerSpan(guide.axis),
+            thickness: project.settings.corpusThickness,
+          }}
+          across={innerSpan(guide.axis === 'x' ? 'y' : 'x')}
+          originX={origin.x}
+          screen={screen}
+          zoom={zoom}
+        />
+      )}
       {error && (
         <text
           role="alert"

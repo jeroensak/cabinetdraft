@@ -801,6 +801,48 @@ input:focus-visible {
   stroke-width: 4px;
   stroke-linejoin: round;
 }
+.snap-guides {
+  pointer-events: none;
+}
+.snap-guide {
+  stroke: #256d67;
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+  opacity: 0.45;
+}
+.snap-guide[data-active='true'] {
+  stroke-width: 1.5;
+  stroke-dasharray: none;
+  opacity: 1;
+}
+.snap-space {
+  fill: #256d6726;
+}
+.snap-space-size {
+  fill: #256d67;
+  font-size: 11px;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: #fffdf8;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.snap-percent rect {
+  fill: #fffdf8;
+  stroke: #256d6766;
+}
+.snap-percent text {
+  fill: #256d67;
+  font-size: 9px;
+}
+.snap-percent[data-active='true'] rect {
+  fill: #256d67;
+  stroke: #256d67;
+}
+.snap-percent[data-active='true'] text {
+  fill: white;
+  font-weight: 600;
+}
 .panel-measure {
   pointer-events: none;
 }
