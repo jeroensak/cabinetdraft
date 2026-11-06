@@ -460,6 +460,23 @@ describe('edge banding', () => {
     expect(screen.queryByText(/wave-top/)).not.toBeInTheDocument()
   })
 
+  it('shows reduced cut sizes and says by how much', () => {
+    const project = createDefaultProject()
+    useProject({
+      ...project,
+      settings: {
+        ...project.settings,
+        edgeBanding: true,
+        edgeBandingThickness: 0.5,
+      },
+    })
+    renderCutList()
+    expect(row('C1-TOP')).toHaveTextContent('596.5')
+    expect(
+      screen.getByText(/reduced by 0\.5 mm for each banded edge/),
+    ).toBeVisible()
+  })
+
   it('keeps the same total when rows are merged or not', async () => {
     const user = userEvent.setup()
     const original = createDefaultProject()

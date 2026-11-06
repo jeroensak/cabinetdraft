@@ -101,4 +101,4 @@ The interface is available in English, Dutch, German and French through i18next,
 
 ## Cut List
 
-Parts are grouped into cabinet bases, shelves and dividers, doors, and drawers, and identical parts share a row by default. The PDF adds an assembly page per cabinet. Turn on **Edge banding enabled** in Settings to see the banded edges of each row and the total length needed, on the page and in the PDF.
+Parts are grouped into cabinet bases, shelves and dividers, doors, and drawers, and identical parts share a row by default. The PDF adds an assembly page per cabinet. Turn on **Edge banding enabled** in Settings to see the banded edges of each row and the total length needed, on the page and in the PDF. Enter the band's thickness there to have it taken off the cut sizes.

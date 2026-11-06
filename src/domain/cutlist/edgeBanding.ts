@@ -30,16 +30,43 @@ export type BandingRow = Pick<
   'part' | 'length' | 'width' | 'waveDip'
 > & { quantity: number }
 
+/** The band's thickness counts only while banding is on. */
+export const bandThickness = (settings: ProjectSettings) =>
+  settings.edgeBanding ? (settings.edgeBandingThickness ?? 0) : 0
+
+/** The size to saw so the part reaches its designed size once banded. A front
+ * edge runs along Length, so its band takes from Width; all four edges take
+ * twice from both. Only a single front edge can leave a half unit. */
+export function bandedCutSize(
+  part: CutListItem['part'],
+  length: number,
+  width: number,
+  thickness: number,
+) {
+  const edges = bandedEdges[part]
+  return {
+    length: edges === 'all' ? length - 2 * thickness : length,
+    width:
+      edges === 'all'
+        ? width - 2 * thickness
+        : edges === 'front'
+          ? width - thickness
+          : width,
+  }
+}
+
 export interface RowBanding {
   edges: BandedEdges
   /** The length includes the wave top allowance. */
   waveAllowance: boolean
-  /** Band needed for the whole row. A wave allowance can end in a half unit,
-   * always exactly, because a front's perimeter is an even whole number. */
+  /** Band needed for the whole row, along its cut sizes. A wave allowance can
+   * end in a half unit, always exactly, because a front's cut perimeter is an
+   * even whole number. */
   length: number
 }
 
 export interface EdgeBanding {
+  thickness: number
   rows: RowBanding[]
   totalLength: number
 }
@@ -68,6 +95,7 @@ export function deriveEdgeBanding(
   if (!settings.edgeBanding) return null
   const banding = rows.map(deriveRowBanding)
   return {
+    thickness: bandThickness(settings),
     rows: banding,
     totalLength: banding.reduce((total, row) => total + row.length, 0),
   }

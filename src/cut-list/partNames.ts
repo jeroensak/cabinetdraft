@@ -52,8 +52,16 @@ export function bandedEdgesLabel(row: BandingRow): string {
 }
 
 /** What the total includes, and that cut sizes are unaffected. */
-export function bandingNote(banding: EdgeBanding): string {
-  return banding.rows.some((row) => row.waveAllowance)
-    ? `${t('cutList.bandingWaveNote')} ${t('cutList.bandingNote')}`
+export function bandingNote(
+  banding: EdgeBanding,
+  unit: MeasurementUnit,
+): string {
+  const sizes = banding.thickness
+    ? t('cutList.bandingSubtracted', {
+        thickness: formatMeasure(banding.thickness, unit),
+      })
     : t('cutList.bandingNote')
+  return banding.rows.some((row) => row.waveAllowance)
+    ? `${t('cutList.bandingWaveNote')} ${sizes}`
+    : sizes
 }

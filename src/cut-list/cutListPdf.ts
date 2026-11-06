@@ -195,7 +195,7 @@ export function createCutListPdf(
     const footer = sheetPage
       ? t('sheets.note', { unit: unitName })
       : banding && !cabinet
-        ? `${listNote} ${bandingNote(banding)}`
+        ? `${listNote} ${bandingNote(banding, measureUnit)}`
         : listNote
     const footerLines: string[] = doc.splitTextToSize(footer, 245)
     doc.text(footerLines, 15, sheetPage || footerLines.length > 1 ? 195 : 199)

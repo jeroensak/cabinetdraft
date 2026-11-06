@@ -1,4 +1,5 @@
 import { PROJECT_SCHEMA_VERSION, type Project } from '../project/types'
+import { isHalfStep } from '../project/units'
 import { verticalBounds } from '../spaces/boundaries'
 
 function record(value: unknown): value is Record<string, unknown> {
@@ -68,6 +69,11 @@ export function isProject(value: unknown): value is Project {
     typeof settings.backPanelEnabled !== 'boolean' ||
     (settings.edgeBanding !== undefined &&
       typeof settings.edgeBanding !== 'boolean') ||
+    (settings.edgeBandingThickness !== undefined &&
+      !(
+        typeof settings.edgeBandingThickness === 'number' &&
+        isHalfStep(settings.edgeBandingThickness)
+      )) ||
     (settings.unit !== undefined &&
       settings.unit !== 'mm' &&
       settings.unit !== 'inch')

@@ -15,6 +15,7 @@ export type CommandErrorCode =
   | 'divider-not-found'
   | 'not-a-door'
   | 'invalid-integer'
+  | 'invalid-band-thickness'
   | 'invalid-leaves'
   | 'invalid-module-order'
   | 'invalid-space'

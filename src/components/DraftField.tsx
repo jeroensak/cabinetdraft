@@ -1,6 +1,12 @@
 import { useState } from 'react'
 import { useTranslation } from '../i18n'
-import { formatInches, parseInches, unitSymbol } from '../units'
+import {
+  formatInches,
+  parseHalfInches,
+  parseHalfMillimetres,
+  parseInches,
+  unitSymbol,
+} from '../units'
 import { useMeasure } from '../units/useMeasure'
 
 const wholeNumber = (text: string) =>
@@ -14,6 +20,7 @@ export function DraftField({
   value,
   numeric = false,
   percent = false,
+  halfSteps = false,
   onCommit,
 }: {
   label: string
@@ -21,6 +28,8 @@ export function DraftField({
   numeric?: boolean
   /** A whole percentage instead of a size in the design's unit. */
   percent?: boolean
+  /** Also accepts a half unit: 0.5 mm, or 1/64". */
+  halfSteps?: boolean
   onCommit: (value: string) => boolean | void
 }) {
   const { t } = useTranslation()
@@ -36,7 +45,9 @@ export function DraftField({
       <span className={numeric ? 'dimension-input' : undefined}>
         <input
           aria-label={numeric ? `${label} (${symbol})` : label}
-          inputMode={numeric && !inch ? 'numeric' : undefined}
+          inputMode={
+            !numeric || inch ? undefined : halfSteps ? 'decimal' : 'numeric'
+          }
           value={draft}
           aria-invalid={error}
           onChange={(event) => {
@@ -45,7 +56,13 @@ export function DraftField({
           }}
           onBlur={() => {
             if (draft === shown) return
-            const parsed = inch ? parseInches(draft) : wholeNumber(draft)
+            const parsed = halfSteps
+              ? inch
+                ? parseHalfInches(draft)
+                : parseHalfMillimetres(draft)
+              : inch
+                ? parseInches(draft)
+                : wholeNumber(draft)
             if (numeric && parsed === null) {
               setError(true)
               return
@@ -72,9 +89,11 @@ export function DraftField({
         <span className="field-error" role="alert">
           {percent
             ? t('field.whole')
-            : inch
-              ? t('field.inches')
-              : t('field.wholeMm')}
+            : halfSteps
+              ? t(inch ? 'field.halfInches' : 'field.halfMm')
+              : inch
+                ? t('field.inches')
+                : t('field.wholeMm')}
         </span>
       )}
     </label>

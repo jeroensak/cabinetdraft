@@ -83,3 +83,9 @@ describe('inch designs', () => {
     ).toThrow()
   })
 })
+
+it('converts a band thickness to the nearest 1/64 inch', () => {
+  const project = createDefaultProject()
+  project.settings.edgeBandingThickness = 1
+  expect(convertToInches(project).settings.edgeBandingThickness).toBe(1.5)
+})

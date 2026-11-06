@@ -54,6 +54,18 @@ export function ProjectSettings() {
         />
         {t('settings.edgeBanding')}
       </label>
+      {project.settings.edgeBanding && (
+        <DraftField
+          key={`${project.id}-band-${project.settings.edgeBandingThickness ?? 0}`}
+          label={t('settings.edgeBandingThickness')}
+          numeric
+          halfSteps
+          value={project.settings.edgeBandingThickness ?? 0}
+          onCommit={(value) =>
+            run(() => updateSettings({ edgeBandingThickness: Number(value) }))
+          }
+        />
+      )}
       <p className="settings-units">
         <Trans
           i18nKey="settings.unitsNote"

@@ -188,7 +188,7 @@ export function CutListPage() {
                   length: formatTotalLength(banding.totalLength, unit),
                 })}
               </strong>
-              <span>{bandingNote(banding)}</span>
+              <span>{bandingNote(banding, unit)}</span>
             </div>
           )}
           {view === 'parts' && (

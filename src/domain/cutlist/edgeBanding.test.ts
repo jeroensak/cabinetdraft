@@ -6,8 +6,15 @@ import { convertToInches } from '../project/convertToInches'
 import { createDefaultProject } from '../project/createDefaultProject'
 import { inches } from '../project/units'
 import type { Project } from '../project/types'
-import { deriveCutList, type CutListItem } from './deriveCutList'
+import { formatBare } from '../../units'
 import {
+  deriveCutList,
+  deriveLabelledPanels,
+  type CutListItem,
+} from './deriveCutList'
+import { deriveSheetLayout } from './sheetLayout'
+import {
+  bandedCutSize,
   deriveEdgeBanding,
   deriveRowBanding,
   type BandingRow,
@@ -175,12 +182,174 @@ describe('deriveEdgeBanding', () => {
   })
 })
 
+describe('bandedCutSize', () => {
+  it.each([
+    'side-left',
+    'side-right',
+    'top',
+    'bottom',
+    'shelf',
+    'divider',
+  ] as const)('takes a %s band off Width once', (part) => {
+    expect(bandedCutSize(part, 700, 400, 2)).toStrictEqual({
+      length: 700,
+      width: 398,
+    })
+  })
+
+  it.each(['door', 'drawer'] as const)(
+    'takes a %s band off all edges',
+    (part) => {
+      expect(bandedCutSize(part, 700, 400, 2)).toStrictEqual({
+        length: 696,
+        width: 396,
+      })
+    },
+  )
+
+  it.each([
+    'back',
+    'drawer-side-left',
+    'drawer-side-right',
+    'drawer-box-front',
+    'drawer-box-back',
+    'drawer-bottom',
+  ] as const)('leaves a %s at full size', (part) => {
+    expect(bandedCutSize(part, 700, 400, 2)).toStrictEqual({
+      length: 700,
+      width: 400,
+    })
+  })
+
+  it('keeps a half unit exact on a single front edge', () => {
+    expect(bandedCutSize('shelf', 764, 597, 0.5).width).toBe(596.5)
+    expect(bandedCutSize('door', 700, 400, 0.5)).toStrictEqual({
+      length: 699,
+      width: 399,
+    })
+  })
+})
+
+describe('band thickness on the cut list', () => {
+  const project = createDefaultProject()
+  const thick = (thickness: number, source = project) =>
+    updateProjectSettings(source, {
+      edgeBanding: true,
+      edgeBandingThickness: thickness,
+    })
+  const byId = (rows: CutListItem[]) =>
+    new Map(rows.map((item) => [item.id, item]))
+
+  it('takes it off the cut sizes of every banded part', () => {
+    const before = byId(items(project))
+    for (const after of items(thick(1))) {
+      const row = before.get(after.id)!
+      expect({ length: after.length, width: after.width }).toStrictEqual(
+        bandedCutSize(row.part, row.length, row.width, 1),
+      )
+    }
+    expect(byId(items(thick(1))).get('C1-BACK')).toStrictEqual(
+      before.get('C1-BACK'),
+    )
+  })
+
+  it('ignores the thickness while banding is off', () => {
+    const off = updateProjectSettings(thick(2), { edgeBanding: false })
+    expect(off.settings.edgeBandingThickness).toBe(2)
+    expect(items(off)).toStrictEqual(items(project))
+  })
+
+  it('leaves designed panels alone, so the Designer never changes', () => {
+    expect(deriveLabelledPanels(thick(2))).toStrictEqual(
+      deriveLabelledPanels(project),
+    )
+  })
+
+  it('measures an inch design in 1/64ths', () => {
+    const inch = convertToInches(project)
+    const before = byId(items(inch))
+    const side = byId(items(thick(1 / 2, inch))).get('C1-SIDE-L')!
+    expect(side.width).toBe(before.get('C1-SIDE-L')!.width - 0.5)
+    expect(formatBare(side.width, 'inch')).toMatch(/\d+\/64$/)
+  })
+
+  it('reports a band too thick for a part instead of a negative size', () => {
+    const result = deriveCutList(thick(400))
+    expect(result.available).toBe(false)
+    if (!result.available)
+      expect(result.issues.map((issue) => issue.code)).toContain(
+        'edge-banding-too-thick',
+      )
+  })
+
+  it('totals along the cut sizes', () => {
+    const rows = items(thick(1))
+    const door = rows.find((item) => item.part === 'door')!
+    expect(deriveRowBanding(door).length).toBe(2 * (door.length + door.width))
+  })
+
+  it('lays half sizes out on sheets without losing a part', () => {
+    const rows = items(thick(0.5))
+    const layout = deriveSheetLayout(
+      rows,
+      { length: 2440, width: 1220, kerf: 4 },
+      'cuts',
+    )
+    const placed = layout.groups.flatMap((group) =>
+      group.sheets.flatMap((sheet) => sheet.parts),
+    )
+    expect(placed).toHaveLength(rows.length)
+    expect(
+      placed.some((part) => !Number.isInteger(part.spanX + part.spanY)),
+    ).toBe(true)
+  })
+})
+
 describe('edge banding setting', () => {
   const project = createDefaultProject()
 
-  it('changes no cut sizes', () => {
+  it('changes no cut sizes until a thickness is entered', () => {
     const banded = updateProjectSettings(project, { edgeBanding: true })
     expect(items(banded)).toStrictEqual(items(project))
+  })
+
+  it('keeps a thickness through export and import', () => {
+    const banded = updateProjectSettings(project, {
+      edgeBanding: true,
+      edgeBandingThickness: 0.5,
+    })
+    expect(parseProject(exportProject(banded)).settings).toMatchObject({
+      edgeBanding: true,
+      edgeBandingThickness: 0.5,
+    })
+  })
+
+  it('removes the thickness from the project at zero', () => {
+    const banded = updateProjectSettings(project, {
+      edgeBanding: true,
+      edgeBandingThickness: 2,
+    })
+    expect(
+      updateProjectSettings(banded, { edgeBandingThickness: 0 }).settings,
+    ).not.toHaveProperty('edgeBandingThickness')
+  })
+
+  it.each([-1, 0.25, Number.NaN])('refuses a thickness of %s', (value) => {
+    expect(() =>
+      updateProjectSettings(project, { edgeBandingThickness: value }),
+    ).toThrow('invalid-band-thickness')
+  })
+
+  it.each([-1, 0.25, '1'])('refuses to import a thickness of %s', (value) => {
+    const parsed = JSON.parse(exportProject(project)) as Project
+    expect(() =>
+      parseProject(
+        JSON.stringify({
+          ...parsed,
+          settings: { ...parsed.settings, edgeBandingThickness: value },
+        }),
+      ),
+    ).toThrow('invalid-structure')
   })
 
   it('stays out of a project that never turned it on', () => {

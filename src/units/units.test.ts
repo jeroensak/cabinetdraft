@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   formatTotalLength,
+  parseHalfInches,
+  parseHalfMillimetres,
   formatBare,
   formatInches,
   formatMeasure,
@@ -92,5 +94,23 @@ describe('formatTotalLength', () => {
 
   it('stays in plain inches, however long, down to a half unit', () => {
     expect(formatTotalLength(inches(600) + 0.5, 'inch')).toBe('600 1/64"')
+  })
+})
+
+describe('half step sizes', () => {
+  it('reads millimetres in 0.5 steps, with either decimal mark', () => {
+    expect(parseHalfMillimetres('0.5')).toBe(0.5)
+    expect(parseHalfMillimetres('1,5')).toBe(1.5)
+    expect(parseHalfMillimetres('2')).toBe(2)
+    expect(parseHalfMillimetres('0.3')).toBeNull()
+    expect(parseHalfMillimetres('-1')).toBeNull()
+    expect(parseHalfMillimetres('')).toBeNull()
+  })
+
+  it('reads inches to 1/64, which plain sizes refuse', () => {
+    expect(parseHalfInches('1/64')).toBe(0.5)
+    expect(parseHalfInches('1/32')).toBe(1)
+    expect(parseHalfInches('1/128')).toBeNull()
+    expect(parseInches('1/64')).toBeNull()
   })
 })
