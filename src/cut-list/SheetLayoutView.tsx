@@ -5,7 +5,6 @@ import {
   deriveSheetLayout,
   type SheetPriority,
 } from '../domain/cutlist/sheetLayout'
-import { UNITS_PER_INCH } from '../domain/project/units'
 import { useTranslation } from '../i18n'
 import {
   loadSheetPreference,
@@ -13,18 +12,18 @@ import {
   SHEET_SIZES,
   type SheetPreference,
 } from '../store/sheetStockPreference'
+import { formatSheetSize } from '../units'
 import { useMeasure } from '../units/useMeasure'
 import { CUT_LIST_GROUPS } from './partGroups'
 import { SheetDrawing } from './SheetDrawing'
 
 const CUSTOM = 'custom'
-const UNITS_PER_FOOT = 12 * UNITS_PER_INCH
 const sizeKey = (length: number, width: number) => `${length}x${width}`
 
 /** Presentation of the canonical cut list rows laid out on sheets. */
 export function SheetLayoutView({ items }: { items: CutListItem[] }) {
   const { t } = useTranslation()
-  const { unit, measure, size } = useMeasure()
+  const { unit, measure } = useMeasure()
   const [stock, setStock] = useState(() => loadSheetPreference(unit))
   const sizes = SHEET_SIZES[unit]
   const standard = sizes.some(
@@ -40,11 +39,6 @@ export function SheetLayoutView({ items }: { items: CutListItem[] }) {
     setStock(next)
     saveSheetPreference(unit, next)
   }
-  // Boards are sold in whole feet, so both sides read alike: 4' × 2'.
-  const sheetName = (length: number, width: number) =>
-    unit === 'inch'
-      ? `${length / UNITS_PER_FOOT}' × ${width / UNITS_PER_FOOT}'`
-      : size(length, width)
   const sheets = layout.groups.reduce(
     (sum, group) => sum + group.sheets.length,
     0,
@@ -71,7 +65,7 @@ export function SheetLayoutView({ items }: { items: CutListItem[] }) {
                 key={sizeKey(length, width)}
                 value={sizeKey(length, width)}
               >
-                {sheetName(length, width)}
+                {formatSheetSize(length, width, unit)}
               </option>
             ))}
             <option value={CUSTOM}>{t('sheets.custom')}</option>

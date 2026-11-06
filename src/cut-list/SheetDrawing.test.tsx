@@ -75,6 +75,17 @@ describe('SheetDrawing', () => {
     )
   })
 
+  it('keeps a label clear of the cut numbers at the ends of a part', () => {
+    const thin = draw([
+      part({ id: 'C1-DRAWER-4-BOX-FRONT', spanX: 350, spanY: 80 }),
+    ])
+    const size = Number(
+      thin.querySelector('.sheet-part-label')!.getAttribute('font-size'),
+    )
+    const textLength = 'C1-DRAWER-4-BOX-FRONT'.length * size * 0.58
+    expect(350 - textLength).toBeGreaterThanOrEqual((2440 / 75) * 3 - 0.01)
+  })
+
   it('leaves a part too small to read to its title', () => {
     const container = draw([part({ spanX: 8, spanY: 8 })])
     expect(container.querySelector('.sheet-part-label')).toBeNull()

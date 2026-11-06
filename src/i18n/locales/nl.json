@@ -357,6 +357,8 @@
   "design.duplicateFailed": "Dit ontwerp kon niet worden gedupliceerd.",
   "pdf.assembly": "Montage: {{cabinet}}",
   "pdf.assemblyNote": "Labels zijn de ID’s uit de zaaglijst zonder het voorvoegsel {{prefix}}.",
+  "pdf.sheetLayout": "Plaatindeling",
+  "pdf.sheetTitle": "Plaat {{number}} van {{total}}, {{thickness}} dik",
   "files.share": "Delen",
   "files.menu": "Importeren, exporteren en delen",
   "files.linkCopied": "Link gekopieerd",

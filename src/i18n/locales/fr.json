@@ -357,6 +357,8 @@
   "design.duplicateFailed": "Cette conception n’a pas pu être dupliquée.",
   "pdf.assembly": "Assemblage : {{cabinet}}",
   "pdf.assemblyNote": "Les étiquettes sont les ID de la liste de découpe sans le préfixe {{prefix}}.",
+  "pdf.sheetLayout": "Plan de découpe",
+  "pdf.sheetTitle": "Panneau {{number}} sur {{total}}, épaisseur {{thickness}}",
   "files.share": "Partager",
   "files.menu": "Importer, exporter et partager",
   "files.linkCopied": "Lien copié",

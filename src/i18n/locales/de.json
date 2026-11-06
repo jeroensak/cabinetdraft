@@ -357,6 +357,8 @@
   "design.duplicateFailed": "Dieser Entwurf konnte nicht dupliziert werden.",
   "pdf.assembly": "Montage: {{cabinet}}",
   "pdf.assemblyNote": "Beschriftungen sind die IDs der Zuschnittliste ohne das Präfix {{prefix}}.",
+  "pdf.sheetLayout": "Plattenaufteilung",
+  "pdf.sheetTitle": "Platte {{number}} von {{total}}, {{thickness}} dick",
   "files.share": "Teilen",
   "files.menu": "Importieren, exportieren und teilen",
   "files.linkCopied": "Link kopiert",

@@ -12,7 +12,7 @@ const font = readFileSync(
 ).toString('base64')
 it('creates a PDF for the default cabinet and paginates large cut lists', () => {
   const project = createDefaultProject()
-  expect(createCutListPdf(project, font).getNumberOfPages()).toBe(2)
+  expect(createCutListPdf(project, font).getNumberOfPages()).toBe(6)
   const module = project.modules[0]
   project.modules = Array.from({ length: 20 }, (_, i) => ({
     ...module,
@@ -25,6 +25,11 @@ it('creates a PDF for the default cabinet and paginates large cut lists', () => 
   expect(pdf.getNumberOfPages()).toBeGreaterThan(20)
   expect(pdf.output().startsWith('%PDF-')).toBe(true)
 })
+it('puts the sheets between the lists and the assembly pages', () => {
+  const pdf = createCutListPdf(createDefaultProject(), font)
+  // One list, four sheets, one cabinet.
+  expect(pdf.getNumberOfPages()).toBe(1 + 4 + 1)
+})
 it('refuses invalid and empty projects even outside the UI', () => {
   const project = createDefaultProject()
   project.modules[0].width = 801
@@ -36,7 +41,7 @@ it.each(['nl', 'de', 'fr'] as const)('creates a %s PDF', (language) => {
   setLanguage(language)
   try {
     const pdf = createCutListPdf(createDefaultProject(), font)
-    expect(pdf.getNumberOfPages()).toBe(2)
+    expect(pdf.getNumberOfPages()).toBe(6)
   } finally {
     setLanguage('en')
   }

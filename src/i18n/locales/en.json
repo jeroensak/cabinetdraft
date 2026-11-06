@@ -357,6 +357,8 @@
   "design.duplicateFailed": "This design could not be duplicated.",
   "pdf.assembly": "Assembly: {{cabinet}}",
   "pdf.assemblyNote": "Labels are the cut list IDs without the {{prefix}} prefix.",
+  "pdf.sheetLayout": "Sheet layout",
+  "pdf.sheetTitle": "Sheet {{number}} of {{total}}, {{thickness}} thick",
   "files.share": "Share",
   "files.menu": "Import, export and share",
   "files.linkCopied": "Link copied",
