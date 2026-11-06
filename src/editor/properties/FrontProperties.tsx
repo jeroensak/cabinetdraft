@@ -2,7 +2,6 @@ import type { CabinetModule } from '../../domain/cabinet/types'
 import type { Boundary, Front } from '../../domain/fronts/types'
 import type { ProjectSettings } from '../../domain/project/types'
 import { deriveFrontGeometry } from '../../domain/fronts/deriveFrontGeometry'
-import { setDoorLeaves } from '../../domain/commands'
 import { deriveDrawerGeometry } from '../../domain/drawers/deriveDrawerGeometry'
 import { spaceRange } from '../../domain/spaces/spaceRanges'
 import { useTranslation } from '../../i18n'
@@ -11,7 +10,11 @@ import { useMeasure } from '../../units/useMeasure'
 import { drawerIssueMessage } from '../../i18n/drawerIssues'
 import { useProjectStore } from '../../store/projectStore'
 import { useCommandAction } from '../useCommandAction'
-import { DoorMountField, DrawerDesignField } from './FrontChoices'
+import {
+  DoorLeavesField,
+  DoorMountField,
+  DrawerDesignField,
+} from './FrontChoices'
 
 export function FrontProperties({
   module,
@@ -25,7 +28,6 @@ export function FrontProperties({
   const { t } = useTranslation()
   const { measure, size, unit } = useMeasure()
 
-  const execute = useProjectStore((state) => state.execute)
   const designs = useProjectStore((state) => state.present.drawerDesigns)
   const openDrawerDesigner = useProjectStore(
     (state) => state.openDrawerDesigner,
@@ -57,28 +59,7 @@ export function FrontProperties({
       <h3 className="eyebrow dimension-heading">{t('frontInfo.type')}</h3>
       {front.type === 'door' ? (
         <>
-          <label className="property-field">
-            <span className="sr-only">{t('frontInfo.doorLeaves')}</span>
-            <select
-              aria-label={t('frontInfo.doorLeaves')}
-              value={front.leaves}
-              onChange={(event) =>
-                run(() =>
-                  execute((project) =>
-                    setDoorLeaves(
-                      project,
-                      module.id,
-                      front.id,
-                      Number(event.target.value) as 1 | 2,
-                    ),
-                  ),
-                )
-              }
-            >
-              <option value={1}>{t('front.single')}</option>
-              <option value={2}>{t('front.double')}</option>
-            </select>
-          </label>
+          <DoorLeavesField moduleId={module.id} door={front} run={run} />
           <DoorMountField moduleId={module.id} door={front} run={run} />
         </>
       ) : (

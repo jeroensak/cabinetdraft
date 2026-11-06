@@ -6,16 +6,23 @@ import { formatBare, formatMeasure } from '../units'
 const isDrawerSide = (item: CutListItem) =>
   item.part === 'drawer-side-left' || item.part === 'drawer-side-right'
 
+const isTopOrBottom = (item: CutListItem) =>
+  item.part === 'top' || item.part === 'bottom'
+
 export function partName(
   item: CutListItem,
   unit: MeasurementUnit = 'mm',
-  /** Left and right drawer sides are the same panel once rows are merged. */
+  /** Once rows are merged, left and right drawer sides are the same panel, and
+   * so are a cabinet's top and bottom. */
   merged = false,
 ): string {
-  const name =
-    merged && isDrawerSide(item)
+  const name = !merged
+    ? t(`part.${item.part}`)
+    : isDrawerSide(item)
       ? t('part.drawer-side')
-      : t(`part.${item.part}`)
+      : isTopOrBottom(item)
+        ? t('part.top-bottom')
+        : t(`part.${item.part}`)
   if (item.groove)
     return t('part.withGroove', {
       name,

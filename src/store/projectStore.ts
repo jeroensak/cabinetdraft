@@ -92,7 +92,7 @@ export type Hover =
   | { type: 'front'; moduleId: string; frontId: string }
   | null
 
-export type ViewMode = 'structure' | 'fronts'
+export type ViewMode = 'structure' | 'both' | 'fronts'
 
 export interface ViewportState {
   zoom: number

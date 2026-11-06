@@ -147,8 +147,11 @@ describe('application shell', () => {
     expect(
       screen.queryByRole('region', { name: 'Design settings' }),
     ).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Import' })).toBeEnabled()
-    expect(screen.getByRole('button', { name: 'Export' })).toBeEnabled()
+    await user.click(
+      screen.getByRole('button', { name: 'Import, export and share' }),
+    )
+    expect(screen.getByRole('menuitem', { name: 'Import' })).toBeEnabled()
+    expect(screen.getByRole('menuitem', { name: 'Export' })).toBeEnabled()
   })
 
   it('closes settings on Escape and outside clicks, and keeps the view mode', async () => {
