@@ -11,7 +11,7 @@ import {
   DEFAULT_MODULE_DIMENSIONS,
 } from '../project/defaults'
 import type { Project, ProjectSettings } from '../project/types'
-import { maxCabinetSize } from '../project/units'
+import { isHalfStep, maxCabinetSize } from '../project/units'
 import {
   allocateIds,
   cloneModule,
@@ -200,5 +200,14 @@ export function updateProjectSettings(
     }
     if (settings.backPanelEnabled !== undefined)
       draft.settings.backPanelEnabled = settings.backPanelEnabled
+    if (settings.edgeBanding === true) draft.settings.edgeBanding = true
+    if (settings.edgeBanding === false) delete draft.settings.edgeBanding
+    const band = settings.edgeBandingThickness
+    if (band !== undefined) {
+      if (!isHalfStep(band))
+        throw new CommandError('invalid-band-thickness', { value: band })
+      if (band > 0) draft.settings.edgeBandingThickness = band
+      else delete draft.settings.edgeBandingThickness
+    }
   })
 }

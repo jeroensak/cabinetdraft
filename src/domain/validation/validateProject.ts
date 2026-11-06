@@ -10,6 +10,8 @@ import {
   type FrontGeometryIssue,
 } from '../fronts/deriveFrontGeometry'
 import type { Boundary } from '../fronts/types'
+import { bandedCutSize, bandThickness } from '../cutlist/edgeBanding'
+import type { PhysicalPanel } from '../geometry/physicalPanel'
 import type { Project } from '../project/types'
 import { deriveSpacePartition } from '../spaces/deriveSpaces'
 import {
@@ -44,6 +46,25 @@ export type ValidationCode =
   | 'invalid-front-range'
   | 'drawer-must-cover-one-space'
   | 'overlapping-fronts'
+  | 'edge-banding-too-thick'
+
+/** Panels are the designed sizes, so a zero cut size can only come from the band. */
+function bandLeavesNoPart(project: Project, panels: PhysicalPanel[]) {
+  const band = bandThickness(project.settings)
+  return (
+    band > 0 &&
+    panels.some((panel) => {
+      if (panel.length <= 0 || panel.width <= 0) return false
+      const cut = bandedCutSize(
+        panel.source.type,
+        panel.length,
+        panel.width,
+        band,
+      )
+      return cut.length <= 0 || cut.width <= 0
+    })
+  )
+}
 
 export interface ValidationIssue {
   code: ValidationCode
@@ -106,6 +127,8 @@ export function validateProject(project: Project): ValidationIssue[] {
     for (const field of ['width', 'height', 'depth'] as const)
       measurement(field, module[field], 1, moduleId)
     const geometry = deriveCabinetGeometry(module, project.settings)
+    if (bandLeavesNoPart(project, geometry.panels))
+      issues.push({ code: 'edge-banding-too-thick', moduleId, data: {} })
     const { spaces, unresolved } = deriveSpacePartition(
       module,
       project.settings,
@@ -367,6 +390,13 @@ export function validateProject(project: Project): ValidationIssue[] {
         const { code, moduleId: issueModuleId, frontId, ...data } = issue
         issues.push({ code, moduleId: issueModuleId, frontId, data })
       }
+      if (bandLeavesNoPart(project, frontGeometry.panels))
+        issues.push({
+          code: 'edge-banding-too-thick',
+          moduleId,
+          frontId: front.id,
+          data: {},
+        })
       const box = rangeBounds(module, project.settings, front)
       const bottom = partitioned
         ? box.bottom

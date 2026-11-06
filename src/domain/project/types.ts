@@ -13,6 +13,11 @@ export interface ProjectSettings {
   backPanelThickness: number
   frontThickness: number
   frontGap: number
+  /** Omitted means off, so older projects stay unchanged. */
+  edgeBanding?: boolean
+  /** Taken off the cut size per banded edge. The one setting that may be a
+   * half unit, for 0.5 mm banding. Omitted means nothing is taken off. */
+  edgeBandingThickness?: number
 }
 
 export const PROJECT_SCHEMA_VERSION = 6

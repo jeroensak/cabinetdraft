@@ -8,6 +8,7 @@ import type {
   PhysicalPanel,
 } from '../geometry/physicalPanel'
 import type { Project } from '../project/types'
+import { bandedCutSize, bandThickness } from './edgeBanding'
 import {
   validateProject,
   type ValidationIssue,
@@ -110,6 +111,7 @@ export function deriveLabelledPanels(project: Project): LabelledPanel[] {
 export function deriveCutList(project: Project): CutListResult {
   const issues = validateProject(project)
   if (issues.length > 0) return { available: false, issues }
+  const band = bandThickness(project.settings)
   return {
     available: true,
     items: deriveLabelledPanels(project).map(
@@ -119,8 +121,7 @@ export function deriveCutList(project: Project): CutListResult {
         moduleName,
         part: panel.source.type,
         quantity: 1,
-        length: panel.length,
-        width: panel.width,
+        ...bandedCutSize(panel.source.type, panel.length, panel.width, band),
         thickness: panel.thickness,
         ...(panel.waveDip !== undefined ? { waveDip: panel.waveDip } : {}),
         ...(panel.groove ? { groove: panel.groove } : {}),

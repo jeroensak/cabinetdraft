@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
+  formatTotalLength,
+  parseHalfInches,
+  parseHalfMillimetres,
   formatBare,
   formatInches,
   formatMeasure,
@@ -81,5 +84,33 @@ describe('inch notation', () => {
     expect(formatSize([inches(31.5), inches(20)], 'inch')).toBe('31 1/2" × 20"')
     expect(formatBare(inches(31.5), 'inch')).toBe('31 1/2')
     expect(formatBare(754, 'mm')).toBe('754')
+  })
+})
+
+describe('formatTotalLength', () => {
+  it('groups millimetres and keeps a half exact', () => {
+    expect(formatTotalLength(12345.5, 'mm')).toBe('12,345.5 mm')
+  })
+
+  it('stays in plain inches, however long, down to a half unit', () => {
+    expect(formatTotalLength(inches(600) + 0.5, 'inch')).toBe('600 1/64"')
+  })
+})
+
+describe('half step sizes', () => {
+  it('reads millimetres in 0.5 steps, with either decimal mark', () => {
+    expect(parseHalfMillimetres('0.5')).toBe(0.5)
+    expect(parseHalfMillimetres('1,5')).toBe(1.5)
+    expect(parseHalfMillimetres('2')).toBe(2)
+    expect(parseHalfMillimetres('0.3')).toBeNull()
+    expect(parseHalfMillimetres('-1')).toBeNull()
+    expect(parseHalfMillimetres('')).toBeNull()
+  })
+
+  it('reads inches to 1/64, which plain sizes refuse', () => {
+    expect(parseHalfInches('1/64')).toBe(0.5)
+    expect(parseHalfInches('1/32')).toBe(1)
+    expect(parseHalfInches('1/128')).toBeNull()
+    expect(parseInches('1/64')).toBeNull()
   })
 })

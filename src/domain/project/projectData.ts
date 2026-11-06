@@ -22,6 +22,10 @@ export function projectData(project: Project): Project {
       backPanelThickness: project.settings.backPanelThickness,
       frontThickness: project.settings.frontThickness,
       frontGap: project.settings.frontGap,
+      ...(project.settings.edgeBanding ? { edgeBanding: true } : {}),
+      ...(project.settings.edgeBandingThickness
+        ? { edgeBandingThickness: project.settings.edgeBandingThickness }
+        : {}),
     },
     drawerDesigns: project.drawerDesigns.map(drawerDesignData),
     modules: project.modules.map((module) => ({

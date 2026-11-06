@@ -22,6 +22,14 @@ export function convertToInches(project: Project): Project {
       backPanelThickness: thickness(settings.backPanelThickness),
       frontThickness: thickness(settings.frontThickness),
       frontGap: size(settings.frontGap),
+      ...(settings.edgeBandingThickness
+        ? {
+            edgeBandingThickness: mmToInchUnits(
+              settings.edgeBandingThickness,
+              0.5,
+            ),
+          }
+        : {}),
     },
     drawerDesigns: project.drawerDesigns.map((design) => ({
       ...design,

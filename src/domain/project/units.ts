@@ -11,6 +11,10 @@ export function mmToInchUnits(mm: number, grid: number) {
   return Math.round(((mm / MM_PER_INCH) * UNITS_PER_INCH) / grid) * grid
 }
 
+/** Sizes that may fall on a half unit: 0.5 mm, or 1/64". */
+export const isHalfStep = (value: number) =>
+  value >= 0 && Number.isSafeInteger(value * 2)
+
 /** Refuses typing slips such as an extra digit, not unusual furniture. */
 export const maxCabinetSize = (unit: MeasurementUnit = 'mm') =>
   unit === 'inch' ? inches(4000) : 100_000

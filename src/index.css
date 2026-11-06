@@ -1126,6 +1126,13 @@ input:focus-visible {
 .cut-list-table td:nth-child(n + 4) {
   text-align: right;
 }
+.cut-list-table thead th:nth-child(8) {
+  width: 140px;
+}
+.cut-list-table th:nth-child(8),
+.cut-list-table td:nth-child(8) {
+  text-align: left;
+}
 .cut-list-table thead th:first-child {
   border-radius: 8px 0 0 8px;
 }
@@ -1137,6 +1144,18 @@ input:focus-visible {
 }
 .cut-list-table tbody tr:hover {
   background: #f7f4ed;
+}
+.cut-list-banding {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 20px 8px 0;
+  font-size: 12px;
+}
+.cut-list-banding span {
+  color: #6f6a62;
+  font-size: 11px;
 }
 .cut-list-note {
   color: #8a847b;

@@ -9,6 +9,12 @@ export function commandMessage(error: unknown) {
   if (!(error instanceof CommandError)) throw error
   if (error.code === 'structural-conflict') return t('error.structuralConflict')
   if (error.code === 'invalid-integer') return t('field.wholeMm')
+  if (error.code === 'invalid-band-thickness')
+    return t(
+      useProjectStore.getState().present.settings.unit === 'inch'
+        ? 'field.halfInches'
+        : 'field.halfMm',
+    )
   if (error.code === 'slot-too-narrow') return t('error.slotTooNarrow')
   if (error.code === 'divider-in-use') return t('error.dividerInUse')
   if (error.code === 'shelf-has-dividers') return t('error.shelfHasDividers')

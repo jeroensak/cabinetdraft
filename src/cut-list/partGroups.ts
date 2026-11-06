@@ -62,10 +62,12 @@ export interface CutListRow {
   cabinets: string[]
   moduleId: string
   name: string
+  part: CutListItem['part']
   quantity: number
   length: number
   width: number
   thickness: number
+  waveDip?: number
 }
 
 /** Rows for one list. Merging is presentation only: identical parts share a
@@ -94,10 +96,12 @@ export function cutListRows(
       cabinets: [item.moduleName],
       moduleId: item.moduleId,
       name,
+      part: item.part,
       quantity: item.quantity,
       length: item.length,
       width: item.width,
       thickness: item.thickness,
+      ...(item.waveDip !== undefined ? { waveDip: item.waveDip } : {}),
     })
   })
   return [...rows.values()]

@@ -2,7 +2,8 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import type { CutListItem } from '../domain/cutlist/deriveCutList'
 import { cutListRows, groupCutList } from './partGroups'
 import { setLanguage } from '../i18n'
-import { partName } from './partNames'
+import { deriveRowBanding } from '../domain/cutlist/edgeBanding'
+import { bandedEdgesLabel, partName } from './partNames'
 
 // These read the English names, whatever language the machine runs in.
 beforeAll(() => setLanguage('en'))
@@ -138,6 +139,37 @@ describe('groupCutList', () => {
       'C1-DRAWER-1-SIDE-R',
       'C1-DRAWER-2',
       'C1-DRAWER-2-SIDE-L',
+    ])
+  })
+
+  it('keeps what a merged row needs for its banding', () => {
+    const [row] = cutListRows(
+      [
+        { ...item('C1-DRAWER-1', 'drawer'), waveDip: 15 },
+        { ...item('C2-DRAWER-1', 'drawer', 'two'), waveDip: 15 },
+      ],
+      'mm',
+      true,
+    )
+    expect(row).toMatchObject({ part: 'drawer', waveDip: 15, quantity: 2 })
+    expect(bandedEdgesLabel(row!)).toBe('All 4 edges +25%')
+    expect(deriveRowBanding(row!).length).toBe(375 * 2)
+  })
+
+  it('never merges a part with a differently banded one', () => {
+    const rows = cutListRows(
+      [
+        item('C1-DRAWER-1', 'drawer'),
+        { ...item('C1-DRAWER-2', 'drawer'), waveDip: 15 },
+        item('C1-DRAWER-1-BOX-FRONT', 'drawer-box-front'),
+      ],
+      'mm',
+      true,
+    )
+    expect(rows.map(bandedEdgesLabel)).toStrictEqual([
+      'All 4 edges',
+      'All 4 edges +25%',
+      'None',
     ])
   })
 })

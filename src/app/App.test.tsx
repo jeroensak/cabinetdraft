@@ -135,6 +135,38 @@ describe('application shell', () => {
     expect(screen.queryByText('C1-BACK')).toBeNull()
   })
 
+  it('asks for the band thickness only while banding is on', async () => {
+    const user = userEvent.setup()
+    renderDesigner()
+    await user.click(screen.getByRole('button', { name: 'Settings' }))
+    const label = 'Edge banding thickness (mm)'
+    expect(screen.queryByLabelText(label)).toBeNull()
+    await user.click(screen.getByLabelText('Edge banding enabled'))
+    const input = screen.getByLabelText(label)
+    expect(input).toHaveValue('0')
+    await user.clear(input)
+    await user.type(input, '0.3{Enter}')
+    expect(screen.getByRole('alert')).toHaveTextContent('steps of 0.5')
+    await user.clear(input)
+    await user.type(input, '0.5{Enter}')
+    expect(
+      useProjectStore.getState().present.settings.edgeBandingThickness,
+    ).toBe(0.5)
+    expect(screen.getByLabelText(label)).toHaveValue('0.5')
+  })
+
+  it('turns edge banding on from Settings, as one undoable step', async () => {
+    const user = userEvent.setup()
+    renderDesigner()
+    await user.click(screen.getByRole('button', { name: 'Settings' }))
+    await user.click(screen.getByLabelText('Edge banding enabled'))
+    expect(useProjectStore.getState().present.settings.edgeBanding).toBe(true)
+    await user.click(screen.getByRole('button', { name: 'Undo' }))
+    expect(useProjectStore.getState().present.settings).not.toHaveProperty(
+      'edgeBanding',
+    )
+  })
+
   it('shows global settings separately and enables file controls', async () => {
     const user = userEvent.setup()
     renderDesigner()

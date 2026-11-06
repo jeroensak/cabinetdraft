@@ -1,5 +1,5 @@
 import type { MeasurementUnit } from '../domain/project/units'
-import { UNITS_PER_INCH } from '../domain/project/units'
+import { isHalfStep, UNITS_PER_INCH } from '../domain/project/units'
 import { i18n } from '../i18n'
 
 export type { MeasurementUnit }
@@ -24,6 +24,25 @@ export function formatInches(value: number): string {
 /** Whole 1/32 inch units, or null when the text isn't an exact size: a value
  * finer than that is refused, never rounded. */
 export function parseInches(text: string): number | null {
+  const units = inchUnits(text)
+  return Number.isSafeInteger(units) ? units : null
+}
+
+/** A size that may fall on a half unit: exact to 1/64", or null. */
+export function parseHalfInches(text: string): number | null {
+  const units = inchUnits(text)
+  return isHalfStep(units) ? units : null
+}
+
+/** Millimetres in 0.5 steps, or null. */
+export function parseHalfMillimetres(text: string): number | null {
+  const input = text.trim()
+  if (!/^\d*[.,]?\d+$/.test(input)) return null
+  const size = Number(input.replace(',', '.'))
+  return isHalfStep(size) ? size : null
+}
+
+function inchUnits(text: string): number {
   const input = text
     .trim()
     .replace(/\s*(?:"|″|in|inch|inches)$/i, '')
@@ -38,8 +57,7 @@ export function parseInches(text: string): number | null {
       : decimal
         ? Number(input.replace(',', '.'))
         : NaN
-  const units = size * UNITS_PER_INCH
-  return Number.isSafeInteger(units) ? units : null
+  return size * UNITS_PER_INCH
 }
 
 const number = (value: number, grouped: boolean) =>
@@ -94,6 +112,10 @@ export function formatSheetSize(
 /** A size where the context already names the unit, as in a table column. */
 export const formatBare = (value: number, unit: MeasurementUnit) =>
   unit === 'inch' ? formatInches(value) : number(value, false)
+
+/** A long total on the Cut List, which stays in plain inches. */
+export const formatTotalLength = (value: number, unit: MeasurementUnit) =>
+  unit === 'inch' ? `${formatInches(value)}"` : formatMeasure(value, unit, true)
 
 export const unitSymbol = (unit: MeasurementUnit) =>
   unit === 'inch' ? 'in' : 'mm'

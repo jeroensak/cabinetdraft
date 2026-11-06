@@ -430,3 +430,75 @@ describe('sheet layout view', () => {
     )
   })
 })
+
+describe('edge banding', () => {
+  const useProject = (project: Project) =>
+    useProjectStore.setState({ present: project })
+  const row = (id: string) => screen.getByRole('row', { name: new RegExp(id) })
+
+  it('shows nothing while the project has it off', () => {
+    renderCutList()
+    expect(screen.queryByText(/Edge banding/)).not.toBeInTheDocument()
+  })
+
+  it('shows the banded edges per row and the total', () => {
+    const project = createDefaultProject()
+    useProject({
+      ...project,
+      settings: { ...project.settings, edgeBanding: true },
+    })
+    renderCutList()
+    expect(
+      screen.getAllByRole('columnheader', { name: 'Edge banding' }),
+    ).not.toHaveLength(0)
+    expect(within(row('C1-SIDE-L')).getByText('Front edge')).toBeInTheDocument()
+    expect(within(row('C1-BACK')).getByText('None')).toBeInTheDocument()
+    expect(
+      within(row('C1-DOOR-1-L')).getByText('All 4 edges'),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/^Edge banding needed: [\d,]+ mm$/)).toBeVisible()
+    expect(screen.queryByText(/wave-top/)).not.toBeInTheDocument()
+  })
+
+  it('shows reduced cut sizes and says by how much', () => {
+    const project = createDefaultProject()
+    useProject({
+      ...project,
+      settings: {
+        ...project.settings,
+        edgeBanding: true,
+        edgeBandingThickness: 0.5,
+      },
+    })
+    renderCutList()
+    expect(row('C1-TOP')).toHaveTextContent('596.5')
+    expect(
+      screen.getByText(/reduced by 0\.5 mm for each banded edge/),
+    ).toBeVisible()
+  })
+
+  it('keeps the same total when rows are merged or not', async () => {
+    const user = userEvent.setup()
+    const original = createDefaultProject()
+    const project = duplicateModule(original, original.modules[0]!.id)
+    useProject({
+      ...project,
+      settings: { ...project.settings, edgeBanding: true },
+    })
+    renderCutList()
+    const total = screen.getByText(/^Edge banding needed/).textContent
+    await user.click(screen.getByRole('checkbox'))
+    expect(screen.getByText(/^Edge banding needed/).textContent).toBe(total)
+  })
+
+  it('explains the wave allowance when a design has wave fronts', () => {
+    const project = waveSideboard as unknown as Project
+    useProject({
+      ...project,
+      settings: { ...project.settings, edgeBanding: true },
+    })
+    renderCutList()
+    expect(screen.getAllByText('All 4 edges +25%')).not.toHaveLength(0)
+    expect(screen.getByText(/25% extra on wave-top/)).toBeVisible()
+  })
+})

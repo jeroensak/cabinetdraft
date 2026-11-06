@@ -17,6 +17,7 @@ type IssueKey =
   | 'validation.panelPosition'
   | 'validation.measurement'
   | 'validation.fronts'
+  | 'validation.bandingTooThick'
 
 const keys: Partial<Record<ValidationCode, IssueKey>> = {
   'fractional-front-dimension': 'validation.frontFraction',
@@ -34,6 +35,7 @@ const keys: Partial<Record<ValidationCode, IssueKey>> = {
   'invalid-measurement': 'validation.measurement',
   'overlapping-fronts': 'validation.fronts',
   'drawer-must-cover-one-space': 'validation.fronts',
+  'edge-banding-too-thick': 'validation.bandingTooThick',
 }
 
 function issueText(issue: ValidationIssue, unit: MeasurementUnit) {

@@ -1,6 +1,8 @@
 import type { CutListItem } from '../domain/cutlist/deriveCutList'
 import type { MeasurementUnit } from '../domain/project/units'
 import { t } from '../i18n'
+import type { BandingRow, EdgeBanding } from '../domain/cutlist/edgeBanding'
+import { deriveRowBanding } from '../domain/cutlist/edgeBanding'
 import { formatBare, formatMeasure } from '../units'
 
 const isDrawerSide = (item: CutListItem) =>
@@ -39,4 +41,27 @@ export function partName(
   return item.waveDip === undefined
     ? name
     : t('part.withWave', { name, dip: formatMeasure(item.waveDip, unit) })
+}
+
+/** The banded edges of a row, in the words of the cut list column. */
+export function bandedEdgesLabel(row: BandingRow): string {
+  const { edges, waveAllowance } = deriveRowBanding(row)
+  if (edges === 'none') return t('cutList.bandingNone')
+  if (edges === 'front') return t('cutList.bandingFront')
+  return t(waveAllowance ? 'cutList.bandingAllWave' : 'cutList.bandingAll')
+}
+
+/** What the total includes, and that cut sizes are unaffected. */
+export function bandingNote(
+  banding: EdgeBanding,
+  unit: MeasurementUnit,
+): string {
+  const sizes = banding.thickness
+    ? t('cutList.bandingSubtracted', {
+        thickness: formatMeasure(banding.thickness, unit),
+      })
+    : t('cutList.bandingNote')
+  return banding.rows.some((row) => row.waveAllowance)
+    ? `${t('cutList.bandingWaveNote')} ${sizes}`
+    : sizes
 }
