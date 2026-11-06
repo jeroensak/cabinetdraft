@@ -9,6 +9,7 @@ import { cutListRows, groupCutList } from './partGroups'
 import { useProjectStore } from '../store/projectStore'
 import { trackEvent } from '../app/analytics'
 import { ValidationIssues } from '../app/ValidationIssues'
+import { SheetLayoutView } from './SheetLayoutView'
 
 export function CutListPage() {
   const { t } = useTranslation()
@@ -18,6 +19,7 @@ export function CutListPage() {
   const project = useProjectStore((state) => state.present)
   const result = useMemo(() => deriveCutList(project), [project])
   const [merged, setMerged] = useState(true)
+  const [view, setView] = useState<'parts' | 'sheets'>('parts')
   const [downloading, setDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)
   const download = async () => {
@@ -70,17 +72,44 @@ export function CutListPage() {
         <div className="cut-list-card">
           <div className="cut-list-summary">
             <strong>{t('count.parts', { count: result.items.length })}</strong>
-            <label className="cut-list-merge">
-              <input
-                type="checkbox"
-                checked={merged}
-                onChange={(event) => setMerged(event.target.checked)}
-              />
-              {t('cutList.mergeIdentical')}
-            </label>
+            {result.items.length > 0 && (
+              <div
+                className="segmented view-switch cut-list-view"
+                role="group"
+                aria-label={t('cutList.viewLabel')}
+              >
+                {(['parts', 'sheets'] as const).map((option) => (
+                  <button
+                    key={option}
+                    aria-pressed={view === option}
+                    className={view === option ? 'selected' : undefined}
+                    onClick={() => setView(option)}
+                  >
+                    {t(`cutList.${option}View`)}
+                  </button>
+                ))}
+              </div>
+            )}
+            {view === 'parts' && (
+              <label className="cut-list-merge">
+                <input
+                  type="checkbox"
+                  checked={merged}
+                  onChange={(event) => setMerged(event.target.checked)}
+                />
+                {t('cutList.mergeIdentical')}
+              </label>
+            )}
             <span>{t('cutList.allCabinets')}</span>
           </div>
-          {result.items.length > 0 ? (
+          {result.items.length === 0 ? (
+            <div className="cut-list-empty">
+              <h2>{t('cutList.emptyTitle')}</h2>
+              <p>{t('cutList.emptyBody')}</p>
+            </div>
+          ) : view === 'sheets' ? (
+            <SheetLayoutView key={unit} items={result.items} />
+          ) : (
             <div className="cut-list-scroll">
               {groupCutList(result.items).map((group) => (
                 <section
@@ -140,17 +169,14 @@ export function CutListPage() {
                 </section>
               ))}
             </div>
-          ) : (
-            <div className="cut-list-empty">
-              <h2>{t('cutList.emptyTitle')}</h2>
-              <p>{t('cutList.emptyBody')}</p>
-            </div>
           )}
-          <p className="cut-list-note">
-            {t(merged ? 'cutList.noteMerged' : 'cutList.note', {
-              unit: t(unit === 'inch' ? 'unit.inchPlural' : 'unit.mmPlural'),
-            })}
-          </p>
+          {view === 'parts' && (
+            <p className="cut-list-note">
+              {t(merged ? 'cutList.noteMerged' : 'cutList.note', {
+                unit: t(unit === 'inch' ? 'unit.inchPlural' : 'unit.mmPlural'),
+              })}
+            </p>
+          )}
         </div>
       ) : (
         <div className="cut-list-unavailable" role="status">

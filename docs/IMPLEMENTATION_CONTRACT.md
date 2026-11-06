@@ -113,7 +113,15 @@ The unit is chosen in the New design dialog and can't be changed afterwards. Tem
 
 ## Cut List PDF assembly pages
 
-The user requested a printable assembly view. After its lists, the PDF adds one page per cabinet: the structure and the fronts side by side, labelled with the cut list IDs. `deriveLabelledPanels` is the one source of those IDs for both, and the drawing uses canonical panels with the Designer's projection helpers only. The Cut List page itself still renders no drawing.
+The user requested a printable assembly view. After its lists, the PDF adds one page per cabinet: the structure and the fronts side by side, labelled with the cut list IDs. `deriveLabelledPanels` is the one source of those IDs for both, and the drawing uses canonical panels with the Designer's projection helpers only. The Cut List page draws only the sheet layout below.
+
+## Approved post-V1 extension: sheet layout
+
+The user requested a visual cut list: choose a sheet size and a saw kerf, and see the parts on the sheet, optimised for the fewest cuts above all, then for material. This supersedes the sheet nesting and optimization non-goals; the frozen specification remains unchanged. It answers none of its other V2 items: there are no materials, grain direction or purchase quantities beyond the sheets shown.
+
+`deriveSheetLayout` in `src/domain/cutlist/sheetLayout.ts` is the one implementation. It reads validated Cut List rows, so it is another consumer of those rows and it can't change them. Parts are grouped by thickness, because the project has no materials, and may be turned, because it has no grain direction. Only guillotine cuts are used: each cut runs right across the piece it splits, with the kerf taken from the far side of the cut. A cut is counted per saw pass through one piece; stacked boards and sheet edge trimming are not considered. Plans rank by the chosen priority: fewest cuts then fewest sheets, the default the user asked for, or fewest sheets then fewest cuts. A cuts-first plan may use another sheet to save only a few cuts, which is why the choice exists. The search is repeatable, not exhaustive, so the same design always gets the same plan, which is good but not proven the best possible. Parts that fit a sheet neither way are named on the page, never dropped silently.
+
+The Cut List page shows the layout as a Sheets view next to Parts. Sheet size, kerf and priority are editor preferences stored per unit under `cabinet-designer:sheet-stock`, never in Project JSON: they describe the workshop, not the design. They default to fewest cuts on 2440 × 1220 mm with a 4 mm kerf, or on 8' × 4' with a 1/8" kerf. Like every size in a design, they are whole millimetres or 1/32 inches.
 
 ## Approved post-V1 extension: share links
 
