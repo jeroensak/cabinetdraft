@@ -53,6 +53,10 @@ export function ModuleList() {
   return (
     <aside className="cabinet-sidebar" aria-label={t('sidebar.label')}>
       <DesignPicker />
+      <div className="sidebar-tip">
+        <p className="eyebrow">{t('sidebar.tip')}</p>
+        <p>{t('sidebar.reorderTip')}</p>
+      </div>
       <h2 className="eyebrow sidebar-section">{t('sidebar.cabinets')}</h2>
       <ul
         className="module-list"
@@ -146,10 +150,6 @@ export function ModuleList() {
       <button className="add-cabinet" onClick={newDrawerDesign}>
         {t('drawer.new')}
       </button>
-      <div className="sidebar-tip">
-        <p className="eyebrow">{t('sidebar.tip')}</p>
-        <p>{t('sidebar.reorderTip')}</p>
-      </div>
       {error && (
         <p role="alert" className="field-error">
           {error}
