@@ -47,6 +47,30 @@ describe('addSheetPages', () => {
     expect(headers[0]!.summary).toContain('Fewest cuts')
   })
 
+  it('names a short part in two lines on the page', () => {
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4',
+    })
+    const text = vi.spyOn(doc, 'text')
+    const part = {
+      id: 'C2-DRAWER-1-BOX-FRONT',
+      part: 'drawer-box-front' as const,
+      moduleName: 'Open cabinet',
+      x: 0,
+      y: 0,
+      spanX: 277,
+      spanY: 99,
+    }
+    const sheet = { parts: [part], cuts: [] }
+    const group = { thickness: 18, sheets: [sheet], cuts: 0, waste: 0.5 }
+    addSheetPages(doc, { groups: [group], tooLarge: [] }, STOCK, 'mm')
+    const written = text.mock.calls.map(([line]) => line)
+    expect(written).toContain('C2-DRAWER-1')
+    expect(written).toContain('BOX-FRONT')
+  })
+
   it('draws every part and cut, inside the page and to scale', () => {
     const { rect, line, circle, text, layout, items } = pages(STOCK)
     const sheets = layout.groups.flatMap((group) => group.sheets)

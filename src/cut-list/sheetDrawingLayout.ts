@@ -27,11 +27,17 @@ export const partSizeLabel = (
     .map((value) => formatBare(value, unit))
     .join(' × ')
 
+/** Breaks after the last number with more behind it, which keeps a part's own
+ * name together: C2-DRAWER-1 / BOX-FRONT. */
+const idInTwoLines = (id: string) => /^(.*\d)-(.+)$/.exec(id)?.slice(1)
+
 /** The ID and size where both fit, otherwise the ID alone, smaller if it has
- * to be, turned to run along the part when that makes it larger. Null when
- * even that can't be read, which leaves the part to its title or the list. */
+ * to be, in two lines if one would be too small to read, and turned to run
+ * along the part when that makes it larger. Null when even that can't be read,
+ * which leaves the part to its title or the list. */
 export function fitPartLabel(part: SheetPart, label: string, font: number) {
   const { spanX, spanY, id } = part
+  const smallest = font * SMALLEST_TEXT
   /** The largest text size, up to the normal one, that fits these lines. */
   const fitted = (along: number, across: number, lines: string[]) => {
     const longest = Math.max(...lines.map((line) => line.length))
@@ -41,17 +47,21 @@ export function fitPartLabel(part: SheetPart, label: string, font: number) {
       across / (lines.length * LINE_HEIGHT),
     )
   }
+  const largest = (lines: string[]) =>
+    Math.max(fitted(spanX, spanY, lines), fitted(spanY, spanX, lines))
   const both = [id, label]
-  const lines = [both, [id]].find(
-    (text) =>
-      Math.max(fitted(spanX, spanY, text), fitted(spanY, spanX, text)) ===
-        font || text.length === 1,
-  )!
-  const flatSize = fitted(spanX, spanY, lines)
-  const turnedSize = fitted(spanY, spanX, lines)
-  const size = Math.max(flatSize, turnedSize)
-  if (size < font * SMALLEST_TEXT) return null
-  return { lines, size, turned: turnedSize > flatSize }
+  const lines =
+    largest(both) === font
+      ? both
+      : largest([id]) >= smallest
+        ? [id]
+        : idInTwoLines(id)
+  if (!lines || largest(lines) < smallest) return null
+  return {
+    lines,
+    size: largest(lines),
+    turned: fitted(spanY, spanX, lines) > fitted(spanX, spanY, lines),
+  }
 }
 
 /** Where a cut's line and its number go. The line follows the middle of the
