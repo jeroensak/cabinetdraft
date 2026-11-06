@@ -431,3 +431,51 @@ test('an inch design stays in fractions through the designer, cut list and reloa
     page.getByRole('columnheader', { name: 'Length (in)' }).first(),
   ).toBeVisible()
 })
+
+test('plans sheets, replans on every setting and survives a reload', async ({
+  page,
+}) => {
+  await page.getByRole('link', { name: 'Cut List', exact: true }).click()
+  await page.getByRole('button', { name: 'Sheets', exact: true }).click()
+  const total = page.locator('.sheet-total')
+  await expect(total).toContainText('4 sheets')
+  await expect(page.getByRole('img')).toHaveCount(4)
+  await expect(page.locator('.sheet-part')).toHaveCount(8)
+  await expect(page.locator('.sheet-part-label')).toHaveCount(8)
+
+  await page.getByLabel('Sheet size').selectOption('2800x2070')
+  await expect(total).toContainText('3 sheets')
+  await page.getByLabel('Sheet size').selectOption('custom')
+  await page.getByLabel('Sheet length (mm)').fill('2000')
+  await page.getByLabel('Sheet length (mm)').press('Enter')
+  await expect(page.getByRole('alert')).toContainText('C1-SIDE-L')
+  await page.getByLabel('Sheet length (mm)').fill('2300')
+  await page.getByLabel('Sheet length (mm)').press('Enter')
+  await expect(page.getByRole('alert')).toHaveCount(0)
+  await page.getByLabel('Saw kerf (mm)').fill('5')
+  await page.getByLabel('Saw kerf (mm)').press('Enter')
+  await page.getByLabel('Optimise for').selectOption('sheets')
+
+  await page.reload()
+  await page.getByRole('button', { name: 'Sheets', exact: true }).click()
+  await expect(page.getByLabel('Sheet size')).toHaveValue('custom')
+  await expect(page.getByLabel('Sheet length (mm)')).toHaveValue('2300')
+  await expect(page.getByLabel('Saw kerf (mm)')).toHaveValue('5')
+  await expect(page.getByLabel('Optimise for')).toHaveValue('sheets')
+
+  // The parts list is untouched, and a design edit reaches the drawings.
+  await page.getByRole('button', { name: 'Parts', exact: true }).click()
+  await expect(page.getByRole('row', { name: /C1-SIDE-L/ })).toBeVisible()
+  await page.getByRole('button', { name: 'Sheets', exact: true }).click()
+  await page.getByRole('link', { name: 'Back to Designer' }).click()
+  await page
+    .getByRole('button', { name: 'Cabinet 1, 800 mm', exact: true })
+    .click()
+  await dimension(page, 'height', '2000')
+  await page.getByRole('link', { name: 'Cut List', exact: true }).click()
+  await page.getByRole('button', { name: 'Sheets', exact: true }).click()
+  await expect(page.getByRole('img').first()).toHaveAccessibleName(/sheet 1/i)
+  await expect(page.locator('.sheet-part title').first()).toContainText(
+    /2,?000|1,?996/,
+  )
+})

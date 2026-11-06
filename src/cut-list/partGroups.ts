@@ -3,14 +3,14 @@ import type { MeasurementUnit } from '../domain/project/units'
 import { t } from '../i18n'
 import { partName } from './partNames'
 
-const groups = [
+export const CUT_LIST_GROUPS = [
   { id: 'bases', titleKey: 'group.bases' },
   { id: 'shelves', titleKey: 'group.shelves' },
   { id: 'doors', titleKey: 'group.doors' },
   { id: 'drawers', titleKey: 'group.drawers' },
 ] as const
 
-type GroupId = (typeof groups)[number]['id']
+type GroupId = (typeof CUT_LIST_GROUPS)[number]['id']
 
 const partGroup: Record<CutListItem['part'], GroupId> = {
   'side-left': 'bases',
@@ -29,6 +29,8 @@ const partGroup: Record<CutListItem['part'], GroupId> = {
   'drawer-bottom': 'drawers',
 }
 
+export const partGroupOf = (part: CutListItem['part']) => partGroup[part]
+
 const drawerNumber = (item: CutListItem) =>
   Number(/-DRAWER-(\d+)/.exec(item.id)?.[1] ?? 0)
 
@@ -45,16 +47,14 @@ function inDrawerOrder(items: CutListItem[]) {
 }
 
 export function groupCutList(items: CutListItem[]) {
-  return groups
-    .map(({ id, titleKey }) => {
-      const rows = items.filter((item) => partGroup[item.part] === id)
-      return {
-        id,
-        title: t(titleKey),
-        items: id === 'drawers' ? inDrawerOrder(rows) : rows,
-      }
-    })
-    .filter((group) => group.items.length > 0)
+  return CUT_LIST_GROUPS.map(({ id, titleKey }) => {
+    const rows = items.filter((item) => partGroup[item.part] === id)
+    return {
+      id,
+      title: t(titleKey),
+      items: id === 'drawers' ? inDrawerOrder(rows) : rows,
+    }
+  }).filter((group) => group.items.length > 0)
 }
 
 export interface CutListRow {

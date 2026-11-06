@@ -78,6 +78,19 @@ export function formatSize(values: number[], unit: MeasurementUnit): string {
     : `${values.map((value) => number(value, false)).join(' × ')} mm`
 }
 
+/** A sheet's size. Boards are sold in whole feet, so both sides then read
+ * alike, as 4' × 2' rather than 4' × 24". */
+export function formatSheetSize(
+  length: number,
+  width: number,
+  unit: MeasurementUnit,
+): string {
+  const perFoot = INCHES_PER_FOOT * UNITS_PER_INCH
+  return unit === 'inch' && length % perFoot === 0 && width % perFoot === 0
+    ? `${length / perFoot}' × ${width / perFoot}'`
+    : formatSize([length, width], unit)
+}
+
 /** A size where the context already names the unit, as in a table column. */
 export const formatBare = (value: number, unit: MeasurementUnit) =>
   unit === 'inch' ? formatInches(value) : number(value, false)
