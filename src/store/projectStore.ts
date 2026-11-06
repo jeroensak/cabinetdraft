@@ -3,6 +3,7 @@ import { create } from 'zustand'
 import { t } from '../i18n'
 import { hasOpenModal } from './hasOpenModal'
 import { reconcileSelection } from './selection'
+import { loadDoorMount, saveDoorMount } from './doorMountPreference'
 import { updateProjectSettings, type BoundaryRange } from '../domain/commands'
 import { projectData } from '../domain/project/projectData'
 import { createDefaultProject } from '../domain/project/createDefaultProject'
@@ -19,6 +20,7 @@ import {
   type StoredDesign,
 } from './designLibrary'
 import { type Project, type ProjectSettings } from '../domain/project/types'
+import type { FrontMount } from '../domain/fronts/types'
 import type { Point, Selection } from './types'
 export type { Point, Selection } from './types'
 
@@ -154,6 +156,9 @@ export interface ProjectStoreState {
   cancelProjectPreview(): void
   undo(): void
   redo(): void
+  /** Applied to every new door until the user chooses another position. */
+  lastDoorMount: FrontMount
+  setLastDoorMount(mount: FrontMount): void
   setSelection(selection: Selection): void
   setHover(hover: Hover): void
   setViewport(viewport: Partial<ViewportState>): void
@@ -472,6 +477,11 @@ export function createProjectStore(options: CreateProjectStoreOptions = {}) {
           future: state.future.slice(1),
         })
         save(next)
+      },
+      lastDoorMount: loadDoorMount(),
+      setLastDoorMount: (lastDoorMount) => {
+        saveDoorMount(lastDoorMount)
+        set({ lastDoorMount })
       },
       setSelection: (selection) =>
         set((state) => ({ editor: { ...state.editor, selection } })),

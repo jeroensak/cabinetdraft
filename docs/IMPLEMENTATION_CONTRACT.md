@@ -97,6 +97,8 @@ The user requested doors that are either overlay or inset. This supersedes speci
 
 An inset door sits inside its opening with `frontGap` on all four sides, its face flush with the carcass front. A double door's leaves divide the width as they do for overlay, so a non-integer leaf remains a validation problem. Any shelf or divider inside the opening of an inset door would block it, so it is set back by `frontThickness + frontGap` and its depth shrinks by the same amount. `insetDoorSetback` is the one canonical rule. The setback is derived, never stored, and panels that only bound the opening do not move.
 
+The position last chosen for a door is an editor preference stored under `cabinet-designer:door-mount`, never in Project JSON. Every new door takes that position until another is chosen. Existing doors never change with it.
+
 ## Approved post-V1 extension: inch designs
 
 The user requested designs in inches, in the fractional notation used in America, next to millimetres, with the unit set per design so that free switching can't cause rounding errors. This supersedes the measurement rule of specification section 6 for inch designs only; the frozen specification remains unchanged.

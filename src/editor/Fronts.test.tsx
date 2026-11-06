@@ -8,7 +8,15 @@ import { createDefaultProject } from '../domain/project/createDefaultProject'
 import { deriveFrontGeometry } from '../domain/fronts/deriveFrontGeometry'
 import { useProjectStore } from '../store/projectStore'
 import { mockResizeObserver } from '../test/mockResizeObserver'
-import { addShelfToSpace, removeFront } from '../domain/commands'
+import {
+  addDrawerDesign,
+  addShelfToSpace,
+  applyDrawerDesign,
+  removeFront,
+} from '../domain/commands'
+import { defaultDrawerDesign } from '../domain/drawers/types'
+import { spaceRange } from '../domain/spaces/spaceRanges'
+import { DOOR_MOUNT_STORAGE_KEY } from '../store/doorMountPreference'
 import { addBoxlessFront } from '../domain/commands/testHelpers'
 import { deriveSpaces } from '../domain/spaces/deriveSpaces'
 
@@ -99,6 +107,73 @@ describe('Fronts mode', () => {
     expect(
       screen.getByRole('button', { name: 'Cabinet 1 single door 1' }),
     ).toBeInTheDocument()
+  })
+  it('replaces the add buttons with remove on a space holding a door', async () => {
+    clearFronts()
+    const user = userEvent.setup()
+    render(<DesignerPage />)
+    await user.click(screen.getByRole('button', { name: 'Fronts' }))
+    await user.click(screen.getByRole('button', { name: 'Cabinet 1 space 1' }))
+    await user.click(screen.getByRole('button', { name: 'Add door' }))
+    expect(screen.queryByRole('button', { name: 'Add door' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Add drawer' })).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'Remove door' }))
+    expect(useProjectStore.getState().present.modules[0].fronts).toEqual([])
+    expect(screen.getByRole('button', { name: 'Add door' })).toBeEnabled()
+  })
+  it('applies the last door position to every new door', async () => {
+    clearFronts()
+    useProjectStore.getState().setLastDoorMount('overlay')
+    const user = userEvent.setup()
+    render(<DesignerPage />)
+    await user.click(screen.getByRole('button', { name: 'Fronts' }))
+    await user.click(screen.getByRole('button', { name: 'Cabinet 1 space 1' }))
+    await user.click(screen.getByRole('button', { name: 'Add door' }))
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Position' }),
+      'inset',
+    )
+    await user.click(screen.getByRole('button', { name: 'Cabinet 1 space 2' }))
+    await user.click(screen.getByRole('button', { name: 'Add door' }))
+    const doors = useProjectStore.getState().present.modules[0].fronts
+    expect(doors).toHaveLength(2)
+    expect(doors.map((door) => door.type === 'door' && door.mount)).toEqual([
+      'inset',
+      'inset',
+    ])
+    expect(localStorage.getItem(DOOR_MOUNT_STORAGE_KEY)).toBe('inset')
+    useProjectStore.getState().setLastDoorMount('overlay')
+  })
+  it('switches the design of a drawer from its space', async () => {
+    clearFronts()
+    useProjectStore.getState().execute((project) => {
+      const shallow = { ...defaultDrawerDesign(), depth: 300, name: 'Shallow' }
+      const designed = addDrawerDesign(
+        addDrawerDesign(project, { ...shallow, name: 'Deep', depth: 400 }),
+        shallow,
+      )
+      const module = designed.modules[0]
+      return applyDrawerDesign(designed, designed.drawerDesigns[0].id, [
+        {
+          moduleId: module.id,
+          range: spaceRange(deriveSpaces(module, designed.settings)[0]),
+        },
+      ])
+    })
+    const user = userEvent.setup()
+    render(<DesignerPage />)
+    await user.click(screen.getByRole('button', { name: 'Structure' }))
+    await user.click(screen.getByRole('button', { name: 'Cabinet 1 space 1' }))
+    expect(screen.getByRole('button', { name: 'Remove drawer' })).toBeEnabled()
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Drawer box design' }),
+      'Shallow',
+    )
+    const { drawerDesigns, modules } = useProjectStore.getState().present
+    const front = modules[0].fronts[0]
+    expect(front.type === 'drawer' && front.drawerDesignId).toBe(
+      drawerDesigns[1].id,
+    )
   })
   it('switches a door between overlay and inset and explains the setback', async () => {
     const user = userEvent.setup()
