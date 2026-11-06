@@ -1,12 +1,8 @@
 import type { CabinetModule } from '../../domain/cabinet/types'
-import type { Boundary, Front, FrontMount } from '../../domain/fronts/types'
+import type { Boundary, Front } from '../../domain/fronts/types'
 import type { ProjectSettings } from '../../domain/project/types'
 import { deriveFrontGeometry } from '../../domain/fronts/deriveFrontGeometry'
-import {
-  applyDrawerDesign,
-  setDoorLeaves,
-  setDoorMount,
-} from '../../domain/commands'
+import { setDoorLeaves } from '../../domain/commands'
 import { deriveDrawerGeometry } from '../../domain/drawers/deriveDrawerGeometry'
 import { spaceRange } from '../../domain/spaces/spaceRanges'
 import { useTranslation } from '../../i18n'
@@ -15,6 +11,7 @@ import { useMeasure } from '../../units/useMeasure'
 import { drawerIssueMessage } from '../../i18n/drawerIssues'
 import { useProjectStore } from '../../store/projectStore'
 import { useCommandAction } from '../useCommandAction'
+import { DoorMountField, DrawerDesignField } from './FrontChoices'
 
 export function FrontProperties({
   module,
@@ -82,35 +79,7 @@ export function FrontProperties({
               <option value={2}>{t('front.double')}</option>
             </select>
           </label>
-          <label className="property-field">
-            <span>{t('frontInfo.position')}</span>
-            <select
-              aria-label={t('frontInfo.position')}
-              value={front.mount ?? 'overlay'}
-              onChange={(event) =>
-                run(() =>
-                  execute((project) =>
-                    setDoorMount(
-                      project,
-                      module.id,
-                      front.id,
-                      event.target.value as FrontMount,
-                    ),
-                  ),
-                )
-              }
-            >
-              <option value="overlay">{t('drawer.positionOverlay')}</option>
-              <option value="inset">{t('drawer.positionInset')}</option>
-            </select>
-          </label>
-          {front.mount === 'inset' && (
-            <p className="inspector-note muted">
-              {t('frontInfo.insetNote', {
-                value: measure(settings.frontThickness + settings.frontGap),
-              })}
-            </p>
-          )}
+          <DoorMountField moduleId={module.id} door={front} run={run} />
         </>
       ) : (
         <p className="semantic-value">{t('front.drawer')}</p>
@@ -159,34 +128,7 @@ export function FrontProperties({
           <h3 className="eyebrow dimension-heading">
             {t('frontInfo.drawerBox')}
           </h3>
-          <label className="property-field">
-            <span className="sr-only">{t('frontInfo.drawerBoxDesign')}</span>
-            <select
-              aria-label={t('frontInfo.drawerBoxDesign')}
-              value={front.drawerDesignId ?? ''}
-              onChange={(event) => {
-                const designId = event.target.value
-                run(() =>
-                  execute((project) =>
-                    applyDrawerDesign(project, designId, [
-                      { moduleId: module.id, range: spaceRange(front) },
-                    ]),
-                  ),
-                )
-              }}
-            >
-              {designs.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-              {!design && (
-                <option value={front.drawerDesignId ?? ''}>
-                  {t('frontInfo.missingDesign')}
-                </option>
-              )}
-            </select>
-          </label>
+          <DrawerDesignField moduleId={module.id} drawer={front} run={run} />
           {box && (
             <dl className="settings-values">
               <div>

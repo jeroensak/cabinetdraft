@@ -1,6 +1,6 @@
 import type { CabinetModule } from '../cabinet/types'
 import type { ProjectSettings } from '../project/types'
-import type { SpaceRange } from '../fronts/types'
+import type { Front, SpaceRange } from '../fronts/types'
 import { deriveSpaces, type Space } from './deriveSpaces'
 import {
   horizontalBounds,
@@ -8,6 +8,7 @@ import {
   leftBoundary,
   rightBoundary,
   horizontalData,
+  sameSpace,
 } from './boundaries'
 
 /** Boundary centre-lines tile the cabinet without counting panel thickness as gaps. */
@@ -34,6 +35,19 @@ export function spaceRange(space: SpaceRange): SpaceRange {
     ...horizontalData(space),
   }
 }
+/** The fronts covering any of these spaces, each once. */
+export function frontsCovering(
+  module: CabinetModule,
+  settings: ProjectSettings,
+  spaces: readonly Space[],
+): Front[] {
+  return module.fronts.filter((front) =>
+    spacesForRange(module, settings, front).some((covered) =>
+      spaces.some((space) => sameSpace(space, covered)),
+    ),
+  )
+}
+
 export function spacesForRange(
   module: CabinetModule,
   settings: ProjectSettings,

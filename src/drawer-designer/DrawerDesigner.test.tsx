@@ -71,7 +71,7 @@ describe('Drawer designer', () => {
       ),
     ).toStrictEqual([designId, designId])
     expect(
-      screen.getByRole('button', { name: 'Add drawer' }),
+      screen.getByRole('button', { name: 'Remove drawers' }),
     ).toBeInTheDocument()
 
     act(() => useProjectStore.getState().undo())
