@@ -12,8 +12,8 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router'
 import { CutListPage } from './CutListPage'
-import template2 from '../design-templates/template-2.json'
-import template3 from '../design-templates/template-3.json'
+import drawersAndDoor from '../design-templates/template-2.json'
+import waveSideboard from '../test-fixtures/wave-sideboard.json'
 import type { Project } from '../domain/project/types'
 import { createDefaultProject } from '../domain/project/createDefaultProject'
 import {
@@ -254,7 +254,7 @@ describe('sheet layout view', () => {
   })
 
   it('saves sheets instead of cuts on request, and remembers it', async () => {
-    useProjectStore.setState({ present: template3 as unknown as Project })
+    useProjectStore.setState({ present: drawersAndDoor as unknown as Project })
     const user = await openSheets()
     const total = () => screen.getAllByRole('status').at(-1)
     await user.selectOptions(
@@ -400,7 +400,7 @@ describe('sheet layout view', () => {
   })
 
   it('labels every part, and keeps every cut on the sheet', async () => {
-    useProjectStore.setState({ present: template2 as unknown as Project })
+    useProjectStore.setState({ present: waveSideboard as unknown as Project })
     await openSheets()
     const svg = screen.getAllByRole('img')
     for (const drawing of svg) {

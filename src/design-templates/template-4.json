@@ -1,542 +1,230 @@
 {
   "schemaVersion": 6,
-  "id": "afc8df20-1145-58af-b2f8-bfa07b54d43a",
-  "name": "Media wall",
+  "id": "66522da5-1238-5706-9348-e8d057fff2c6",
+  "name": "Record cabinet",
   "settings": {
     "corpusThickness": 18,
     "backPanelEnabled": true,
-    "backPanelThickness": 3,
+    "backPanelThickness": 10,
     "frontThickness": 18,
     "frontGap": 2
   },
   "drawerDesigns": [
     {
-      "id": "938579fd-5069-5bac-8782-1d3d510389af",
-      "name": "Wave front drawer",
+      "id": "1e9e6376-dab0-54d6-a143-5327def4fc93",
+      "name": "Record drawer",
       "slideType": "undermount",
-      "wallThickness": 18,
-      "bottomThickness": 6,
-      "depth": 400,
-      "heightPercent": 35,
+      "wallThickness": 16,
+      "bottomThickness": 16,
+      "depth": 340,
+      "heightPercent": 41,
+      "sideClearance": 5,
+      "bottomClearance": 14,
+      "topClearance": 7,
+      "rearClearance": 3,
       "bottomRecess": 13,
       "frontStyle": "wave",
       "frontMount": "inset",
-      "frontHeightPercent": 55,
-      "sideClearance": 5,
-      "bottomClearance": 14,
-      "topClearance": 7,
-      "rearClearance": 3
-    },
-    {
-      "id": "827be85d-5ff4-585e-ba9a-ce2353cf59cc",
-      "name": "Large drawer",
-      "slideType": "undermount",
-      "wallThickness": 18,
-      "bottomThickness": 6,
-      "depth": 450,
-      "heightPercent": 50,
-      "bottomRecess": 8,
-      "frontStyle": "full",
-      "frontMount": "overlay",
-      "frontHeightPercent": 100,
-      "sideClearance": 5,
-      "bottomClearance": 14,
-      "topClearance": 7,
-      "rearClearance": 3
+      "frontHeightPercent": 60
     }
   ],
   "modules": [
     {
-      "id": "5e9c864d-5a4f-56a3-bc70-243b9f0f3ea2",
-      "name": "Tall cabinet",
-      "width": 900,
-      "height": 2400,
-      "depth": 500,
+      "id": "42a5b1fd-a20e-51eb-a705-5566d15cd94e",
+      "name": "Record cabinet",
+      "width": 1978,
+      "height": 810,
+      "depth": 420,
       "shelves": [
         {
-          "id": "89bb95fa-2d7b-5a33-bc8b-d2fb07cb86b8",
-          "bottom": 340
-        },
-        {
-          "id": "a92d281d-1bca-5c18-ac15-5312be34805b",
-          "bottom": 640
-        },
-        {
-          "id": "f748dad6-591d-5ddf-b9d5-caa0a59396c4",
-          "bottom": 1100
-        },
-        {
-          "id": "b80dc83f-e839-591e-b1fa-bba61b96d111",
-          "bottom": 1560
-        },
-        {
-          "id": "bbbbde52-6756-5654-a43e-79f971b1a68e",
-          "bottom": 2020
+          "id": "4cc210e7-c347-58f9-b1e5-68feeb123f43",
+          "bottom": 404
         }
       ],
       "dividers": [
         {
-          "id": "1e876eb4-314f-5aeb-9242-0f5dade1d525",
-          "left": 609,
+          "id": "b90251d9-ed04-561e-ba8d-b27909898fe9",
+          "left": 392,
           "bottomBoundary": {
             "type": "shelf",
-            "shelfId": "bbbbde52-6756-5654-a43e-79f971b1a68e"
+            "shelfId": "4cc210e7-c347-58f9-b1e5-68feeb123f43"
           },
           "topBoundary": {
             "type": "module-top"
+          }
+        },
+        {
+          "id": "37f2f433-672a-509c-bcee-d4218da7b81d",
+          "left": 784,
+          "bottomBoundary": {
+            "type": "shelf",
+            "shelfId": "4cc210e7-c347-58f9-b1e5-68feeb123f43"
+          },
+          "topBoundary": {
+            "type": "module-top"
+          }
+        },
+        {
+          "id": "d2da55ce-c278-5a4f-965a-8824b353e8bf",
+          "left": 1176,
+          "bottomBoundary": {
+            "type": "shelf",
+            "shelfId": "4cc210e7-c347-58f9-b1e5-68feeb123f43"
+          },
+          "topBoundary": {
+            "type": "module-top"
+          }
+        },
+        {
+          "id": "463d35a4-75de-53a2-adee-5e4f058e85bd",
+          "left": 1568,
+          "bottomBoundary": {
+            "type": "shelf",
+            "shelfId": "4cc210e7-c347-58f9-b1e5-68feeb123f43"
+          },
+          "topBoundary": {
+            "type": "module-top"
+          }
+        },
+        {
+          "id": "83c1a772-b964-5fb9-878d-3002ee6986f3",
+          "left": 490,
+          "bottomBoundary": {
+            "type": "module-bottom"
+          },
+          "topBoundary": {
+            "type": "shelf",
+            "shelfId": "4cc210e7-c347-58f9-b1e5-68feeb123f43"
+          }
+        },
+        {
+          "id": "069e8940-e4df-508a-badc-43bd5041d036",
+          "left": 980,
+          "bottomBoundary": {
+            "type": "module-bottom"
+          },
+          "topBoundary": {
+            "type": "shelf",
+            "shelfId": "4cc210e7-c347-58f9-b1e5-68feeb123f43"
+          }
+        },
+        {
+          "id": "2064589a-c65e-590a-be25-16748b01c880",
+          "left": 1470,
+          "bottomBoundary": {
+            "type": "module-bottom"
+          },
+          "topBoundary": {
+            "type": "shelf",
+            "shelfId": "4cc210e7-c347-58f9-b1e5-68feeb123f43"
           }
         }
       ],
       "fronts": [
         {
-          "id": "81ac8551-99bc-534a-a498-0aba69f52d2a",
+          "id": "a0fd8b2d-aac3-5732-99e5-f0ab2e4a459e",
           "type": "drawer",
-          "bottomBoundary": {
-            "type": "module-bottom"
+          "rightBoundary": {
+            "type": "divider",
+            "dividerId": "b90251d9-ed04-561e-ba8d-b27909898fe9"
           },
-          "topBoundary": {
-            "type": "shelf",
-            "shelfId": "89bb95fa-2d7b-5a33-bc8b-d2fb07cb86b8"
-          },
-          "drawerDesignId": "827be85d-5ff4-585e-ba9a-ce2353cf59cc"
-        },
-        {
-          "id": "13c19db4-2c69-5c8e-8037-c7b43509a375",
-          "type": "drawer",
           "bottomBoundary": {
             "type": "shelf",
-            "shelfId": "89bb95fa-2d7b-5a33-bc8b-d2fb07cb86b8"
+            "shelfId": "4cc210e7-c347-58f9-b1e5-68feeb123f43"
           },
           "topBoundary": {
-            "type": "shelf",
-            "shelfId": "a92d281d-1bca-5c18-ac15-5312be34805b"
+            "type": "module-top"
           },
-          "drawerDesignId": "827be85d-5ff4-585e-ba9a-ce2353cf59cc"
+          "drawerDesignId": "1e9e6376-dab0-54d6-a143-5327def4fc93"
         },
         {
-          "id": "d00e1411-6d25-5ffd-97de-ef0d66068e61",
+          "id": "66f38039-c06c-5cdc-aa5d-55142b7b9c1a",
+          "type": "drawer",
+          "leftBoundary": {
+            "type": "divider",
+            "dividerId": "b90251d9-ed04-561e-ba8d-b27909898fe9"
+          },
+          "rightBoundary": {
+            "type": "divider",
+            "dividerId": "37f2f433-672a-509c-bcee-d4218da7b81d"
+          },
+          "bottomBoundary": {
+            "type": "shelf",
+            "shelfId": "4cc210e7-c347-58f9-b1e5-68feeb123f43"
+          },
+          "topBoundary": {
+            "type": "module-top"
+          },
+          "drawerDesignId": "1e9e6376-dab0-54d6-a143-5327def4fc93"
+        },
+        {
+          "id": "909d4c54-e5ee-5299-b8cd-0bb69a50348d",
+          "type": "drawer",
+          "leftBoundary": {
+            "type": "divider",
+            "dividerId": "37f2f433-672a-509c-bcee-d4218da7b81d"
+          },
+          "rightBoundary": {
+            "type": "divider",
+            "dividerId": "d2da55ce-c278-5a4f-965a-8824b353e8bf"
+          },
+          "bottomBoundary": {
+            "type": "shelf",
+            "shelfId": "4cc210e7-c347-58f9-b1e5-68feeb123f43"
+          },
+          "topBoundary": {
+            "type": "module-top"
+          },
+          "drawerDesignId": "1e9e6376-dab0-54d6-a143-5327def4fc93"
+        },
+        {
+          "id": "eb3f07e3-5675-5d6a-83f8-148297d04c80",
+          "type": "drawer",
+          "leftBoundary": {
+            "type": "divider",
+            "dividerId": "d2da55ce-c278-5a4f-965a-8824b353e8bf"
+          },
+          "rightBoundary": {
+            "type": "divider",
+            "dividerId": "463d35a4-75de-53a2-adee-5e4f058e85bd"
+          },
+          "bottomBoundary": {
+            "type": "shelf",
+            "shelfId": "4cc210e7-c347-58f9-b1e5-68feeb123f43"
+          },
+          "topBoundary": {
+            "type": "module-top"
+          },
+          "drawerDesignId": "1e9e6376-dab0-54d6-a143-5327def4fc93"
+        },
+        {
+          "id": "33959df7-606d-510f-a4c5-a535eb91ad51",
+          "type": "drawer",
+          "leftBoundary": {
+            "type": "divider",
+            "dividerId": "463d35a4-75de-53a2-adee-5e4f058e85bd"
+          },
+          "bottomBoundary": {
+            "type": "shelf",
+            "shelfId": "4cc210e7-c347-58f9-b1e5-68feeb123f43"
+          },
+          "topBoundary": {
+            "type": "module-top"
+          },
+          "drawerDesignId": "1e9e6376-dab0-54d6-a143-5327def4fc93"
+        },
+        {
+          "id": "93e6abfc-ae82-55ca-812b-1d4204ed77a2",
           "type": "door",
           "bottomBoundary": {
-            "type": "shelf",
-            "shelfId": "a92d281d-1bca-5c18-ac15-5312be34805b"
-          },
-          "topBoundary": {
-            "type": "shelf",
-            "shelfId": "bbbbde52-6756-5654-a43e-79f971b1a68e"
-          },
-          "leaves": 2
-        }
-      ]
-    },
-    {
-      "id": "370b22c0-44db-5b4d-9a82-9506fe2519ad",
-      "name": "Open cabinet",
-      "width": 700,
-      "height": 2000,
-      "depth": 500,
-      "shelves": [
-        {
-          "id": "8b97708a-377a-51ff-9571-750e7a3f8e85",
-          "bottom": 300
-        },
-        {
-          "id": "c46c6cd1-9824-57e1-ba50-60dcb59cefa3",
-          "bottom": 1100
-        },
-        {
-          "id": "253626e8-8738-527a-8933-847b09202c92",
-          "bottom": 700,
-          "rightBoundary": {
-            "type": "divider",
-            "dividerId": "e6c635a4-89da-5ff7-826b-8b4c11ff12b1"
-          }
-        },
-        {
-          "id": "d51756d5-2500-5d98-a223-907a6b1808ef",
-          "bottom": 1520,
-          "leftBoundary": {
-            "type": "divider",
-            "dividerId": "e22ff97d-fef6-58d0-9a2a-ddd412e1ccb5"
-          }
-        }
-      ],
-      "dividers": [
-        {
-          "id": "3fb751f4-f27c-5a01-ac16-c2386f334892",
-          "left": 341,
-          "bottomBoundary": {
             "type": "module-bottom"
           },
           "topBoundary": {
             "type": "shelf",
-            "shelfId": "8b97708a-377a-51ff-9571-750e7a3f8e85"
-          }
-        },
-        {
-          "id": "e6c635a4-89da-5ff7-826b-8b4c11ff12b1",
-          "left": 240,
-          "bottomBoundary": {
-            "type": "shelf",
-            "shelfId": "8b97708a-377a-51ff-9571-750e7a3f8e85"
-          },
-          "topBoundary": {
-            "type": "shelf",
-            "shelfId": "c46c6cd1-9824-57e1-ba50-60dcb59cefa3"
-          }
-        },
-        {
-          "id": "e22ff97d-fef6-58d0-9a2a-ddd412e1ccb5",
-          "left": 440,
-          "bottomBoundary": {
-            "type": "shelf",
-            "shelfId": "c46c6cd1-9824-57e1-ba50-60dcb59cefa3"
-          },
-          "topBoundary": {
-            "type": "module-top"
-          }
-        }
-      ],
-      "fronts": [
-        {
-          "id": "bae0c192-e45c-543e-8423-adf9e2be0f67",
-          "type": "drawer",
-          "rightBoundary": {
-            "type": "divider",
-            "dividerId": "3fb751f4-f27c-5a01-ac16-c2386f334892"
-          },
-          "bottomBoundary": {
-            "type": "module-bottom"
-          },
-          "topBoundary": {
-            "type": "shelf",
-            "shelfId": "8b97708a-377a-51ff-9571-750e7a3f8e85"
-          },
-          "drawerDesignId": "938579fd-5069-5bac-8782-1d3d510389af"
-        },
-        {
-          "id": "b71e92fd-fe0b-5c1a-ae49-3e15a8415651",
-          "type": "drawer",
-          "leftBoundary": {
-            "type": "divider",
-            "dividerId": "3fb751f4-f27c-5a01-ac16-c2386f334892"
-          },
-          "bottomBoundary": {
-            "type": "module-bottom"
-          },
-          "topBoundary": {
-            "type": "shelf",
-            "shelfId": "8b97708a-377a-51ff-9571-750e7a3f8e85"
-          },
-          "drawerDesignId": "938579fd-5069-5bac-8782-1d3d510389af"
-        },
-        {
-          "id": "6a84d4d6-9a29-5d9b-b517-afecc02fa950",
-          "type": "door",
-          "leftBoundary": {
-            "type": "divider",
-            "dividerId": "e6c635a4-89da-5ff7-826b-8b4c11ff12b1"
-          },
-          "bottomBoundary": {
-            "type": "shelf",
-            "shelfId": "8b97708a-377a-51ff-9571-750e7a3f8e85"
-          },
-          "topBoundary": {
-            "type": "shelf",
-            "shelfId": "c46c6cd1-9824-57e1-ba50-60dcb59cefa3"
-          },
-          "leaves": 1,
-          "mount": "inset"
-        }
-      ]
-    },
-    {
-      "id": "c7e050b8-7733-5c06-8c87-970b7c3721b1",
-      "name": "TV bench",
-      "width": 1800,
-      "height": 500,
-      "depth": 500,
-      "shelves": [
-        {
-          "id": "bf70a8d2-82bd-5b2e-9519-9b9aada98c40",
-          "bottom": 241,
-          "rightBoundary": {
-            "type": "divider",
-            "dividerId": "ed2600e3-6906-5813-870a-85e549e5ed69"
-          }
-        },
-        {
-          "id": "1d3532ed-fc10-5a72-9095-855c4ac3d1d8",
-          "bottom": 250,
-          "leftBoundary": {
-            "type": "divider",
-            "dividerId": "ed2600e3-6906-5813-870a-85e549e5ed69"
-          },
-          "rightBoundary": {
-            "type": "divider",
-            "dividerId": "410603e0-1ab0-5b38-8a47-ac1b6cc0478a"
-          }
-        }
-      ],
-      "dividers": [
-        {
-          "id": "ed2600e3-6906-5813-870a-85e549e5ed69",
-          "left": 594,
-          "bottomBoundary": {
-            "type": "module-bottom"
-          },
-          "topBoundary": {
-            "type": "module-top"
-          }
-        },
-        {
-          "id": "410603e0-1ab0-5b38-8a47-ac1b6cc0478a",
-          "left": 1188,
-          "bottomBoundary": {
-            "type": "module-bottom"
-          },
-          "topBoundary": {
-            "type": "module-top"
-          }
-        }
-      ],
-      "fronts": [
-        {
-          "id": "91020c12-345c-5fe0-afe2-62bd7657aa62",
-          "type": "drawer",
-          "rightBoundary": {
-            "type": "divider",
-            "dividerId": "ed2600e3-6906-5813-870a-85e549e5ed69"
-          },
-          "bottomBoundary": {
-            "type": "module-bottom"
-          },
-          "topBoundary": {
-            "type": "shelf",
-            "shelfId": "bf70a8d2-82bd-5b2e-9519-9b9aada98c40"
-          },
-          "drawerDesignId": "938579fd-5069-5bac-8782-1d3d510389af"
-        },
-        {
-          "id": "3c1d2ac4-962e-5211-96f0-de845d42dfdc",
-          "type": "drawer",
-          "rightBoundary": {
-            "type": "divider",
-            "dividerId": "ed2600e3-6906-5813-870a-85e549e5ed69"
-          },
-          "bottomBoundary": {
-            "type": "shelf",
-            "shelfId": "bf70a8d2-82bd-5b2e-9519-9b9aada98c40"
-          },
-          "topBoundary": {
-            "type": "module-top"
-          },
-          "drawerDesignId": "938579fd-5069-5bac-8782-1d3d510389af"
-        },
-        {
-          "id": "1257f1a5-ff87-5881-851e-11187ce11c7c",
-          "type": "door",
-          "leftBoundary": {
-            "type": "divider",
-            "dividerId": "410603e0-1ab0-5b38-8a47-ac1b6cc0478a"
-          },
-          "bottomBoundary": {
-            "type": "module-bottom"
-          },
-          "topBoundary": {
-            "type": "module-top"
+            "shelfId": "4cc210e7-c347-58f9-b1e5-68feeb123f43"
           },
           "leaves": 2,
           "mount": "inset"
-        }
-      ]
-    },
-    {
-      "id": "78a9e6b9-d5de-5e73-9999-2b7970a894f4",
-      "name": "Bookcase",
-      "width": 1000,
-      "height": 1600,
-      "depth": 500,
-      "shelves": [
-        {
-          "id": "71c67ce9-dce1-5121-98f6-12b481e0d016",
-          "bottom": 420
-        },
-        {
-          "id": "8609746e-b078-5616-bb10-55b90566ff1b",
-          "bottom": 820
-        },
-        {
-          "id": "d38d536f-06b0-5d9d-8643-54b1c53d2e5f",
-          "bottom": 1220
-        }
-      ],
-      "dividers": [
-        {
-          "id": "218d7c75-222c-52eb-b9e8-41c123cff0f2",
-          "left": 300,
-          "bottomBoundary": {
-            "type": "shelf",
-            "shelfId": "71c67ce9-dce1-5121-98f6-12b481e0d016"
-          },
-          "topBoundary": {
-            "type": "shelf",
-            "shelfId": "8609746e-b078-5616-bb10-55b90566ff1b"
-          }
-        },
-        {
-          "id": "9ab04dde-0bf7-5e5c-a716-671d6de5141c",
-          "left": 640,
-          "bottomBoundary": {
-            "type": "shelf",
-            "shelfId": "8609746e-b078-5616-bb10-55b90566ff1b"
-          },
-          "topBoundary": {
-            "type": "shelf",
-            "shelfId": "d38d536f-06b0-5d9d-8643-54b1c53d2e5f"
-          }
-        },
-        {
-          "id": "7a66a27a-9ce6-5e89-969c-9262fb38312a",
-          "left": 420,
-          "bottomBoundary": {
-            "type": "shelf",
-            "shelfId": "d38d536f-06b0-5d9d-8643-54b1c53d2e5f"
-          },
-          "topBoundary": {
-            "type": "module-top"
-          }
-        }
-      ],
-      "fronts": [
-        {
-          "id": "1401e48f-0ef2-5fe3-943b-ab40873caf7c",
-          "type": "door",
-          "bottomBoundary": {
-            "type": "module-bottom"
-          },
-          "topBoundary": {
-            "type": "shelf",
-            "shelfId": "71c67ce9-dce1-5121-98f6-12b481e0d016"
-          },
-          "leaves": 2,
-          "mount": "inset"
-        },
-        {
-          "id": "eda6524a-447e-5313-8a84-c5e8e580e501",
-          "type": "door",
-          "leftBoundary": {
-            "type": "divider",
-            "dividerId": "9ab04dde-0bf7-5e5c-a716-671d6de5141c"
-          },
-          "bottomBoundary": {
-            "type": "shelf",
-            "shelfId": "8609746e-b078-5616-bb10-55b90566ff1b"
-          },
-          "topBoundary": {
-            "type": "shelf",
-            "shelfId": "d38d536f-06b0-5d9d-8643-54b1c53d2e5f"
-          },
-          "leaves": 1,
-          "mount": "inset"
-        }
-      ]
-    },
-    {
-      "id": "93757369-ac53-52d4-bdcb-0206a324910b",
-      "name": "Drawer tower",
-      "width": 600,
-      "height": 2200,
-      "depth": 500,
-      "shelves": [
-        {
-          "id": "6fb618b0-b903-5537-bb9a-b8aebfd851dd",
-          "bottom": 260
-        },
-        {
-          "id": "7e24c13c-f666-5435-bef3-ad80daaba3c6",
-          "bottom": 540
-        },
-        {
-          "id": "a286acd0-c5bb-569c-8d1e-dc5996532897",
-          "bottom": 860
-        },
-        {
-          "id": "1dd7be55-a308-5e0d-82bb-f0d0233fdbaa",
-          "bottom": 1173
-        },
-        {
-          "id": "52b8c9bd-8d2a-5295-a55b-c4db1da024fb",
-          "bottom": 1486
-        },
-        {
-          "id": "adbdcf35-ea71-5905-8eda-82a4e4c2e97d",
-          "bottom": 1800
-        }
-      ],
-      "dividers": [
-        {
-          "id": "96a77596-68fd-5c88-a343-c249fd9b47d8",
-          "left": 200,
-          "bottomBoundary": {
-            "type": "shelf",
-            "shelfId": "adbdcf35-ea71-5905-8eda-82a4e4c2e97d"
-          },
-          "topBoundary": {
-            "type": "module-top"
-          }
-        }
-      ],
-      "fronts": [
-        {
-          "id": "e821c117-2c2a-5403-9fd6-78860fccaf2e",
-          "type": "drawer",
-          "bottomBoundary": {
-            "type": "module-bottom"
-          },
-          "topBoundary": {
-            "type": "shelf",
-            "shelfId": "6fb618b0-b903-5537-bb9a-b8aebfd851dd"
-          },
-          "drawerDesignId": "827be85d-5ff4-585e-ba9a-ce2353cf59cc"
-        },
-        {
-          "id": "bfae1aa8-caf4-5cb3-a4e9-7a893fbc94d3",
-          "type": "drawer",
-          "bottomBoundary": {
-            "type": "shelf",
-            "shelfId": "6fb618b0-b903-5537-bb9a-b8aebfd851dd"
-          },
-          "topBoundary": {
-            "type": "shelf",
-            "shelfId": "7e24c13c-f666-5435-bef3-ad80daaba3c6"
-          },
-          "drawerDesignId": "827be85d-5ff4-585e-ba9a-ce2353cf59cc"
-        },
-        {
-          "id": "84fa2c94-83b1-564f-b0c3-784a2ea7b062",
-          "type": "drawer",
-          "bottomBoundary": {
-            "type": "shelf",
-            "shelfId": "7e24c13c-f666-5435-bef3-ad80daaba3c6"
-          },
-          "topBoundary": {
-            "type": "shelf",
-            "shelfId": "a286acd0-c5bb-569c-8d1e-dc5996532897"
-          },
-          "drawerDesignId": "827be85d-5ff4-585e-ba9a-ce2353cf59cc"
-        },
-        {
-          "id": "57fc6d73-b649-5398-8e84-75d901aaaa31",
-          "type": "door",
-          "bottomBoundary": {
-            "type": "shelf",
-            "shelfId": "a286acd0-c5bb-569c-8d1e-dc5996532897"
-          },
-          "topBoundary": {
-            "type": "shelf",
-            "shelfId": "adbdcf35-ea71-5905-8eda-82a4e4c2e97d"
-          },
-          "leaves": 1
         }
       ]
     }

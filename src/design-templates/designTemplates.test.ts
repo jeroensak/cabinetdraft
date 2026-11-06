@@ -4,30 +4,30 @@ import { defaultDrawerDesign } from '../domain/drawers/types'
 import { convertToInches } from '../domain/project/convertToInches'
 import { parseProject } from '../domain/import-export/projectJson'
 import { validateProject } from '../domain/validation/validateProject'
-import { setLanguage } from '../i18n'
+import { setLanguage, t } from '../i18n'
 import { designTemplates, localizedTemplate } from './index'
 
-it('ships exactly five valid starting templates', () => {
+it('ships exactly four valid starting templates', () => {
   expect(designTemplates.map((template) => template.id)).toStrictEqual([
     './template-1.json',
     './template-2.json',
     './template-3.json',
     './template-4.json',
-    './template-5.json',
   ])
   for (const template of designTemplates)
     expect(validateProject(parseProject(template.raw))).toStrictEqual([])
   expect(designTemplates.map((template) => template.name)).toStrictEqual([
     'Empty cabinet',
-    'Wave drawer sideboard',
     'Drawers and door',
     'Media wall',
     'Record cabinet',
   ])
+  for (const template of designTemplates)
+    expect(t(template.key), template.id).toBe(template.name)
 })
 
 it('makes the media wall a large, varied five-cabinet run', () => {
-  const { modules } = parseProject(designTemplates[3]!.raw)
+  const { modules } = parseProject(designTemplates[2]!.raw)
   const total = modules.reduce((sum, module) => sum + module.width, 0)
   expect(total).toBe(5000)
   expect(new Set(modules.map((module) => module.height)).size).toBe(5)
@@ -41,7 +41,7 @@ it('makes the media wall a large, varied five-cabinet run', () => {
 })
 
 it('builds the record cabinet as five wave drawers over a double door', () => {
-  const project = parseProject(designTemplates[4]!.raw)
+  const project = parseProject(designTemplates[3]!.raw)
   const [module] = project.modules
   expect(module).toMatchObject({ width: 1978, height: 810, depth: 420 })
   expect(module!.shelves.map((shelf) => shelf.bottom)).toStrictEqual([404])
@@ -89,19 +89,21 @@ it('uses the default 18 mm drawer walls, except in the 16 mm record drawer', () 
       (design) => design.wallThickness,
     ),
   )
-  expect(walls).toStrictEqual([18, 18, 18, 18, 18, 16])
+  expect(walls).toStrictEqual([18, 18, 18, 16])
   expect(defaultDrawerDesign().wallThickness).toBe(18)
 })
 
 it('translates the names inside a template without changing its design', () => {
-  const raw = designTemplates[1]!.raw
+  const raw = designTemplates[2]!.raw
   setLanguage('nl')
   try {
     const project = parseProject(localizedTemplate(raw))
     expect(project.modules.map((module) => module.name)).toStrictEqual([
-      'Brede kast',
-      'Enkele kast',
-      'Kast 1',
+      'Hoge kast',
+      'Open kast',
+      'Tv-meubel',
+      'Boekenkast',
+      'Ladetoren',
     ])
     expect(project.drawerDesigns.map((design) => design.name)).toStrictEqual([
       'Lade met golffront',

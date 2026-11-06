@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createDefaultProject } from '../project/createDefaultProject'
-import template2 from '../../design-templates/template-2.json'
+import waveSideboard from '../../test-fixtures/wave-sideboard.json'
 import type { Project } from '../project/types'
 import { deriveCutList, type CutListItem } from './deriveCutList'
 import {
@@ -298,7 +298,7 @@ describe('deriveSheetLayout', () => {
 
   it.each([
     ['the default cabinet', createDefaultProject()],
-    ['a large design', template2 as unknown as Project],
+    ['a large design', waveSideboard as unknown as Project],
   ])(
     'lays out %s so it can really be sawn, the same way each time',
     (_, project) => {
@@ -341,7 +341,7 @@ describe('deriveSheetLayout', () => {
   })
 
   it('keeps finding a plan this good for a large design', () => {
-    const result = deriveCutList(template2 as unknown as Project)
+    const result = deriveCutList(waveSideboard as unknown as Project)
     if (!result.available) throw new Error('expected a cut list')
     const board = deriveSheetLayout(result.items, STOCK).groups[0]!
     expect(board.cuts).toBeLessThanOrEqual(113)

@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { designTemplates } from '../design-templates'
-import {
-  exportProject,
-  parseProject,
-} from '../domain/import-export/projectJson'
+import { exportProject } from '../domain/import-export/projectJson'
 import { convertToInches } from '../domain/project/convertToInches'
 import { createDefaultProject } from '../domain/project/createDefaultProject'
+import type { Project } from '../domain/project/types'
+import waveSideboard from '../test-fixtures/wave-sideboard.json'
 import { hasSharedDesign, readSharedDesign, shareHash } from './shareLink'
 
 async function hashFor(text: string) {
@@ -31,8 +29,8 @@ describe('share links', () => {
     }
   })
 
-  it('stays short and URL-safe for a large template', async () => {
-    const hash = await shareHash(parseProject(designTemplates[1]!.raw))
+  it('stays short and URL-safe for a large design', async () => {
+    const hash = await shareHash(waveSideboard as unknown as Project)
     expect(hash).toMatch(/^#design=[\w-]+$/)
     expect(hash.length).toBeLessThan(2500)
   })

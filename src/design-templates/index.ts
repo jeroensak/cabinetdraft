@@ -13,7 +13,7 @@ const files = import.meta.glob<string>('./*.json', {
 
 export interface DesignTemplate {
   id: string
-  key: 'template.1' | 'template.2' | 'template.3' | 'template.4' | 'template.5'
+  key: 'template.1' | 'template.2' | 'template.3' | 'template.4'
   name: string
   raw: string
 }
@@ -33,7 +33,7 @@ export const designTemplates: DesignTemplate[] = Object.keys(files)
   })
 
 const textKey = (name: string) =>
-  `templateText.${name}` as 'templateText.Wide cabinet'
+  `templateText.${name}` as 'templateText.Cabinet 1'
 
 /** Names inside a template read in the current language; unlisted names stay. */
 export function localizedTemplate(raw: string): string {

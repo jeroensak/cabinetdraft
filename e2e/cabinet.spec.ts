@@ -358,7 +358,7 @@ test('new designs start from a template, keep their name and survive a reload', 
   await page.getByLabel('Design name').fill('Kitchen')
   await page.getByLabel('Design name').press('Enter')
   await page.getByRole('button', { name: '+ New design' }).click()
-  await page.getByRole('radio').nth(2).check()
+  await page.getByRole('radio', { name: 'Drawers and door' }).check()
   await page.getByLabel('Name', { exact: true }).fill('Hall')
   await page.getByRole('button', { name: 'Create design' }).click()
   await expect(picker).toHaveValue(/.+/)
