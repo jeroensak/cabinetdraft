@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import type { Arrangement } from '../../domain/cabinet/deriveArrangement'
 import { deriveSpaces } from '../../domain/spaces/deriveSpaces'
 import { sameSpace } from '../../domain/spaces/boundaries'
 import { spaceRange } from '../../domain/spaces/spaceRanges'
 import { spacesInRange, selectedSpaces } from '../../store/selection'
 import { selectSpace } from '../spaceSelection'
-import { moveShelf } from '../../domain/commands'
+import { moveDivider, moveShelf } from '../../domain/commands'
+import type { Project } from '../../domain/project/types'
 import { useTranslation } from '../../i18n'
 import { useMeasure } from '../../units/useMeasure'
 
@@ -35,9 +36,10 @@ export function StructureTargets({
   const [error, setError] = useState<string | null>(null)
   const drag = useRef<{
     pointer: number
-    y: number
-    bottom: number
-    shelfId: string
+    start: number
+    value: number
+    axis: 'x' | 'y'
+    move: (project: Project, value: number) => Project
     zoom: number
     started: boolean
   } | null>(null)
@@ -57,6 +59,68 @@ export function StructureTargets({
       cancel()
     }
   }, [])
+  /** Drags a panel along one axis as a live preview, committed once on release. */
+  const dragHandlers = (
+    axis: 'x' | 'y',
+    value: number,
+    move: (project: Project, value: number) => Project,
+    choose: () => void,
+  ) => ({
+    onPointerDown: (event: PointerEvent<SVGRectElement>) => {
+      if (event.button !== 0) return
+      event.stopPropagation()
+      choose()
+      setError(null)
+      drag.current = {
+        pointer: event.pointerId,
+        start: axis === 'x' ? event.clientX : event.clientY,
+        value,
+        axis,
+        move,
+        zoom,
+        started: false,
+      }
+      event.currentTarget.setPointerCapture(event.pointerId)
+    },
+    onPointerMove: (event: PointerEvent<SVGRectElement>) => {
+      const current = drag.current
+      if (!current || current.pointer !== event.pointerId) return
+      const state = useProjectStore.getState()
+      if (current.started && !state.previewBase) {
+        drag.current = null
+        return
+      }
+      const delta =
+        (current.axis === 'x' ? event.clientX : event.clientY) - current.start
+      if (!current.started && Math.abs(delta) < 2) return
+      if (!current.started) {
+        state.beginProjectPreview()
+        current.started = true
+      }
+      // Screen y grows downwards, physical y upwards.
+      const moved = (current.axis === 'x' ? delta : -delta) / current.zoom
+      try {
+        state.updateProjectPreview(
+          current.move(
+            useProjectStore.getState().previewBase!,
+            Math.round(current.value + moved),
+          ),
+        )
+        setError(null)
+      } catch (error) {
+        setError(commandMessage(error))
+      }
+    },
+    onPointerUp: (event: PointerEvent<SVGRectElement>) => {
+      if (!drag.current || drag.current.pointer !== event.pointerId) return
+      if (drag.current.started)
+        useProjectStore.getState().commitProjectPreview()
+      drag.current = null
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    },
+    onPointerCancel: cancel,
+    onLostPointerCapture: cancel,
+  })
   const spaces = deriveSpaces(module, project.settings)
   return (
     <g>
@@ -125,32 +189,51 @@ export function StructureTargets({
             const choose = () =>
               setSelection({ type: 'divider', moduleId: module.id, dividerId })
             return (
-              <rect
-                key={dividerId}
-                className="divider-hit-area"
-                x={p.x}
-                y={p.y}
-                width={Math.max(8, panel.thickness * zoom)}
-                height={Math.max(0, panel.length * zoom)}
-                role="button"
-                tabIndex={0}
-                aria-label={t('canvas.dividerAt', {
-                  name: module.name,
-                  value: measure(panel.position.x),
-                })}
-                aria-pressed={selected}
-                onPointerEnter={() =>
-                  setHover({ type: 'divider', moduleId: module.id, dividerId })
-                }
-                onPointerLeave={() => setHover(null)}
-                onClick={choose}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault()
-                    choose()
+              <g key={dividerId}>
+                <rect
+                  className="divider-hit-area"
+                  x={p.x}
+                  y={p.y}
+                  width={Math.max(8, panel.thickness * zoom)}
+                  height={Math.max(0, panel.length * zoom)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={t('canvas.dividerAt', {
+                    name: module.name,
+                    value: measure(panel.position.x),
+                  })}
+                  aria-pressed={selected}
+                  onPointerEnter={() =>
+                    setHover({
+                      type: 'divider',
+                      moduleId: module.id,
+                      dividerId,
+                    })
                   }
-                }}
-              />
+                  onPointerLeave={() => setHover(null)}
+                  onClick={choose}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      choose()
+                    }
+                  }}
+                  {...dragHandlers(
+                    'x',
+                    panel.position.x,
+                    (project, left) =>
+                      moveDivider(project, module.id, dividerId, left),
+                    choose,
+                  )}
+                />
+                {selected && (
+                  <text className="shelf-position" x={p.x + 8} y={p.y - 10}>
+                    {t('canvas.fromLeft', {
+                      value: measure(panel.position.x),
+                    })}
+                  </text>
+                )}
+              </g>
             )
           })}
       {!frontsMode &&
@@ -193,62 +276,13 @@ export function StructureTargets({
                       choose()
                     }
                   }}
-                  onPointerDown={(event) => {
-                    if (event.button !== 0) return
-                    event.stopPropagation()
-                    choose()
-                    setError(null)
-                    drag.current = {
-                      pointer: event.pointerId,
-                      y: event.clientY,
-                      bottom: panel.position.y,
-                      shelfId,
-                      zoom,
-                      started: false,
-                    }
-                    event.currentTarget.setPointerCapture(event.pointerId)
-                  }}
-                  onPointerMove={(event) => {
-                    const current = drag.current
-                    if (!current || current.pointer !== event.pointerId) return
-                    const state = useProjectStore.getState()
-                    if (current.started && !state.previewBase) {
-                      drag.current = null
-                      return
-                    }
-                    const delta = event.clientY - current.y
-                    if (!current.started && Math.abs(delta) < 2) return
-                    if (!current.started) {
-                      state.beginProjectPreview()
-                      current.started = true
-                    }
-                    try {
-                      state.updateProjectPreview(
-                        moveShelf(
-                          useProjectStore.getState().previewBase!,
-                          module.id,
-                          current.shelfId,
-                          Math.round(current.bottom - delta / current.zoom),
-                        ),
-                      )
-                      setError(null)
-                    } catch (error) {
-                      setError(commandMessage(error))
-                    }
-                  }}
-                  onPointerUp={(event) => {
-                    if (
-                      !drag.current ||
-                      drag.current.pointer !== event.pointerId
-                    )
-                      return
-                    if (drag.current.started)
-                      useProjectStore.getState().commitProjectPreview()
-                    drag.current = null
-                    event.currentTarget.releasePointerCapture(event.pointerId)
-                  }}
-                  onPointerCancel={cancel}
-                  onLostPointerCapture={cancel}
+                  {...dragHandlers(
+                    'y',
+                    panel.position.y,
+                    (project, bottom) =>
+                      moveShelf(project, module.id, shelfId, bottom),
+                    choose,
+                  )}
                 />
                 {selection?.type === 'shelf' &&
                   selection.shelfId === shelfId && (

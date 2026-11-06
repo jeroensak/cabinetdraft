@@ -859,7 +859,8 @@ input:focus-visible {
 .divider-hit-area {
   fill: transparent;
   stroke: none;
-  cursor: pointer;
+  cursor: ew-resize;
+  touch-action: none;
   outline: none;
 }
 .divider-hit-area:hover,

@@ -5,6 +5,9 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DesignerPage } from './DesignerPage'
 import { createDefaultProject } from '../domain/project/createDefaultProject'
+import { addDividerToSpace } from '../domain/commands'
+import { deriveSpaces } from '../domain/spaces/deriveSpaces'
+import { spaceRange } from '../domain/spaces/spaceRanges'
 import { useProjectStore } from '../store/projectStore'
 import { mockResizeObserver } from '../test/mockResizeObserver'
 
@@ -132,6 +135,45 @@ describe('Structure editing', () => {
     expect(
       useProjectStore.getState().present.modules[0].shelves[0].bottom,
     ).toBe(1091)
+  })
+
+  it('previews divider dragging live, commits once, and cancels an interrupted drag', () => {
+    vi.stubGlobal('PointerEvent', MouseEvent)
+    const project = createDefaultProject()
+    const [space] = deriveSpaces(project.modules[0], project.settings)
+    useProjectStore.setState({
+      present: addDividerToSpace(
+        project,
+        project.modules[0].id,
+        spaceRange(space),
+      ),
+    })
+    const left = () =>
+      useProjectStore.getState().present.modules[0].dividers[0].left
+    const start = left()
+    render(<DesignerPage />)
+    const divider = screen.getByRole('button', {
+      name: new RegExp(`Cabinet 1 divider`),
+    })
+    Object.defineProperty(divider, 'setPointerCapture', { value: vi.fn() })
+    Object.defineProperty(divider, 'releasePointerCapture', { value: vi.fn() })
+    const zoom = useProjectStore.getState().editor.viewport.zoom
+    fireEvent.pointerDown(divider, { button: 0, clientX: 300 })
+    fireEvent.pointerMove(divider, { clientX: 300 + zoom * 40 })
+    expect(left()).toBe(start + 40)
+    expect(useProjectStore.getState().past).toHaveLength(0)
+    expect(screen.getByText(`${start + 40} mm from left`)).toBeInTheDocument()
+    fireEvent.pointerMove(divider, { clientX: 300 - zoom * 30 })
+    fireEvent.pointerUp(divider)
+    expect(useProjectStore.getState().past).toHaveLength(1)
+    expect(left()).toBe(start - 30)
+    fireEvent.pointerDown(divider, { button: 0, clientX: 300 })
+    fireEvent.pointerMove(divider, { clientX: 250 })
+    fireEvent.keyDown(window, { key: 'Escape' })
+    expect(left()).toBe(start - 30)
+    expect(useProjectStore.getState().previewBase).toBeNull()
+    act(() => useProjectStore.getState().undo())
+    expect(left()).toBe(start)
   })
 
   it('deletes a selected shelf via keyboard and clears the selection across undo', async () => {

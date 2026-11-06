@@ -327,6 +327,7 @@
   "settings.unitsNote": "Units for this project are in <strong>{{unit}}</strong>.",
   "field.inches": "Enter inches to the nearest 1/32, such as 31 1/2 or 3/4.",
   "canvas.fromBottom": "{{value}} from bottom",
+  "canvas.fromLeft": "{{value}} from left",
   "cutList.mergeIdentical": "Group identical parts",
   "part.drawer-side": "Drawer side",
   "part.top-bottom": "Top / bottom",

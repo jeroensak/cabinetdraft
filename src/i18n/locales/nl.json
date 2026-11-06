@@ -327,6 +327,7 @@
   "settings.unitsNote": "De eenheden van dit project zijn in <strong>{{unit}}</strong>.",
   "field.inches": "Voer inches in tot op 1/32, bijvoorbeeld 31 1/2 of 3/4.",
   "canvas.fromBottom": "{{value}} vanaf de onderkant",
+  "canvas.fromLeft": "{{value}} vanaf links",
   "cutList.mergeIdentical": "Identieke onderdelen groeperen",
   "part.drawer-side": "Ladezijkant",
   "part.top-bottom": "Bovenpaneel / bodem",
