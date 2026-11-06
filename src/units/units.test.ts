@@ -3,6 +3,7 @@ import {
   formatBare,
   formatInches,
   formatMeasure,
+  formatSheetSize,
   formatSize,
   parseInches,
 } from './index'
@@ -72,6 +73,11 @@ describe('inch notation', () => {
     expect(formatMeasure(800, 'mm')).toBe('800 mm')
     expect(formatMeasure(inches(31.5), 'inch')).toBe('31 1/2"')
     expect(formatSize([754, 537], 'mm')).toBe('754 × 537 mm')
+    expect(formatSheetSize(2440, 1220, 'mm')).toBe('2440 × 1220 mm')
+    expect(formatSheetSize(inches(48), inches(24), 'inch')).toBe(`4' × 2'`)
+    expect(formatSheetSize(inches(48.5), inches(24), 'inch')).toBe(
+      `4' 1/2" × 24"`,
+    )
     expect(formatSize([inches(31.5), inches(20)], 'inch')).toBe('31 1/2" × 20"')
     expect(formatBare(inches(31.5), 'inch')).toBe('31 1/2')
     expect(formatBare(754, 'mm')).toBe('754')

@@ -1332,3 +1332,146 @@ input:focus-visible {
 .panel-face[data-source^='drawer-'][data-hovered='true'] {
   fill: #e7f2ef;
 }
+.cut-list-view {
+  width: 180px;
+  margin-left: 20px;
+}
+.cut-list-summary .cut-list-view {
+  flex: none;
+}
+.cut-list-view + span {
+  margin-left: auto;
+}
+.sheet-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0 8px;
+}
+.sheet-controls {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.sheet-controls .property-field {
+  width: 150px;
+  margin-top: 0;
+}
+.sheet-controls .property-field:has(select) {
+  width: 210px;
+}
+.sheet-controls .property-field select {
+  margin-top: 6px;
+}
+.sheet-total {
+  display: flex;
+  align-self: flex-end;
+  gap: 12px;
+  margin: 0 0 12px auto;
+  font-size: 13px;
+}
+.sheet-total span {
+  color: var(--muted);
+}
+.sheet-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 11px;
+}
+.sheet-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sheet-legend li::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid #b9b2a4;
+  background: var(--part-fill);
+}
+[data-group='bases'] {
+  --part-fill: #eadfcb;
+}
+[data-group='shelves'] {
+  --part-fill: #d8e6d6;
+}
+[data-group='doors'] {
+  --part-fill: #cfe3e0;
+}
+[data-group='drawers'] {
+  --part-fill: #f2c4b0;
+}
+.sheet-group h2 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+.sheet-group h2 small {
+  margin-left: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+.sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(460px, 100%), 1fr));
+  gap: 20px;
+}
+.sheet-grid figure {
+  margin: 0;
+  min-width: 0;
+}
+.sheet-grid figcaption {
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+.sheet-grid figcaption strong {
+  color: #1f2933;
+  font-weight: 600;
+  margin-right: 6px;
+}
+.sheet-drawing {
+  display: block;
+  /* A cut number at the sheet's edge may stick out a little. */
+  overflow: visible;
+  width: 100%;
+  height: auto;
+  border: 1px solid #b9b2a4;
+  border-radius: 2px;
+}
+.sheet-board {
+  fill: #f1eee7;
+}
+.sheet-part {
+  fill: var(--part-fill);
+  stroke: #8a847b;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.sheet-part-label {
+  fill: #1f2933;
+  pointer-events: none;
+}
+.sheet-cut line {
+  stroke: #b3401f;
+  stroke-width: 1.25;
+  stroke-dasharray: 5 3;
+  vector-effect: non-scaling-stroke;
+}
+.sheet-cut circle {
+  fill: #b3401f;
+}
+.sheet-cut text {
+  fill: #fff;
+  font-weight: 600;
+  pointer-events: none;
+}

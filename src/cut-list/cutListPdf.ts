@@ -10,6 +10,9 @@ import { t } from '../i18n'
 import { formatBare, unitSymbol } from '../units'
 
 import { addAssemblyPage } from './assemblyPages'
+import { addSheetPages } from './sheetPages'
+import { deriveSheetLayout } from '../domain/cutlist/sheetLayout'
+import { loadSheetPreference } from '../store/sheetStockPreference'
 import { cutListRows, groupCutList } from './partGroups'
 import fontUrl from '../assets/fonts/NotoSans-Regular.ttf?url'
 
@@ -105,6 +108,14 @@ export function createCutListPdf(
         .finalY + 8
   }
   const listPages = doc.getNumberOfPages()
+  const sheetStock = loadSheetPreference(measureUnit)
+  const sheetPages = addSheetPages(
+    doc,
+    deriveSheetLayout(result.items, sheetStock, sheetStock.priority),
+    sheetStock,
+    measureUnit,
+  )
+  const firstAssembly = listPages + sheetPages.length
   const labelled = deriveLabelledPanels(project)
   for (const module of project.modules)
     addAssemblyPage(
@@ -117,11 +128,13 @@ export function createCutListPdf(
     doc.setPage(page)
     doc.setFontSize(19)
     doc.setTextColor(31, 41, 51)
-    const cabinet = project.modules[page - listPages - 1]
+    const sheetPage = sheetPages[page - listPages - 1]
+    const cabinet = project.modules[page - firstAssembly - 1]
     doc.text(
-      cabinet
-        ? t('pdf.assembly', { cabinet: cabinet.name })
-        : t('cutList.title'),
+      sheetPage?.title ??
+        (cabinet
+          ? t('pdf.assembly', { cabinet: cabinet.name })
+          : t('cutList.title')),
       15,
       17,
     )
@@ -131,22 +144,26 @@ export function createCutListPdf(
     doc.setFontSize(8)
     doc.setTextColor(100)
     doc.text(
-      cabinet
-        ? t('pdf.assemblyNote', { prefix: `C${page - listPages}-` })
-        : t('pdf.summary', {
-            cabinets: t('count.cabinets', { count: project.modules.length }),
-            parts: t('count.parts', { count: result.items.length }),
-          }),
+      sheetPage?.summary ??
+        (cabinet
+          ? t('pdf.assemblyNote', { prefix: `C${page - firstAssembly}-` })
+          : t('pdf.summary', {
+              cabinets: t('count.cabinets', { count: project.modules.length }),
+              parts: t('count.parts', { count: result.items.length }),
+            })),
       15,
       36,
     )
     doc.setTextColor(100)
+    const unitName = t(
+      measureUnit === 'inch' ? 'unit.inchPlural' : 'unit.mmPlural',
+    )
     doc.text(
-      t(merged ? 'pdf.noteMerged' : 'pdf.note', {
-        unit: t(measureUnit === 'inch' ? 'unit.inchPlural' : 'unit.mmPlural'),
-      }),
+      sheetPage
+        ? doc.splitTextToSize(t('sheets.note', { unit: unitName }), 245)
+        : t(merged ? 'pdf.noteMerged' : 'pdf.note', { unit: unitName }),
       15,
-      199,
+      sheetPage ? 195 : 199,
     )
     doc.text(t('pdf.page', { page, pages }), 282, 199, { align: 'right' })
   }
