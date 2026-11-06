@@ -68,7 +68,7 @@ test('a share link opens as a new design for someone else, after asking', async 
   const from = await sender.newPage()
   await from.goto('/designer')
   await from.getByLabel('Name', { exact: true }).fill('Shared hallway')
-  await from.getByRole('radio').nth(1).check()
+  await from.getByRole('radio', { name: 'Media wall' }).check()
   await from.getByRole('button', { name: 'Create design' }).click()
   await from.getByRole('button', { name: 'Import, export and share' }).click()
   await from.getByRole('menuitem', { name: 'Share' }).click()
@@ -90,7 +90,7 @@ test('a share link opens as a new design for someone else, after asking', async 
   expect(message).toContain('Shared hallway')
   await expect(to).toHaveURL(/\/designer$/)
   await expect(
-    to.getByRole('button', { name: 'Wide cabinet, 1998 mm', exact: true }),
+    to.getByRole('button', { name: 'Tall cabinet, 900 mm', exact: true }),
   ).toBeVisible()
   await to.reload()
   await expect(to.getByLabel('Design name')).toHaveValue('Shared hallway')
