@@ -1,9 +1,13 @@
 import { jsPDF } from 'jspdf'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { deriveCutList } from '../domain/cutlist/deriveCutList'
 import { deriveSheetLayout } from '../domain/cutlist/sheetLayout'
 import { createDefaultProject } from '../domain/project/createDefaultProject'
+import { setLanguage } from '../i18n'
 import { addSheetPages } from './sheetPages'
+
+// These read the English names, whatever language the machine runs in.
+beforeAll(() => setLanguage('en'))
 
 const STOCK = { length: 2440, width: 1220, kerf: 4, priority: 'cuts' } as const
 

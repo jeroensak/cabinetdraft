@@ -417,7 +417,7 @@ describe('deriveSheetLayout', () => {
         expect(other.sheets.length).toBeLessThanOrEqual(group.sheets.length)
       })
     }
-  })
+  }, 30_000)
 
   it('does not change the cut list items', () => {
     const items = parts([

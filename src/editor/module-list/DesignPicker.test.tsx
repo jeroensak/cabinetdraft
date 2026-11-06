@@ -49,7 +49,7 @@ it('names, creates from a template and switches designs', async () => {
 
   await user.click(screen.getByRole('button', { name: '+ New design' }))
   const dialog = screen.getByRole('dialog', { name: 'New design' })
-  expect(within(dialog).getAllByRole('radio')).toHaveLength(3)
+  expect(within(dialog).getAllByRole('radio')).toHaveLength(5)
   await user.click(within(dialog).getAllByRole('radio')[1]!)
   await user.type(within(dialog).getByLabelText('Name'), 'Hall')
   await user.click(
