@@ -16,7 +16,7 @@ This post-V1 extension was requested by the user. The subsequent request to add 
 - A door can cover one space or a rectangular union of adjacent spaces, vertically, horizontally, or both. An L-shaped group supports per-space actions, but cannot become one rectangular door.
 - Adding a shelf or divider behind a door preserves that door. Splitting a space occupied by a drawer front creates two corresponding drawer fronts atomically.
 - Removing a shelf uses the existing lower-front-wins merge rule within that shelf's column. A shelf supporting dividers cannot be removed until those dividers are removed. A divider supporting shelves or bounding fronts cannot be removed until those dependants are removed. Unrelated spaces are not modified.
-- Dividers can be dragged left and right on the canvas, like shelves up and down: a live preview that commits one undo step on release, and Escape cancels it. Dragging does not snap.
+- Dividers can be dragged left and right on the canvas, like shelves up and down: a live preview that commits one undo step on release, and Escape cancels it. Dragged shelves and dividers snap to 10 mm, or 1/4 inch in an inch design, and to the positions that divide the cabinet's whole inner height or width into 2, 3, 4 or 5 equal spaces, panel thicknesses taken off first. `snapPosition` is the one rule, and typed values stay exact.
 - Resizing or moving panels may leave invalid geometry persisted for repair. Validation checks dimensions, supports, intersections, and the partition; an invalid project has no usable Cut List. Module properties list dividers so off-canvas positions remain repairable.
 
 ## Scoped overlay fronts
