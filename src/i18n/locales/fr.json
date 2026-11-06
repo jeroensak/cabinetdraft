@@ -327,6 +327,7 @@
   "settings.unitsNote": "Les unités de ce projet sont en <strong>{{unit}}</strong>.",
   "field.inches": "Saisissez des pouces au 1/32 près, par exemple 31 1/2 ou 3/4.",
   "canvas.fromBottom": "{{value}} depuis le bas",
+  "canvas.fromLeft": "{{value}} depuis la gauche",
   "cutList.mergeIdentical": "Regrouper les pièces identiques",
   "part.drawer-side": "Côté de tiroir",
   "part.top-bottom": "Dessus / dessous",

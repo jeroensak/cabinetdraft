@@ -801,6 +801,16 @@ input:focus-visible {
   stroke-width: 4px;
   stroke-linejoin: round;
 }
+.panel-measure {
+  pointer-events: none;
+}
+.panel-measure path {
+  stroke: #256d67;
+  stroke-width: 1;
+}
+.panel-measure text {
+  fill: #256d67;
+}
 .invalid-geometry-label {
   fill: #a63d40;
   font-size: 11px;
@@ -859,7 +869,8 @@ input:focus-visible {
 .divider-hit-area {
   fill: transparent;
   stroke: none;
-  cursor: pointer;
+  cursor: ew-resize;
+  touch-action: none;
   outline: none;
 }
 .divider-hit-area:hover,

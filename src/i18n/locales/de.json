@@ -327,6 +327,7 @@
   "settings.unitsNote": "Die Einheiten dieses Projekts sind in <strong>{{unit}}</strong>.",
   "field.inches": "Gib Zoll auf 1/32 genau ein, zum Beispiel 31 1/2 oder 3/4.",
   "canvas.fromBottom": "{{value}} vom Boden",
+  "canvas.fromLeft": "{{value}} von links",
   "cutList.mergeIdentical": "Gleiche Teile zusammenfassen",
   "part.drawer-side": "Schubladenseite",
   "part.top-bottom": "Ober- / Unterboden",
